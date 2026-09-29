@@ -1,6 +1,6 @@
 import { reactive, readonly } from 'vue'
 
-import { authenticatedRequest } from './useAuth'
+import { authenticatedRequest, setMerchantProfile } from './useAuth'
 import { ApiError } from '../lib/api'
 import { convertProfileImage, uploadProfileImage } from '../lib/profileImages'
 import type {
@@ -59,9 +59,11 @@ async function loadProfile(): Promise<void> {
   try {
     const response = await authenticatedRequest<MerchantProfileResponse>('/v1/app-nudger/profile')
     state.profile = response.data
+    setMerchantProfile(response.data)
   } catch (error) {
     if (error instanceof ApiError && error.code === 'MERCHANT_PROFILE_NOT_FOUND') {
       state.profile = null
+      setMerchantProfile(null)
     } else {
       state.errorMessage = getErrorMessage(error, 'Your merchant profile could not be loaded.')
     }
@@ -92,6 +94,7 @@ async function createProfile(form: MerchantProfileForm, file: File): Promise<boo
       }),
     })
     state.profile = response.data
+    setMerchantProfile(response.data)
     return true
   } catch (error) {
     state.errorMessage = getErrorMessage(error, 'Your merchant profile could not be created.')
@@ -117,6 +120,7 @@ async function changeProfileImage(file: File): Promise<boolean> {
       body: JSON.stringify({ profile_image_key: profileImageKey }),
     })
     state.profile = response.data
+    setMerchantProfile(response.data)
     return true
   } catch (error) {
     state.errorMessage = getErrorMessage(error, 'Your profile image could not be changed.')

@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 
 import AuthCallbackView from './components/AuthCallbackView.vue'
 import DashboardView from './components/DashboardView.vue'
 import FlowIllustration from './components/FlowIllustration.vue'
 import IconGlyph from './components/IconGlyph.vue'
 import LoginView from './components/LoginView.vue'
+import OnboardingView from './components/OnboardingView.vue'
+import PendingView from './components/PendingView.vue'
 import { initializeAuth, useAuth } from './composables/useAuth'
 import { getNudgerConfig } from './config'
 import { getCurrentPath, navigateTo } from './lib/navigation'
@@ -16,6 +18,8 @@ const currentPath = ref(getCurrentPath())
 const isLoginRoute = computed(() => currentPath.value === '/login')
 const isCallbackRoute = computed(() => currentPath.value === '/auth/callback')
 const isDashboardRoute = computed(() => currentPath.value === '/dashboard')
+const isOnboardingRoute = computed(() => currentPath.value === '/onboarding')
+const isPendingRoute = computed(() => currentPath.value === '/pending')
 const isMenuOpen = ref(false)
 const isDarkMode = ref(true)
 
@@ -109,6 +113,18 @@ function getActionUrl(url: string, fallback: string): string {
   return url || fallback
 }
 
+function isWorkspaceRoute(path: string): boolean {
+  return path === '/dashboard' || path === '/onboarding' || path === '/pending'
+}
+
+function getProfileRoute(): string {
+  const profile = auth.state.merchantProfile
+  if (!profile) {
+    return '/onboarding'
+  }
+  return profile.is_active ? '/dashboard' : '/pending'
+}
+
 function handleRouteChange(): void {
   currentPath.value = getCurrentPath()
 
@@ -116,13 +132,15 @@ function handleRouteChange(): void {
     return
   }
 
-  if (isDashboardRoute.value && !auth.state.user) {
-    navigateTo('/login', true)
+  if (!auth.state.user) {
+    if (isWorkspaceRoute(currentPath.value)) {
+      navigateTo('/login', true)
+    }
     return
   }
 
-  if (isLoginRoute.value && auth.state.user) {
-    navigateTo('/dashboard', true)
+  if ((isLoginRoute.value || isWorkspaceRoute(currentPath.value)) && currentPath.value !== getProfileRoute()) {
+    navigateTo(getProfileRoute(), true)
   }
 }
 
@@ -136,6 +154,15 @@ onMounted(() => {
 
   applyColorMode()
   window.addEventListener('popstate', handleRouteChange)
+  watch(
+    [
+      () => auth.state.isInitialized,
+      () => auth.state.user?.id,
+      () => auth.state.merchantProfile?.id,
+      () => auth.state.merchantProfile?.is_active,
+    ],
+    handleRouteChange,
+  )
   void initializeAuth().then(handleRouteChange)
 })
 
@@ -154,7 +181,11 @@ onUnmounted(() => {
 
     <DashboardView v-else-if="isDashboardRoute && auth.state.isInitialized && auth.state.user" />
 
-    <main v-else-if="isLoginRoute || isDashboardRoute" class="auth-loading" aria-live="polite">
+    <OnboardingView v-else-if="isOnboardingRoute && auth.state.isInitialized && auth.state.user" />
+
+    <PendingView v-else-if="isPendingRoute && auth.state.isInitialized && auth.state.user" />
+
+    <main v-else-if="isLoginRoute || isDashboardRoute || isOnboardingRoute || isPendingRoute" class="auth-loading" aria-live="polite">
       <div class="auth-loading__spinner" aria-hidden="true"></div>
       <p>Restoring your Nudger session…</p>
     </main>

@@ -1,3 +1,5 @@
+import type { MerchantProfile } from './merchantProfile'
+
 export interface IdentityUser {
   id: string
   name: string
@@ -18,6 +20,16 @@ export interface AuthResponse {
   data: {
     auth: AuthTokens
     user: IdentityUser
+    merchant_profile: MerchantProfile | null
+  }
+  errors: Record<string, unknown>
+}
+
+export interface AuthSessionResponse {
+  message: string
+  data: {
+    user: IdentityUser
+    merchant_profile: MerchantProfile | null
   }
   errors: Record<string, unknown>
 }

@@ -8,12 +8,14 @@ import type {
   GoogleStartResponse,
   IdentityUser,
 } from '../types/auth'
+import type { MerchantProfile } from '../types/merchantProfile'
 
 const REFRESH_TOKEN_KEY = 'nudger.refresh_token'
 const AUTH_CALLBACK_PATH = '/auth/callback'
 
 interface AuthState {
   user: IdentityUser | null
+  merchantProfile: MerchantProfile | null
   accessToken: string | null
   isInitialized: boolean
   isBusy: boolean
@@ -22,6 +24,7 @@ interface AuthState {
 
 const state = reactive<AuthState>({
   user: null,
+  merchantProfile: null,
   accessToken: null,
   isInitialized: false,
   isBusy: false,
@@ -35,16 +38,26 @@ function getStoredRefreshToken(): string | null {
   return window.localStorage.getItem(REFRESH_TOKEN_KEY)
 }
 
-function saveSession(tokens: AuthTokens, user: IdentityUser): void {
+function saveSession(
+  tokens: AuthTokens,
+  user: IdentityUser,
+  merchantProfile: MerchantProfile | null,
+): void {
   state.accessToken = tokens.access_token
   state.user = user
+  state.merchantProfile = merchantProfile
   window.localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refresh_token)
 }
 
 function clearSession(): void {
   state.accessToken = null
   state.user = null
+  state.merchantProfile = null
   window.localStorage.removeItem(REFRESH_TOKEN_KEY)
+}
+
+export function setMerchantProfile(profile: MerchantProfile | null): void {
+  state.merchantProfile = profile
 }
 
 async function refreshAccessToken(): Promise<boolean> {
@@ -64,7 +77,7 @@ async function refreshAccessToken(): Promise<boolean> {
         method: 'POST',
         body: JSON.stringify({ refresh_token: refreshToken }),
       })
-      saveSession(response.data.auth, response.data.user)
+      saveSession(response.data.auth, response.data.user, response.data.merchant_profile)
       return true
     } catch {
       clearSession()
@@ -122,7 +135,7 @@ export async function completeGoogleLogin(handoffCode: string): Promise<void> {
       method: 'POST',
       body: JSON.stringify({ handoff_code: handoffCode }),
     })
-    saveSession(response.data.auth, response.data.user)
+    saveSession(response.data.auth, response.data.user, response.data.merchant_profile)
   } catch (error) {
     state.errorMessage = error instanceof Error ? error.message : 'Sign-in could not be completed.'
     throw error
@@ -189,6 +202,7 @@ export function useAuth() {
     initializeAuth,
     startGoogleLogin,
     completeGoogleLogin,
+    setMerchantProfile,
     logout,
   }
 }
