@@ -202,13 +202,22 @@ onMounted(() => {
     </div>
 
     <div v-else class="merchant-profile__ready">
+      <div v-if="!state.profile.is_active" class="profile-status-notice" role="status" aria-live="polite">
+        <span class="profile-status-notice__icon"><IconGlyph name="bell" /></span>
+        <div>
+          <strong>Your profile is inactive</strong>
+          <p>Please wait while your merchant profile is reviewed and approved. You will be able to send nudges once it is active.</p>
+        </div>
+      </div>
+
       <div class="profile-card">
         <img class="profile-card__image" :src="state.profile.profile_image_url" :alt="`${state.profile.display_name} profile picture`" />
         <div class="profile-card__body">
           <div class="profile-card__meta"><span>{{ state.profile.profile_type }}</span><span :class="{ 'profile-card__status--inactive': !state.profile.is_active }">{{ state.profile.is_active ? 'Active' : 'Pending activation' }}</span></div>
           <h3>{{ state.profile.display_name }}</h3>
           <p class="profile-card__nudger-id">@{{ state.profile.nudger_id }}</p>
-          <p>Your merchant profile is ready. When it is activated, this is the identity attached to every nudge you send.</p>
+          <p v-if="state.profile.is_active">Your merchant profile is ready. This is the identity attached to every nudge you send.</p>
+          <p v-else>Your profile has been saved and is waiting for approval.</p>
         </div>
       </div>
 
@@ -603,6 +612,46 @@ onMounted(() => {
   display: grid;
   gap: 24px;
   margin-top: 42px;
+}
+
+.profile-status-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid rgba(243, 207, 140, 0.35);
+  border-radius: 20px;
+  background: rgba(243, 207, 140, 0.1);
+}
+
+.profile-status-notice__icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 13px;
+  color: #f3cf8c;
+  background: rgba(243, 207, 140, 0.16);
+}
+
+.profile-status-notice__icon .icon-glyph {
+  width: 19px;
+  height: 19px;
+}
+
+.profile-status-notice strong {
+  display: block;
+  color: var(--color-text);
+  font-size: 14px;
+}
+
+.profile-status-notice p {
+  max-width: 680px;
+  margin: 5px 0 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1.55;
 }
 
 .profile-card {
