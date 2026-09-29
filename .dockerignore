@@ -1,6 +1,12 @@
-node_modules
-dist
-.git
+node_modules/
+dist/
+.git/
+.idea/
+.vscode/
+.vite/
+coverage/
+*.tsbuildinfo
+*.log
 .env
 .env.*
 !.env.nudger.example
