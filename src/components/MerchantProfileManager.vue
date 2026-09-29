@@ -619,9 +619,9 @@ onMounted(() => {
   align-items: flex-start;
   gap: 14px;
   padding: 18px 20px;
-  border: 1px solid rgba(243, 207, 140, 0.35);
+  border: 1px solid #f59e0b;
   border-radius: 20px;
-  background: rgba(243, 207, 140, 0.1);
+  background: #fff7ed;
 }
 
 .profile-status-notice__icon {
@@ -631,8 +631,8 @@ onMounted(() => {
   flex: 0 0 auto;
   place-items: center;
   border-radius: 13px;
-  color: #f3cf8c;
-  background: rgba(243, 207, 140, 0.16);
+  color: #9a3412;
+  background: #fed7aa;
 }
 
 .profile-status-notice__icon .icon-glyph {
@@ -642,14 +642,14 @@ onMounted(() => {
 
 .profile-status-notice strong {
   display: block;
-  color: var(--color-text);
+  color: #7c2d12;
   font-size: 14px;
 }
 
 .profile-status-notice p {
   max-width: 680px;
   margin: 5px 0 0;
-  color: var(--color-text-muted);
+  color: #9a3412;
   font-size: 13px;
   line-height: 1.55;
 }
@@ -692,7 +692,17 @@ onMounted(() => {
 }
 
 .profile-card__meta .profile-card__status--inactive {
-  color: #f3cf8c;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 11px;
+  border: 1px solid #f59e0b;
+  border-radius: 999px;
+  color: #7c2d12;
+  background: #ffedd5;
+  box-shadow: 0 2px 0 rgba(124, 45, 18, 0.12);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.02em;
 }
 
 .profile-card h3 {
