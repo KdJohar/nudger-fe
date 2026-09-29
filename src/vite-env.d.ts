@@ -7,5 +7,10 @@ interface Window {
     nudgeeIosUrl?: string
     nudgerRegisterUrl?: string
     nudgerLoginUrl?: string
+    profileImageSourceMaxBytes?: string
+    profileImageFinalMaxBytes?: string
+    profileImageMaxDimension?: string
+    profileImageWebpQuality?: string
+    profileImagePresignUrlTtlSeconds?: string
   }
 }

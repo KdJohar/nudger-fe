@@ -4,10 +4,20 @@ export interface NudgerConfig {
   nudgeeIosUrl: string
   nudgerRegisterUrl: string
   nudgerLoginUrl: string
+  profileImageSourceMaxBytes: number
+  profileImageFinalMaxBytes: number
+  profileImageMaxDimension: number
+  profileImageWebpQuality: number
+  profileImagePresignUrlTtlSeconds: number
 }
 
 function getConfiguredValue(runtimeValue: string | undefined, viteValue: string | undefined, fallback = ''): string {
   return runtimeValue?.trim() || viteValue?.trim() || fallback
+}
+
+function getConfiguredNumber(runtimeValue: string | undefined, viteValue: string | undefined, fallback: number): number {
+  const value = Number.parseFloat(getConfiguredValue(runtimeValue, viteValue))
+  return Number.isFinite(value) && value > 0 ? value : fallback
 }
 
 export function getNudgerConfig(): NudgerConfig {
@@ -32,6 +42,31 @@ export function getNudgerConfig(): NudgerConfig {
     nudgerLoginUrl: getConfiguredValue(
       window.__NUDGER_CONFIG__?.nudgerLoginUrl,
       import.meta.env.VITE_NUDGER_LOGIN_URL,
+    ),
+    profileImageSourceMaxBytes: getConfiguredNumber(
+      window.__NUDGER_CONFIG__?.profileImageSourceMaxBytes,
+      import.meta.env.VITE_PROFILE_IMAGE_SOURCE_MAX_BYTES,
+      10 * 1024 * 1024,
+    ),
+    profileImageFinalMaxBytes: getConfiguredNumber(
+      window.__NUDGER_CONFIG__?.profileImageFinalMaxBytes,
+      import.meta.env.VITE_PROFILE_IMAGE_FINAL_MAX_BYTES,
+      2 * 1024 * 1024,
+    ),
+    profileImageMaxDimension: getConfiguredNumber(
+      window.__NUDGER_CONFIG__?.profileImageMaxDimension,
+      import.meta.env.VITE_PROFILE_IMAGE_MAX_DIMENSION,
+      1600,
+    ),
+    profileImageWebpQuality: getConfiguredNumber(
+      window.__NUDGER_CONFIG__?.profileImageWebpQuality,
+      import.meta.env.VITE_PROFILE_IMAGE_WEBP_QUALITY,
+      0.82,
+    ),
+    profileImagePresignUrlTtlSeconds: getConfiguredNumber(
+      window.__NUDGER_CONFIG__?.profileImagePresignUrlTtlSeconds,
+      import.meta.env.VITE_PROFILE_IMAGE_PRESIGN_URL_TTL_SECONDS,
+      600,
     ),
   }
 }

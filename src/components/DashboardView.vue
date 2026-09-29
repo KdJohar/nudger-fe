@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 import { useAuth } from '../composables/useAuth'
 import { navigateTo } from '../lib/navigation'
 import IconGlyph from './IconGlyph.vue'
+import MerchantProfileManager from './MerchantProfileManager.vue'
 
 const { state, logout } = useAuth()
 const isLoggingOut = ref(false)
@@ -62,38 +63,7 @@ async function handleLogout(): Promise<void> {
         <p>Everything you need to reach the people who choose your updates will live here.</p>
       </section>
 
-      <section class="workspace-empty" aria-labelledby="empty-heading">
-        <div class="workspace-empty__icon" aria-hidden="true">
-          <IconGlyph name="layers" />
-        </div>
-        <p class="panel-label">Your workspace is ready</p>
-        <h2 id="empty-heading">Your Nudger dashboard is empty for now.</h2>
-        <p class="workspace-empty__copy">Once your profile and first audience are set up, this is where your updates, delivery activity, and workspace signals will appear.</p>
-
-        <div class="workspace-empty__steps" aria-label="Workspace setup preview">
-          <div class="workspace-empty__step">
-            <span>01</span>
-            <div>
-              <strong>Set up your profile</strong>
-              <small>Tell people who is sending the update.</small>
-            </div>
-          </div>
-          <div class="workspace-empty__step">
-            <span>02</span>
-            <div>
-              <strong>Connect your audience</strong>
-              <small>Choose the people and tiers you want to reach.</small>
-            </div>
-          </div>
-          <div class="workspace-empty__step">
-            <span>03</span>
-            <div>
-              <strong>Send the moment</strong>
-              <small>Share a useful update when it matters.</small>
-            </div>
-          </div>
-        </div>
-      </section>
+      <MerchantProfileManager />
     </main>
   </div>
 </template>
