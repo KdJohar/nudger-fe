@@ -1,13 +1,21 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 
+import AuthCallbackView from './components/AuthCallbackView.vue'
+import DashboardView from './components/DashboardView.vue'
 import FlowIllustration from './components/FlowIllustration.vue'
 import IconGlyph from './components/IconGlyph.vue'
 import LoginView from './components/LoginView.vue'
+import { initializeAuth, useAuth } from './composables/useAuth'
 import { getNudgerConfig } from './config'
+import { getCurrentPath, navigateTo } from './lib/navigation'
 
 const config = getNudgerConfig()
-const isLoginRoute = window.location.pathname.replace(/\/+$/, '') === '/login' || window.location.hash === '#/login'
+const auth = useAuth()
+const currentPath = ref(getCurrentPath())
+const isLoginRoute = computed(() => currentPath.value === '/login')
+const isCallbackRoute = computed(() => currentPath.value === '/auth/callback')
+const isDashboardRoute = computed(() => currentPath.value === '/dashboard')
 const isMenuOpen = ref(false)
 const isDarkMode = ref(true)
 
@@ -101,6 +109,23 @@ function getActionUrl(url: string, fallback: string): string {
   return url || fallback
 }
 
+function handleRouteChange(): void {
+  currentPath.value = getCurrentPath()
+
+  if (!auth.state.isInitialized) {
+    return
+  }
+
+  if (isDashboardRoute.value && !auth.state.user) {
+    navigateTo('/login', true)
+    return
+  }
+
+  if (isLoginRoute.value && auth.state.user) {
+    navigateTo('/dashboard', true)
+  }
+}
+
 onMounted(() => {
   const savedColorMode = localStorage.getItem('nudger-color-mode')
   if (savedColorMode === 'light' || savedColorMode === 'dark') {
@@ -110,6 +135,12 @@ onMounted(() => {
   }
 
   applyColorMode()
+  window.addEventListener('popstate', handleRouteChange)
+  void initializeAuth().then(handleRouteChange)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('popstate', handleRouteChange)
 })
 </script>
 
@@ -117,7 +148,16 @@ onMounted(() => {
   <div id="top" class="site-shell" :class="{ 'site-shell--light': !isDarkMode }" @keydown="closeMenuOnEscape">
     <a class="skip-link" href="#main-content">Skip to content</a>
 
-    <LoginView v-if="isLoginRoute" :google-auth-url="config.nudgerGoogleAuthUrl" :is-dark-mode="isDarkMode" @toggle-color-mode="handleColorModeToggle" />
+    <LoginView v-if="isLoginRoute && auth.state.isInitialized" :is-dark-mode="isDarkMode" @toggle-color-mode="handleColorModeToggle" />
+
+    <AuthCallbackView v-else-if="isCallbackRoute" />
+
+    <DashboardView v-else-if="isDashboardRoute && auth.state.isInitialized && auth.state.user" />
+
+    <main v-else-if="isLoginRoute || isDashboardRoute" class="auth-loading" aria-live="polite">
+      <div class="auth-loading__spinner" aria-hidden="true"></div>
+      <p>Restoring your Nudger session…</p>
+    </main>
 
     <template v-else>
       <header class="site-header">

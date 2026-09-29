@@ -10,6 +10,7 @@ type IconName =
   | 'layers'
   | 'link'
   | 'login'
+  | 'logout'
   | 'menu'
   | 'moon'
   | 'play'
@@ -55,6 +56,9 @@ defineProps<IconGlyphProps>()
     <path v-else-if="name === 'link'" d="M10 13a5 5 0 0 0 7.5.5l1.5-1.5a5 5 0 0 0-7.1-7.1L11 5.8M14 11a5 5 0 0 0-7.5-.5L5 12a5 5 0 0 0 7.1 7.1l.9-.9" />
     <template v-else-if="name === 'login'">
       <path d="M10 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4M13 8l4 4-4 4M9 12h8" />
+    </template>
+    <template v-else-if="name === 'logout'">
+      <path d="M14 5h4a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-4M10 8l-4 4 4 4M6 12h9" />
     </template>
     <template v-else-if="name === 'menu'">
       <path d="M4 7h16M4 12h16M4 17h16" />
