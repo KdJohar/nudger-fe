@@ -11,8 +11,19 @@ export interface NudgerConfig {
   profileImagePresignUrlTtlSeconds: number
 }
 
+function isUnresolvedEnvironmentPlaceholder(value: string): boolean {
+  return /^\$\{[^}]+\}$/.test(value)
+}
+
 function getConfiguredValue(runtimeValue: string | undefined, viteValue: string | undefined, fallback = ''): string {
-  return runtimeValue?.trim() || viteValue?.trim() || fallback
+  for (const value of [runtimeValue, viteValue]) {
+    const normalizedValue = value?.trim()
+    if (normalizedValue && !isUnresolvedEnvironmentPlaceholder(normalizedValue)) {
+      return normalizedValue
+    }
+  }
+
+  return fallback
 }
 
 function getConfiguredNumber(runtimeValue: string | undefined, viteValue: string | undefined, fallback: number): number {
