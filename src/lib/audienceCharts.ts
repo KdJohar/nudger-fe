@@ -12,6 +12,13 @@ export interface ChartScale {
   minValue: number
 }
 
+export interface MetricComparison {
+  current: number
+  previous: number
+  delta: number
+  relativeChange: number | null
+}
+
 export const CHART_WIDTH = 720
 export const CHART_HEIGHT = 240
 export const CHART_PADDING = { top: 20, right: 18, bottom: 32, left: 42 }
@@ -56,6 +63,33 @@ export function formatMetric(value: number): string {
 
 export function formatPercent(value: number): string {
   return `${value.toFixed(value % 1 === 0 ? 0 : 1)}%`
+}
+
+export function compareMetric(current: number, previous: number): MetricComparison {
+  const delta = current - previous
+  return {
+    current,
+    previous,
+    delta,
+    relativeChange: previous === 0 ? (current === 0 ? 0 : null) : (delta / previous) * 100,
+  }
+}
+
+export function formatDelta(value: number): string {
+  if (value === 0) {
+    return 'No change'
+  }
+  return `${value > 0 ? '+' : ''}${formatMetric(value)}`
+}
+
+export function formatRelativeChange(value: number | null): string {
+  if (value === null) {
+    return 'New'
+  }
+  if (value === 0) {
+    return 'No change'
+  }
+  return `${value > 0 ? '+' : ''}${formatPercent(value)}`
 }
 
 export function formatChartDate(value: string, period: string): string {
