@@ -172,7 +172,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div id="top" class="site-shell" :class="{ 'site-shell--light': !isDarkMode }" @keydown="closeMenuOnEscape">
+  <div id="top" class="site-shell" :class="{ 'site-shell--light': !isDarkMode, dark: isDarkMode }" @keydown="closeMenuOnEscape">
     <a class="skip-link" href="#main-content">Skip to content</a>
 
     <LoginView v-if="isLoginRoute && auth.state.isInitialized" :is-dark-mode="isDarkMode" @toggle-color-mode="handleColorModeToggle" />

@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 
 import { useAuth } from '../composables/useAuth'
+import AudienceOverview from './AudienceOverview.vue'
 import IconGlyph from './IconGlyph.vue'
 import DashboardShell from './DashboardShell.vue'
 
@@ -34,26 +35,7 @@ const firstName = computed(() => {
         </div>
       </div>
 
-      <div class="dashboard-stat-grid" aria-label="Workspace summary">
-        <article class="dashboard-stat-card">
-          <div class="dashboard-stat-card__icon dashboard-stat-card__icon--coral"><IconGlyph name="users" /></div>
-          <p>Audience</p>
-          <strong>—</strong>
-          <small>Subscribers will appear here.</small>
-        </article>
-        <article class="dashboard-stat-card">
-          <div class="dashboard-stat-card__icon dashboard-stat-card__icon--indigo"><IconGlyph name="send" /></div>
-          <p>Nudges sent</p>
-          <strong>—</strong>
-          <small>Your first send is still ahead.</small>
-        </article>
-        <article class="dashboard-stat-card">
-          <div class="dashboard-stat-card__icon dashboard-stat-card__icon--green"><IconGlyph name="bell" /></div>
-          <p>Delivery rate</p>
-          <strong>—</strong>
-          <small>Delivery insights will follow.</small>
-        </article>
-      </div>
+      <AudienceOverview />
     </section>
 
     <section class="dashboard-panel-grid" aria-label="Workspace activity">
