@@ -1,31 +1,18 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-
+import { useAuth } from '../composables/useAuth'
 import IconGlyph from './IconGlyph.vue'
 
 interface LoginViewProps {
-  googleAuthUrl: string
   isDarkMode: boolean
 }
 
-const props = defineProps<LoginViewProps>()
+defineProps<LoginViewProps>()
 
 const emit = defineEmits<{
   'toggle-color-mode': []
 }>()
 
-const isConnecting = ref(false)
-const authMessage = ref('')
-
-function handleGoogleSignIn(): void {
-  if (!props.googleAuthUrl) {
-    authMessage.value = 'Google sign-in will be available when the Nudger auth service is connected.'
-    return
-  }
-
-  isConnecting.value = true
-  window.location.assign(props.googleAuthUrl)
-}
+const { state, startGoogleLogin } = useAuth()
 </script>
 
 <template>
@@ -62,12 +49,12 @@ function handleGoogleSignIn(): void {
           Sign in to manage the platform and creator updates your audience chooses to receive.
         </p>
 
-        <button class="google-button" type="button" :disabled="isConnecting" @click="handleGoogleSignIn">
+        <button class="google-button" type="button" :disabled="state.isBusy" :aria-busy="state.isBusy" @click="startGoogleLogin">
           <IconGlyph name="google" />
-          <span>{{ isConnecting ? 'Connecting to Google…' : 'Continue with Google' }}</span>
+          <span>{{ state.isBusy ? 'Opening Google…' : 'Continue with Google' }}</span>
         </button>
 
-        <p v-if="authMessage" class="entry-card__status" role="status">{{ authMessage }}</p>
+        <p v-if="state.errorMessage" class="entry-card__status" role="alert">{{ state.errorMessage }}</p>
         <p class="entry-card__note">Nudger is for platforms and creators. Nudgee users receive updates in the mobile app.</p>
       </section>
     </main>
