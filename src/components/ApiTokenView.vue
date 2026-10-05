@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 
 import DashboardShell from './DashboardShell.vue'
 import IconGlyph from './IconGlyph.vue'
@@ -61,6 +61,25 @@ async function loadTokenStatus(): Promise<void> {
   }
 }
 
+watch(
+  [isPlatformMerchant, () => state.isInitialized],
+  ([isPlatform, isInitialized]) => {
+    if (!isInitialized) {
+      return
+    }
+
+    if (isPlatform && tokenStatus.value === null) {
+      void loadTokenStatus()
+      return
+    }
+
+    if (!isPlatform) {
+      isLoading.value = false
+    }
+  },
+  { immediate: true },
+)
+
 async function handleTokenAction(): Promise<void> {
   if (isSubmitting.value) {
     return
@@ -109,10 +128,6 @@ async function handleCopy(): Promise<void> {
     errorMessage.value = 'The token could not be copied. Select it and copy it manually.'
   }
 }
-
-onMounted(() => {
-  void loadTokenStatus()
-})
 
 onUnmounted(() => {
   if (copyResetTimer !== null) {
