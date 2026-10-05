@@ -6,6 +6,7 @@ import DashboardView from './components/DashboardView.vue'
 import FlowIllustration from './components/FlowIllustration.vue'
 import IconGlyph from './components/IconGlyph.vue'
 import LoginView from './components/LoginView.vue'
+import NudgesView from './components/NudgesView.vue'
 import OnboardingView from './components/OnboardingView.vue'
 import PendingView from './components/PendingView.vue'
 import { initializeAuth, useAuth } from './composables/useAuth'
@@ -18,6 +19,7 @@ const currentPath = ref(getCurrentPath())
 const isLoginRoute = computed(() => currentPath.value === '/login')
 const isCallbackRoute = computed(() => currentPath.value === '/auth/callback')
 const isDashboardRoute = computed(() => currentPath.value === '/dashboard')
+const isNudgesRoute = computed(() => currentPath.value === '/nudges')
 const isOnboardingRoute = computed(() => currentPath.value === '/onboarding')
 const isPendingRoute = computed(() => currentPath.value === '/pending')
 const isMenuOpen = ref(false)
@@ -114,6 +116,10 @@ function getActionUrl(url: string, fallback: string): string {
 }
 
 function isWorkspaceRoute(path: string): boolean {
+  return path === '/dashboard' || path === '/nudges' || path === '/onboarding' || path === '/pending'
+}
+
+function isProfileGateRoute(path: string): boolean {
   return path === '/dashboard' || path === '/onboarding' || path === '/pending'
 }
 
@@ -139,8 +145,10 @@ function handleRouteChange(): void {
     return
   }
 
-  if ((isLoginRoute.value || isWorkspaceRoute(currentPath.value)) && currentPath.value !== getProfileRoute()) {
-    navigateTo(getProfileRoute(), true)
+  const profileRoute = getProfileRoute()
+  const nudgesNeedProfileApproval = isNudgesRoute.value && profileRoute !== '/dashboard'
+  if ((isLoginRoute.value || isProfileGateRoute(currentPath.value) || nudgesNeedProfileApproval) && currentPath.value !== profileRoute) {
+    navigateTo(profileRoute, true)
   }
 }
 
@@ -181,11 +189,13 @@ onUnmounted(() => {
 
     <DashboardView v-else-if="isDashboardRoute && auth.state.isInitialized && auth.state.user" />
 
+    <NudgesView v-else-if="isNudgesRoute && auth.state.isInitialized && auth.state.user" />
+
     <OnboardingView v-else-if="isOnboardingRoute && auth.state.isInitialized && auth.state.user" />
 
     <PendingView v-else-if="isPendingRoute && auth.state.isInitialized && auth.state.user" />
 
-    <main v-else-if="isLoginRoute || isDashboardRoute || isOnboardingRoute || isPendingRoute" class="auth-loading" aria-live="polite">
+    <main v-else-if="isLoginRoute || isDashboardRoute || isNudgesRoute || isOnboardingRoute || isPendingRoute" class="auth-loading" aria-live="polite">
       <div class="auth-loading__spinner" aria-hidden="true"></div>
       <p>Restoring your Nudger session…</p>
     </main>
