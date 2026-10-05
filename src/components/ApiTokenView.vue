@@ -184,6 +184,10 @@ onUnmounted(() => {
               <dt>Status</dt>
               <dd><span class="token-card__status-dot" aria-hidden="true"></span>{{ tokenExists ? 'Active' : 'Not generated' }}</dd>
             </div>
+            <div v-if="tokenExists && tokenStatus?.token_prefix">
+              <dt>Token</dt>
+              <dd><code class="token-card__prefix">{{ tokenStatus.token_prefix }}••••••••</code></dd>
+            </div>
             <div>
               <dt>Created</dt>
               <dd>{{ formatDate(tokenStatus?.created_at ?? null) }}</dd>
@@ -460,6 +464,16 @@ onUnmounted(() => {
   color: var(--color-text);
   font-size: 12px;
   font-weight: 800;
+}
+
+.token-card__prefix {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--color-text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .token-card__status-dot {
