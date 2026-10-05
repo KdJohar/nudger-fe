@@ -1,28 +1,62 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 import { useAuth } from '../composables/useAuth'
-import { navigateTo } from '../lib/navigation'
+import { getCurrentPath, navigateTo } from '../lib/navigation'
 import IconGlyph from './IconGlyph.vue'
 
 const { state, logout } = useAuth()
 const isSidebarOpen = ref(false)
 const isLoggingOut = ref(false)
+const currentPath = ref(getCurrentPath())
+
+type NavigationIcon = 'sparkles' | 'bell' | 'key' | 'send' | 'users' | 'link'
+interface NavigationItem {
+  label: string
+  href: string
+  icon: NavigationIcon
+  isAvailable: boolean
+}
 
 const firstName = computed(() => {
   const name = state.user?.name?.trim()
   return name?.split(/\s+/)[0] || 'there'
 })
 
-const navigationItems = [
-  { label: 'Overview', icon: 'sparkles' as const, isAvailable: true },
-  { label: 'Broadcasts', icon: 'send' as const, isAvailable: false },
-  { label: 'Audience', icon: 'users' as const, isAvailable: false },
-  { label: 'Integrations', icon: 'link' as const, isAvailable: false },
-]
+const navigationItems = computed(() => {
+  const items: NavigationItem[] = [
+    { label: 'Overview', href: '/dashboard', icon: 'sparkles' as const, isAvailable: true },
+    { label: 'Nudges', href: '/nudges', icon: 'bell' as const, isAvailable: true },
+    { label: 'Broadcasts', href: '#', icon: 'send' as const, isAvailable: false },
+    { label: 'Audience', href: '#', icon: 'users' as const, isAvailable: false },
+    { label: 'Integrations', href: '#', icon: 'link' as const, isAvailable: false },
+  ]
+
+  if (state.merchantProfile?.profile_type === 'platform') {
+    items.splice(2, 0, { label: 'API token', href: '/token', icon: 'key' as const, isAvailable: true })
+  }
+
+  return items
+})
+
+const pageTitle = computed(() => navigationItems.value.find((item) => item.href === currentPath.value)?.label ?? 'Overview')
 
 function closeSidebar(): void {
   isSidebarOpen.value = false
+}
+
+function handleRouteChange(): void {
+  currentPath.value = getCurrentPath()
+}
+
+function handleNavigationClick(event: MouseEvent, href: string): void {
+  event.preventDefault()
+  closeSidebar()
+  navigateTo(href)
+}
+
+function isItemActive(href: string): boolean {
+  return currentPath.value === href
 }
 
 async function handleLogout(): Promise<void> {
@@ -40,6 +74,14 @@ async function handleLogout(): Promise<void> {
     isLoggingOut.value = false
   }
 }
+
+onMounted(() => {
+  window.addEventListener('popstate', handleRouteChange)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('popstate', handleRouteChange)
+})
 </script>
 
 <template>
@@ -63,20 +105,30 @@ async function handleLogout(): Promise<void> {
       <div class="dashboard-sidebar__body">
         <p class="dashboard-sidebar__label">Workspace</p>
         <nav class="dashboard-nav" aria-label="Workspace sections">
-          <button
-            v-for="item in navigationItems"
-            :key="item.label"
-            class="dashboard-nav__item"
-            :class="{ 'dashboard-nav__item--active': item.isAvailable }"
-            type="button"
-            :disabled="!item.isAvailable"
-            :aria-current="item.isAvailable ? 'page' : undefined"
-            @click="closeSidebar"
-          >
-            <IconGlyph :name="item.icon" />
-            <span>{{ item.label }}</span>
-            <small v-if="!item.isAvailable">Soon</small>
-          </button>
+          <template v-for="item in navigationItems" :key="item.label">
+            <a
+              v-if="item.isAvailable"
+              class="dashboard-nav__item"
+              :class="{ 'dashboard-nav__item--active': isItemActive(item.href) }"
+              :href="item.href"
+              :aria-current="isItemActive(item.href) ? 'page' : undefined"
+              @click="handleNavigationClick($event, item.href)"
+            >
+              <IconGlyph :name="item.icon" />
+              <span>{{ item.label }}</span>
+            </a>
+            <button
+              v-else
+              class="dashboard-nav__item"
+              type="button"
+              disabled
+              @click="closeSidebar"
+            >
+              <IconGlyph :name="item.icon" />
+              <span>{{ item.label }}</span>
+              <small>Soon</small>
+            </button>
+          </template>
         </nav>
 
         <div class="dashboard-sidebar__note">
@@ -109,8 +161,8 @@ async function handleLogout(): Promise<void> {
           <IconGlyph name="menu" />
         </button>
         <div>
-          <p class="dashboard-topbar__eyebrow">Nudger workspace <span>/</span> Overview</p>
-          <h2>Overview</h2>
+          <p class="dashboard-topbar__eyebrow">Nudger workspace <span>/</span> {{ pageTitle }}</p>
+          <h2>{{ pageTitle }}</h2>
         </div>
         <div class="dashboard-topbar__status"><span></span> Workspace active</div>
       </header>

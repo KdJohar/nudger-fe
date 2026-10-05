@@ -5,8 +5,12 @@ type IconName =
   | 'check'
   | 'close'
   | 'device'
+  | 'copy'
+  | 'eye'
+  | 'eye-off'
   | 'globe'
   | 'google'
+  | 'key'
   | 'layers'
   | 'link'
   | 'login'
@@ -39,6 +43,17 @@ defineProps<IconGlyphProps>()
       <rect x="6" y="3" width="12" height="18" rx="2" />
       <path d="M10 18h4" />
     </template>
+    <template v-else-if="name === 'copy'">
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3" />
+    </template>
+    <template v-else-if="name === 'eye'">
+      <path d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5Z" />
+      <circle cx="12" cy="12" r="2.5" />
+    </template>
+    <template v-else-if="name === 'eye-off'">
+      <path d="m3 3 18 18M10.6 10.6A2 2 0 0 0 13.4 13.4M9.9 5.3A10.7 10.7 0 0 1 12 5c6 0 9.5 7 9.5 7a16.8 16.8 0 0 1-3.1 3.8M6.6 6.6C3.9 8.5 2.5 12 2.5 12s3.5 7 9.5 7c1.2 0 2.3-.2 3.3-.6" />
+    </template>
     <template v-else-if="name === 'globe'">
       <circle cx="12" cy="12" r="9" />
       <path d="M3 12h18M12 3c2.2 2.5 3.3 5.5 3.3 9S14.2 18.5 12 21c-2.2-2.5-3.3-5.5-3.3-9S9.8 5.5 12 3Z" />
@@ -48,6 +63,10 @@ defineProps<IconGlyphProps>()
       <path fill="#34A853" stroke="none" d="M12 21.6c2.63 0 4.84-.87 6.45-2.37l-3.14-2.45c-.87.58-1.98.92-3.31.92-2.54 0-4.7-1.72-5.48-4.03H3.28v2.53A9.75 9.75 0 0 0 12 21.6Z" />
       <path fill="#FBBC05" stroke="none" d="M6.52 13.67A5.86 5.86 0 0 1 6.21 12c0-.58.11-1.14.31-1.67V7.8H3.28A9.62 9.62 0 0 0 2.25 12c0 1.52.36 2.95 1.03 4.2l3.24-2.53Z" />
       <path fill="#EA4335" stroke="none" d="M12 6.3c1.43 0 2.71.49 3.72 1.45l2.79-2.79C16.84 3.39 14.63 2.4 12 2.4a9.75 9.75 0 0 0-8.72 5.4l3.24 2.53C7.3 8.02 9.46 6.3 12 6.3Z" />
+    </template>
+    <template v-else-if="name === 'key'">
+      <circle cx="8" cy="15" r="4" />
+      <path d="m11 12 8-8M15 6l3 3M17 4l3 3" />
     </template>
     <template v-else-if="name === 'layers'">
       <path d="m12 3 9 5-9 5-9-5 9-5Z" />
