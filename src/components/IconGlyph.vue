@@ -7,6 +7,7 @@ type IconName =
   | 'device'
   | 'globe'
   | 'google'
+  | 'key'
   | 'layers'
   | 'link'
   | 'login'
@@ -48,6 +49,10 @@ defineProps<IconGlyphProps>()
       <path fill="#34A853" stroke="none" d="M12 21.6c2.63 0 4.84-.87 6.45-2.37l-3.14-2.45c-.87.58-1.98.92-3.31.92-2.54 0-4.7-1.72-5.48-4.03H3.28v2.53A9.75 9.75 0 0 0 12 21.6Z" />
       <path fill="#FBBC05" stroke="none" d="M6.52 13.67A5.86 5.86 0 0 1 6.21 12c0-.58.11-1.14.31-1.67V7.8H3.28A9.62 9.62 0 0 0 2.25 12c0 1.52.36 2.95 1.03 4.2l3.24-2.53Z" />
       <path fill="#EA4335" stroke="none" d="M12 6.3c1.43 0 2.71.49 3.72 1.45l2.79-2.79C16.84 3.39 14.63 2.4 12 2.4a9.75 9.75 0 0 0-8.72 5.4l3.24 2.53C7.3 8.02 9.46 6.3 12 6.3Z" />
+    </template>
+    <template v-else-if="name === 'key'">
+      <circle cx="8" cy="15" r="4" />
+      <path d="m11 12 8-8M15 6l3 3M17 4l3 3" />
     </template>
     <template v-else-if="name === 'layers'">
       <path d="m12 3 9 5-9 5-9-5 9-5Z" />

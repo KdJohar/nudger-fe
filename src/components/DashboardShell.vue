@@ -10,20 +10,36 @@ const isSidebarOpen = ref(false)
 const isLoggingOut = ref(false)
 const currentPath = ref(getCurrentPath())
 
+type NavigationIcon = 'sparkles' | 'bell' | 'key' | 'send' | 'users' | 'link'
+interface NavigationItem {
+  label: string
+  href: string
+  icon: NavigationIcon
+  isAvailable: boolean
+}
+
 const firstName = computed(() => {
   const name = state.user?.name?.trim()
   return name?.split(/\s+/)[0] || 'there'
 })
 
-const navigationItems = [
-  { label: 'Overview', href: '/dashboard', icon: 'sparkles' as const, isAvailable: true },
-  { label: 'Nudges', href: '/nudges', icon: 'bell' as const, isAvailable: true },
-  { label: 'Broadcasts', href: '#', icon: 'send' as const, isAvailable: false },
-  { label: 'Audience', href: '#', icon: 'users' as const, isAvailable: false },
-  { label: 'Integrations', href: '#', icon: 'link' as const, isAvailable: false },
-]
+const navigationItems = computed(() => {
+  const items: NavigationItem[] = [
+    { label: 'Overview', href: '/dashboard', icon: 'sparkles' as const, isAvailable: true },
+    { label: 'Nudges', href: '/nudges', icon: 'bell' as const, isAvailable: true },
+    { label: 'Broadcasts', href: '#', icon: 'send' as const, isAvailable: false },
+    { label: 'Audience', href: '#', icon: 'users' as const, isAvailable: false },
+    { label: 'Integrations', href: '#', icon: 'link' as const, isAvailable: false },
+  ]
 
-const pageTitle = computed(() => navigationItems.find((item) => item.href === currentPath.value)?.label ?? 'Overview')
+  if (state.merchantProfile?.profile_type === 'platform') {
+    items.splice(2, 0, { label: 'API token', href: '/token', icon: 'key' as const, isAvailable: true })
+  }
+
+  return items
+})
+
+const pageTitle = computed(() => navigationItems.value.find((item) => item.href === currentPath.value)?.label ?? 'Overview')
 
 function closeSidebar(): void {
   isSidebarOpen.value = false
