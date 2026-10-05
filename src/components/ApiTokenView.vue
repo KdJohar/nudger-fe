@@ -16,11 +16,20 @@ const isSubmitting = ref(false)
 const errorMessage = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 const copied = ref(false)
+const isIssuedTokenVisible = ref(false)
 let copyResetTimer: number | null = null
 
 const isPlatformMerchant = computed(() => state.merchantProfile?.profile_type === 'platform')
 const tokenExists = computed(() => tokenStatus.value?.has_token === true)
 const tokenActionLabel = computed(() => tokenExists.value ? 'Rotate token' : 'Generate token')
+const displayedIssuedToken = computed(() => {
+  if (!issuedToken.value || isIssuedTokenVisible.value) {
+    return issuedToken.value ?? ''
+  }
+
+  return `${issuedToken.value.slice(0, 20)}••••••••`
+})
+const tokenVisibilityLabel = computed(() => isIssuedTokenVisible.value ? 'Hide token' : 'Show token')
 
 function formatDate(value: string | null): string {
   if (!value) {
@@ -93,6 +102,7 @@ async function handleTokenAction(): Promise<void> {
   errorMessage.value = null
   successMessage.value = null
   issuedToken.value = null
+  isIssuedTokenVisible.value = false
   copied.value = false
 
   try {
@@ -107,6 +117,10 @@ async function handleTokenAction(): Promise<void> {
   } finally {
     isSubmitting.value = false
   }
+}
+
+function handleIssuedTokenVisibility(): void {
+  isIssuedTokenVisible.value = !isIssuedTokenVisible.value
 }
 
 async function handleCopy(): Promise<void> {
@@ -221,9 +235,19 @@ onUnmounted(() => {
             <p class="token-card__copy">This is the only time the full token will be visible.</p>
           </div>
           <div class="token-card__secret-row">
-            <code class="token-card__secret" tabindex="0">{{ issuedToken }}</code>
+            <code class="token-card__secret" tabindex="0">{{ displayedIssuedToken }}</code>
+            <button
+              type="button"
+              class="token-page__button token-page__button--light"
+              :aria-label="tokenVisibilityLabel"
+              :aria-pressed="isIssuedTokenVisible"
+              @click="handleIssuedTokenVisibility"
+            >
+              <IconGlyph :name="isIssuedTokenVisible ? 'eye-off' : 'eye'" />
+              {{ tokenVisibilityLabel }}
+            </button>
             <button type="button" class="token-page__button token-page__button--light" @click="void handleCopy()">
-              <IconGlyph name="check" />
+              <IconGlyph name="copy" />
               {{ copied ? 'Copied' : 'Copy token' }}
             </button>
           </div>

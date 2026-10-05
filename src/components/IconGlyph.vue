@@ -5,6 +5,9 @@ type IconName =
   | 'check'
   | 'close'
   | 'device'
+  | 'copy'
+  | 'eye'
+  | 'eye-off'
   | 'globe'
   | 'google'
   | 'key'
@@ -39,6 +42,17 @@ defineProps<IconGlyphProps>()
     <template v-else-if="name === 'device'">
       <rect x="6" y="3" width="12" height="18" rx="2" />
       <path d="M10 18h4" />
+    </template>
+    <template v-else-if="name === 'copy'">
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3" />
+    </template>
+    <template v-else-if="name === 'eye'">
+      <path d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5Z" />
+      <circle cx="12" cy="12" r="2.5" />
+    </template>
+    <template v-else-if="name === 'eye-off'">
+      <path d="m3 3 18 18M10.6 10.6A2 2 0 0 0 13.4 13.4M9.9 5.3A10.7 10.7 0 0 1 12 5c6 0 9.5 7 9.5 7a16.8 16.8 0 0 1-3.1 3.8M6.6 6.6C3.9 8.5 2.5 12 2.5 12s3.5 7 9.5 7c1.2 0 2.3-.2 3.3-.6" />
     </template>
     <template v-else-if="name === 'globe'">
       <circle cx="12" cy="12" r="9" />
