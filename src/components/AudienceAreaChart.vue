@@ -41,10 +41,14 @@ const firstDate = computed(() => props.trend[0]?.date
 const lastDate = computed(() => props.trend.at(-1)?.date
   ? formatChartDate(props.trend.at(-1)!.date, props.period)
   : '')
+const firstCurrentValue = computed(() => props.trend[0]?.active_subscribers ?? 0)
+const lastCurrentValue = computed(() => props.trend.at(-1)?.active_subscribers ?? 0)
+const firstPreviousValue = computed(() => props.trend[0]?.previous_active_subscribers ?? 0)
+const lastPreviousValue = computed(() => props.trend.at(-1)?.previous_active_subscribers ?? 0)
 </script>
 
 <template>
-  <figure class="space-y-4" aria-labelledby="audience-area-title">
+  <figure class="space-y-4" aria-labelledby="audience-area-caption">
     <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-semibold text-[var(--color-text-muted)]">
       <span class="inline-flex items-center gap-2">
         <i class="h-2.5 w-2.5 rounded-full bg-[var(--color-coral)]" aria-hidden="true"></i>
@@ -55,8 +59,7 @@ const lastDate = computed(() => props.trend.at(-1)?.date
         Previous {{ period }}
       </span>
     </div>
-    <div id="audience-area-title" class="sr-only">Total audience compared with the previous period</div>
-    <svg class="h-64 w-full overflow-visible" :viewBox="`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`" role="img" aria-label="Area chart comparing total audience with the previous period">
+    <svg class="h-64 w-full overflow-visible" :viewBox="`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`" aria-hidden="true" focusable="false">
       <defs>
         <linearGradient id="audience-total-fill" x1="0" x2="0" y1="0" y2="1">
           <stop offset="0%" stop-color="#ff6b4a" stop-opacity="0.32" />
@@ -72,10 +75,13 @@ const lastDate = computed(() => props.trend.at(-1)?.date
       <text :x="CHART_PADDING.left" :y="CHART_HEIGHT - 8" class="fill-slate-400 text-[13px]">{{ firstDate }}</text>
       <text :x="CHART_WIDTH - CHART_PADDING.right" :y="CHART_HEIGHT - 8" text-anchor="end" class="fill-slate-400 text-[13px]">{{ lastDate }}</text>
     </svg>
-    <figcaption class="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--color-text-muted)]">
-      <span>Audience size across matching windows</span>
+    <figcaption id="audience-area-caption" class="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--color-text-muted)]">
+      <span>Total audience across matching windows</span>
       <span>{{ props.trend.length }} daily points</span>
     </figcaption>
+    <p class="sr-only">
+      The selected period changes from {{ formatMetric(firstCurrentValue) }} to {{ formatMetric(lastCurrentValue) }} subscribers. The previous matching period changes from {{ formatMetric(firstPreviousValue) }} to {{ formatMetric(lastPreviousValue) }} subscribers.
+    </p>
     <ul class="sr-only">
       <li v-for="point in trend" :key="point.date">
         {{ point.date }}: {{ point.active_subscribers }} current, {{ point.previous_active_subscribers }} previous

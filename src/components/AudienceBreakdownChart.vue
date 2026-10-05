@@ -62,14 +62,14 @@ const mutedLabel = computed(() => `${formatMetric(props.breakdown.muted_subscrib
 </script>
 
 <template>
-  <figure class="space-y-5" aria-labelledby="audience-breakdown-title">
-    <div class="flex flex-wrap items-end justify-between gap-3">
+  <figure class="space-y-5" aria-labelledby="audience-breakdown-caption">
+    <figcaption id="audience-breakdown-caption" class="flex flex-wrap items-end justify-between gap-3">
       <div>
-        <div id="audience-breakdown-title" class="text-sm font-bold text-[var(--color-text)]">Notification preferences</div>
+        <div class="text-sm font-bold text-[var(--color-text)]">Notification preferences</div>
         <p class="mt-1 text-xs text-[var(--color-text-muted)]">Grouped by the way subscribers want to hear from you.</p>
       </div>
       <span class="rounded-full bg-indigo-500/10 px-3 py-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-200">{{ mutedLabel }}</span>
-    </div>
+    </figcaption>
 
     <div class="grid gap-5" :class="profileType === 'platform' ? 'md:grid-cols-2' : 'grid-cols-1'">
       <div v-for="group in breakdownGroups" :key="group.label" class="rounded-2xl border border-[var(--color-border)] bg-[var(--color-background)]/60 p-4" role="group" :aria-label="group.label">
@@ -77,7 +77,7 @@ const mutedLabel = computed(() => `${formatMetric(props.breakdown.muted_subscrib
           <span class="font-bold text-[var(--color-text)]">{{ group.label }}</span>
           <span class="tabular-nums text-xs font-bold text-[var(--color-text-muted)]">{{ formatMetric(group.total) }} total</span>
         </div>
-        <div class="mt-4 flex h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800" role="img" :aria-label="`${group.label}: ${group.segments.map((segment) => `${segment.label} ${segment.value}`).join(', ')}`">
+        <div class="mt-4 flex h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800" aria-hidden="true">
           <span v-for="segment in group.segments" :key="segment.label" class="h-full transition-[width] duration-300" :class="segment.tone" :style="{ width: `${group.total > 0 ? (segment.value / group.total) * 100 : 0}%` }"></span>
         </div>
         <div class="mt-3 grid gap-2 text-xs text-[var(--color-text-muted)]">
