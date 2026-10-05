@@ -22,12 +22,14 @@ let copyResetTimer: number | null = null
 const isPlatformMerchant = computed(() => state.merchantProfile?.profile_type === 'platform')
 const tokenExists = computed(() => tokenStatus.value?.has_token === true)
 const tokenActionLabel = computed(() => tokenExists.value ? 'Rotate token' : 'Generate token')
+const currentToken = computed(() => issuedToken.value ?? tokenStatus.value?.token ?? null)
 const displayedIssuedToken = computed(() => {
-  if (!issuedToken.value || isIssuedTokenVisible.value) {
-    return issuedToken.value ?? ''
+  if (currentToken.value && isIssuedTokenVisible.value) {
+    return currentToken.value
   }
 
-  return `${issuedToken.value.slice(0, 20)}••••••••`
+  const tokenPrefix = tokenStatus.value?.token_prefix ?? currentToken.value?.slice(0, 20)
+  return tokenPrefix ? `${tokenPrefix}••••••••` : '••••••••'
 })
 const tokenVisibilityLabel = computed(() => isIssuedTokenVisible.value ? 'Hide token' : 'Show token')
 
@@ -124,12 +126,12 @@ function handleIssuedTokenVisibility(): void {
 }
 
 async function handleCopy(): Promise<void> {
-  if (!issuedToken.value) {
+  if (!currentToken.value) {
     return
   }
 
   try {
-    await navigator.clipboard.writeText(issuedToken.value)
+    await navigator.clipboard.writeText(currentToken.value)
     copied.value = true
     if (copyResetTimer !== null) {
       window.clearTimeout(copyResetTimer)
@@ -191,7 +193,7 @@ onUnmounted(() => {
           </div>
 
           <p v-if="!tokenExists" class="token-card__copy">Generate one token for your platform integration. You will see the secret once and can rotate it later.</p>
-          <p v-else class="token-card__copy">The current secret is hidden after creation. Rotate it if you need to replace access for your integration.</p>
+          <p v-else class="token-card__copy">Your encrypted secret stays available to you. Reveal or copy it whenever you need to configure your integration.</p>
 
           <dl class="token-card__details">
             <div>
@@ -223,22 +225,23 @@ onUnmounted(() => {
           <h2 id="token-guidance-heading">Treat it like a password.</h2>
           <ul class="token-card__guidance">
             <li><IconGlyph name="check" /><span>Store it in your server environment, never in browser code.</span></li>
-            <li><IconGlyph name="check" /><span>Copy it now—the full secret is not shown again.</span></li>
+            <li><IconGlyph name="check" /><span>Reveal or copy the secret only when you need to configure your integration.</span></li>
             <li><IconGlyph name="check" /><span>Rotation invalidates the previous token immediately.</span></li>
           </ul>
         </aside>
 
-        <div v-if="issuedToken" class="token-card token-card--issued" role="status" aria-live="polite">
+        <div v-if="tokenExists" class="token-card token-card--issued" role="status" aria-live="polite">
           <div>
-            <p class="token-card__eyebrow">New token · copy now</p>
-            <h2>Your secret is ready.</h2>
-            <p class="token-card__copy">This is the only time the full token will be visible.</p>
+            <p class="token-card__eyebrow">Active token</p>
+            <h2>Your secret is ready whenever you need it.</h2>
+            <p class="token-card__copy">It is masked by default. Reveal it or copy it without rotating your active credential.</p>
           </div>
           <div class="token-card__secret-row">
             <code class="token-card__secret" tabindex="0">{{ displayedIssuedToken }}</code>
             <button
               type="button"
               class="token-page__button token-page__button--light"
+              :disabled="!currentToken"
               :aria-label="tokenVisibilityLabel"
               :aria-pressed="isIssuedTokenVisible"
               @click="handleIssuedTokenVisibility"
@@ -246,7 +249,7 @@ onUnmounted(() => {
               <IconGlyph :name="isIssuedTokenVisible ? 'eye-off' : 'eye'" />
               {{ tokenVisibilityLabel }}
             </button>
-            <button type="button" class="token-page__button token-page__button--light" @click="void handleCopy()">
+            <button type="button" class="token-page__button token-page__button--light" :disabled="!currentToken" @click="void handleCopy()">
               <IconGlyph name="copy" />
               {{ copied ? 'Copied' : 'Copy token' }}
             </button>
