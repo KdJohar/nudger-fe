@@ -147,7 +147,7 @@ onUnmounted(() => {
         <div>
           <strong>Token access is unavailable.</strong>
           <p>{{ errorMessage }}</p>
-          <button type="button" class="token-page__button token-page__button--dark" @click="void loadTokenStatus">Try again</button>
+          <button type="button" class="token-page__button token-page__button--dark" @click="void loadTokenStatus()">Try again</button>
         </div>
       </div>
 
@@ -179,7 +179,7 @@ onUnmounted(() => {
             </div>
           </dl>
 
-          <button type="button" class="token-page__button token-page__button--primary" :disabled="isSubmitting" :aria-busy="isSubmitting" @click="void handleTokenAction">
+          <button type="button" class="token-page__button token-page__button--primary" :disabled="isSubmitting" :aria-busy="isSubmitting" @click="void handleTokenAction()">
             <IconGlyph name="key" />
             {{ isSubmitting ? 'Working…' : tokenActionLabel }}
           </button>
@@ -203,7 +203,7 @@ onUnmounted(() => {
           </div>
           <div class="token-card__secret-row">
             <code class="token-card__secret" tabindex="0">{{ issuedToken }}</code>
-            <button type="button" class="token-page__button token-page__button--light" @click="void handleCopy">
+            <button type="button" class="token-page__button token-page__button--light" @click="void handleCopy()">
               <IconGlyph name="check" />
               {{ copied ? 'Copied' : 'Copy token' }}
             </button>
