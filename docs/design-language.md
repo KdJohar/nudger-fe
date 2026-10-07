@@ -3,6 +3,8 @@
 Current UI contract, 7 October 2026. This file owns visual conventions;
 [app context](app-context.md) owns product scope and [Vue architecture](vue-architecture.md)
 owns shared component/layout behavior. Preserve the existing design, not a new redesign.
+The [shared Vuetify component context](vuetify-component-context.md) maps these rules
+to current primitives, component defaults and reuse across Plug & Nudge applications.
 
 ## Character
 

@@ -50,7 +50,8 @@ files. See [API client conventions](docs/api-client.md) when adding requests.
 ## Structure
 
 Start with [AGENTS.md](AGENTS.md), [app context](docs/app-context.md),
-[design language](docs/design-language.md), and [Vue architecture](docs/vue-architecture.md).
+[design language](docs/design-language.md), [shared Vuetify component context](docs/vuetify-component-context.md),
+and [Vue architecture](docs/vue-architecture.md).
 The app context owns product scope, the design guide owns visual/CSS rules, and the
 architecture guide owns component structure. All five workspace routes share one
 persistent header and content window; only the routed body changes.

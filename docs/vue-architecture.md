@@ -5,6 +5,8 @@ Accepted: 6 October 2026, following the user's confirmation of a persistent, ide
 Companion context: [app scope and journeys](app-context.md), [design language and CSS ownership](design-language.md),
 and [API client conventions](api-client.md). This document owns layout/component
 structure; the design guide owns colours, styling rules and visual behavior.
+The [shared Vuetify component context](vuetify-component-context.md) catalogs the
+current component library, defaults and cross-application reuse rules.
 
 ## The rule
 

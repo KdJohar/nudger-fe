@@ -4,6 +4,8 @@ Current product decisions, 7 October 2026. Read this with [design language](desi
 [Vue architecture](vue-architecture.md), and [API client conventions](api-client.md).
 Update the owning document when an approved behavior changes; do not copy competing
 rules into individual pages.
+For component choices and cross-application consistency, use the
+[shared Vuetify component context](vuetify-component-context.md).
 
 ## Product and repository
 

@@ -1,6 +1,6 @@
 # Plug & Nudge frontend instructions
 
-Read `docs/app-context.md`, `docs/design-language.md`, and `docs/vue-architecture.md`
+Read `docs/app-context.md`, `docs/design-language.md`, `docs/vuetify-component-context.md`, and `docs/vue-architecture.md`
 before changing Vue layouts, routes, components, or CSS. Read `docs/api-client.md`
 before changing frontend requests. Update the owning context document when an
 approved product/design rule changes; keep README as the entry point.
