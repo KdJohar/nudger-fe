@@ -2,6 +2,7 @@
 import { computed, nextTick, ref, useId, watch } from 'vue'
 import Sheet from '../ui/Sheet.vue'
 import MessageField from '../ui/MessageField.vue'
+import SnackbarFeedback from '../ui/SnackbarFeedback.vue'
 import NotificationPreview from '../ui/NotificationPreview.vue'
 import { useAuth } from '../../composables/useAuth'
 import { useBroadcastComposer } from '../../composables/useBroadcastComposer'
@@ -60,10 +61,9 @@ watch(isOpen, (opened) => {
 
 <template>
   <Sheet ref="sheet" v-model="isOpen" :title="sheetTitle" :description="sheetDescription" :is-busy="isSending">
-    <v-alert v-if="!isProfileReady" class="ui-composer__alert" type="warning" variant="tonal">
-      Your profile needs to be active, with a name of 120 characters or fewer, before you can send.
-      <router-link to="/profile">Review profile</router-link>
-    </v-alert>
+    <SnackbarFeedback :message="isOpen && !isProfileReady ? 'Your profile needs to be active, with a name of 120 characters or fewer, before you can send.' : ''" tone="warning" action-text="Review profile" action-to="/profile" />
+    <SnackbarFeedback :message="isOpen ? sendError : ''" action-text="Check history" @action="isOpen = false" />
+    <SnackbarFeedback :message="isQueued ? 'Your nudge is queued. Check history for delivery progress.' : ''" tone="success" />
 
     <div v-if="isQueued" class="ui-composer__success">
       <span class="ui-composer__success-icon"><v-icon icon="mdi-check" size="32" /></span>
@@ -88,7 +88,6 @@ watch(isOpen, (opened) => {
         <span class="ui-composer__audience"><v-icon icon="mdi-account-group-outline" size="18" /> Broadcast to your subscribers</span>
         <div class="ui-composer__review-message"><strong>{{ title }}</strong><p>{{ confirmedMessage }}</p></div>
         <p class="ui-composer__copy">Subscribers receive this based on their notification preferences.</p>
-        <v-alert v-if="sendError" type="error" variant="tonal" role="alert">{{ sendError }}</v-alert>
       </div>
 
       <form v-else :id="formId" class="ui-composer__editor" novalidate @submit.prevent="handleReview">
@@ -96,7 +95,7 @@ watch(isOpen, (opened) => {
         <span class="ui-composer__audience"><v-icon icon="mdi-account-group-outline" size="18" /> Broadcast to your subscribers</span>
       </form>
     </div>
-    <span class="ui-sheet__sr-only" role="status">{{ isQueued ? 'Your nudge is queued.' : isSending ? 'Sending your nudge.' : '' }}</span>
+    <span class="ui-sheet__sr-only" role="status">{{ isSending ? 'Sending your nudge.' : '' }}</span>
 
     <template #footer>
       <div class="ui-composer__actions">

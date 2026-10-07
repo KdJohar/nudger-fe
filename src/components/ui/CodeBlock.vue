@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { copyText } from '../../lib/clipboard'
+import SnackbarFeedback from './SnackbarFeedback.vue'
 
 const props = withDefaults(defineProps<{
   code: string
@@ -10,12 +11,14 @@ const props = withDefaults(defineProps<{
   isCopyDisabled?: boolean
 }>(), { canCopy: true, isCopyDisabled: false })
 const statusMessage = ref('')
+const hasCopyError = ref(false)
 watch(() => [props.code, props.copyCode], () => { statusMessage.value = '' })
 async function handleCopy(): Promise<void> {
   if (props.isCopyDisabled) return
   statusMessage.value = ''
+  hasCopyError.value = false
   try { await copyText(props.copyCode ?? props.code); statusMessage.value = 'Copied.' }
-  catch { statusMessage.value = props.copyCode !== undefined && props.copyCode !== props.code
+  catch { hasCopyError.value = true; statusMessage.value = props.copyCode !== undefined && props.copyCode !== props.code
     ? 'Could not copy. Reveal hidden values, then select and copy the code manually.'
     : 'Could not copy. Select the code to copy it manually.' }
 }
@@ -30,6 +33,6 @@ async function handleCopy(): Promise<void> {
       <div v-if="$slots.actions" class="ui-code-block__actions"><slot name="actions" /></div>
     </div>
     <pre class="ui-code-block__content" tabindex="0" :aria-label="label"><code>{{ code }}</code></pre>
-    <p class="ui-code-block__status" role="status">{{ statusMessage }}</p>
+    <SnackbarFeedback :message="statusMessage" :tone="hasCopyError ? 'error' : 'success'" />
   </div>
 </template>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useId, watch } from 'vue'
 import MessageField from '../ui/MessageField.vue'
+import SnackbarFeedback from '../ui/SnackbarFeedback.vue'
 import NotificationPreview from '../ui/NotificationPreview.vue'
 import { useAuth } from '../../composables/useAuth'
 import { useBroadcastComposer } from '../../composables/useBroadcastComposer'
@@ -40,10 +41,9 @@ function handleDialogClosed(): void {
 
 <template>
   <div class="ui-editor-workspace">
-    <v-alert v-if="!isProfileReady" type="warning" variant="tonal">
-      Your profile needs to be active, with a name of 120 characters or fewer, before you can send.
-      <router-link to="/profile">Review profile</router-link>
-    </v-alert>
+    <SnackbarFeedback :message="!isProfileReady ? 'Your profile needs to be active, with a name of 120 characters or fewer, before you can send.' : ''" tone="warning" action-text="Review profile" action-to="/profile" />
+    <SnackbarFeedback :message="sendError" action-text="Check history" action-to="/nudges" />
+    <SnackbarFeedback :message="isQueued ? 'Your nudge is queued. Check history for delivery progress.' : ''" tone="success" />
 
     <section v-if="isQueued" class="ui-panel ui-editor-result" aria-label="Broadcast queued">
       <span class="ui-editor-result__icon"><v-icon icon="mdi-check" size="28" aria-hidden="true" /></span>
@@ -86,14 +86,13 @@ function handleDialogClosed(): void {
         </form>
       </div>
     </section>
-    <p class="ui-visually-hidden" role="status">{{ isQueued ? 'Your nudge is queued. Check history for delivery progress.' : isSending ? 'Queuing your nudge…' : '' }}</p>
+    <p class="ui-visually-hidden" role="status">{{ isSending ? 'Queuing your nudge…' : '' }}</p>
 
     <v-dialog v-model="isReviewing" :persistent="isSending" max-width="480" :aria-labelledby="dialogTitleId" :aria-describedby="dialogDescriptionId" @after-enter="confirmationTitle?.focus({ preventScroll: true })" @after-leave="handleDialogClosed">
       <v-card class="ui-editor-confirmation">
         <h2 :id="dialogTitleId" ref="confirmationTitle" class="ui-panel__title" tabindex="-1">Send to your subscribers?</h2>
         <p :id="dialogDescriptionId" class="ui-editor-panel__hint">This queues a broadcast now. Check your message before sending.</p>
         <div class="ui-editor-confirmation__message"><strong>{{ title }}</strong><p>{{ confirmedMessage }}</p></div>
-        <v-alert v-if="sendError" type="error" variant="tonal" role="alert">{{ sendError }} <router-link to="/nudges">Check history</router-link> before retrying if you’re unsure.</v-alert>
         <div class="ui-editor-confirmation__actions">
           <v-btn variant="text" rounded="pill" :disabled="isSending" @click="handleEdit">Keep editing</v-btn>
           <v-btn color="secondary" variant="flat" rounded="pill" prepend-icon="mdi-send-outline" :loading="isSending" :disabled="!isProfileReady || isSending" @click="handleSend">Send nudge</v-btn>

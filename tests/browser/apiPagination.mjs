@@ -63,7 +63,7 @@ try {
     assert.equal(await page.getByText('Creator profiles receive broadcast messages.', { exact: false }).count(), 0)
     if (width === 375) assert.equal(await page.getByRole('tab').count(), 0)
     await page.getByRole('button', { name: 'Load more nudges' }).click()
-    await page.getByText('The API returned an unexpected response.', { exact: false }).waitFor()
+    await page.locator('.ui-snackbar').getByText('The API returned an unexpected response.', { exact: false }).waitFor()
     assert.equal(await page.locator('.nudge-card').count(), 20)
     assert.equal(await page.getByText("Cannot read properties of null", { exact: false }).count(), 0)
     await page.getByRole('button', { name: 'Try again' }).click()

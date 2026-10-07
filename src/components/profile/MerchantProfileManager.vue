@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onScopeDispose, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getNudgerConfig } from '../../config'
 import { useAuth } from '../../composables/useAuth'
 import { useMerchantProfile } from '../../composables/useMerchantProfile'
+import { useSnackbar } from '../../composables/useSnackbar'
+import SnackbarFeedback from '../ui/SnackbarFeedback.vue'
 import AvatarPicker from '../ui/AvatarPicker.vue'
 import MerchantProfileSetup from './MerchantProfileSetup.vue'
 import MerchantProfileDetails from './MerchantProfileDetails.vue'
@@ -29,7 +31,9 @@ const imageFile = ref<File | null>(null)
 const replacementImageFile = ref<File | null>(null)
 const maxImageBytes = getNudgerConfig().profileImageSourceMaxBytes
 const isEditing = ref(props.mode === 'onboarding')
-const successMessage = ref<string | null>(null)
+const { show: showSnackbar } = useSnackbar()
+let isDisposed = false
+onScopeDispose(() => { isDisposed = true })
 
 const isOnboarding = computed(() => props.mode === 'onboarding')
 const isPending = computed(() => props.mode === 'pending')
@@ -87,8 +91,8 @@ async function submit(): Promise<void> {
     x_url: xUrl.value.trim() || undefined,
   }
   const saved = await saveProfile(form, imageFile.value)
-  if (!saved) return
-  successMessage.value = isOnboarding.value ? 'Profile created. Welcome to Nudger.' : 'Profile updated.'
+  if (!saved || isDisposed) return
+  showSnackbar({ message: isOnboarding.value ? 'Profile created. Welcome to Nudger.' : 'Profile updated.', tone: 'success' })
   isEditing.value = false
   imageFile.value = null
   emit('saved')
@@ -102,10 +106,9 @@ async function handleImageReplacement(file: File | null): Promise<void> {
   }
   if (isBusy.value || isSigningOut.value) return
   replacementImageFile.value = file
-  successMessage.value = null
   try {
     const saved = await updateProfileImage(file)
-    if (saved) successMessage.value = 'Profile image updated.'
+    if (saved && !isDisposed) showSnackbar({ message: 'Profile image updated.', tone: 'success' })
   } finally {
     // Release the local preview and show the last successfully saved image.
     replacementImageFile.value = null
@@ -115,7 +118,8 @@ async function handleImageReplacement(file: File | null): Promise<void> {
 async function handleCreateProfile(form: MerchantProfileForm, file: File): Promise<void> {
   if (isBusy.value || isSigningOut.value) return
   const saved = await saveProfile(form, file)
-  if (!saved) return
+  if (!saved || isDisposed) return
+  showSnackbar({ message: 'Profile created. Welcome to Nudger.', tone: 'success' })
   emit('saved')
   await router.push(saved.is_active ? '/audience' : '/pending')
 }
@@ -146,8 +150,8 @@ async function handleCreateProfile(form: MerchantProfileForm, file: File): Promi
       />
       <span class="ui-visually-hidden" role="status">{{ isSigningOut ? 'Signing out…' : '' }}</span>
     </div>
-    <v-alert v-if="errorMessage" class="mb-5" closable type="error" variant="tonal">{{ errorMessage }}</v-alert>
-    <v-alert v-if="successMessage" class="mb-5" closable type="success" variant="tonal">{{ successMessage }}</v-alert>
+    <SnackbarFeedback :message="errorMessage" :action-text="!profile ? 'Try again' : undefined" :is-action-disabled="isLoading || isBusy" @action="loadProfile" />
+    <v-btn v-if="errorMessage && !profile" variant="text" :disabled="isLoading || isBusy" @click="loadProfile">Reload profile</v-btn>
     <div v-if="isLoading" class="app-loading profile-manager__loading"><v-progress-circular color="primary" indeterminate /><span>Loading profile…</span></div>
     <template v-else>
       <MerchantProfileDetails
@@ -160,7 +164,7 @@ async function handleCreateProfile(form: MerchantProfileForm, file: File): Promi
         :is-disabled="isSigningOut || isUpdatingDetails"
         :upload-progress="uploadProgress"
         :save-details="updateProfileDetails"
-        @details-saved="successMessage = 'Public profile updated.'"
+        @details-saved="showSnackbar({ message: 'Public profile updated.', tone: 'success' })"
         @image-selected="handleImageReplacement"
       />
       <v-card v-else-if="profile && !isEditing" class="surface-card profile-card" rounded="xl">

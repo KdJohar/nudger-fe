@@ -151,6 +151,34 @@ cleaned up on disposal. No backend calls, duplicate theme state or new page shel
 
 ## Regression checks
 
+### Shared feedback
+
+`App` installs `provideSnackbar` and one `SnackbarHost`. Use `SnackbarFeedback`
+to bridge existing error/success state, or `useSnackbar().show` for discrete
+events. Never add page-specific `v-alert` banners for operation outcomes. Keep
+field validation next to its input, loading states near their content, and
+completed workflow/result panels intact. API adapters and composables must not
+create a second toast system or couple transport failures to visual components.
+
+The app-owned queue shows one notice at a time. One feedback source updates its
+existing notice; clearing that source resolves it. Route-bound errors and retry
+callbacks are removed on disposal; success notices can survive redirects. All
+notices close after 20 seconds or through the close button; hover or keyboard
+focus pauses dismissal. Dismissal never retries a send.
+Keep recovery controls on the relevant page even after an error is dismissed.
+
+The host announces errors assertively and successes politely without stealing
+focus. It attaches inside the top active Vuetify dialog so controls stay inside
+the modal focus boundary (including sheets that make the app root inert). Notices
+stay at the viewport's top-right on every route, including dialogs; mobile notices
+fit the viewport and respect safe areas. Use only
+main.css for styling, 48px controls, both themes and reduced-motion support.
+Do not put credentials, request bodies or personal data in notification text.
+
+`npm run test:snackbar` covers queue/source lifetimes and repeated messages.
+`npm run test:browser:snackbar` checks actual Vuetify feedback, retry, dismissal,
+timing, keyboard/modal access and responsive positioning with mocked APIs only.
+
 ### Mobile landing actions
 
 `PublicLayout` mounts `PublicEntryActions` only on the home route at the shared

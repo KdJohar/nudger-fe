@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import SnackbarFeedback from '../ui/SnackbarFeedback.vue'
 import type { NudgeHistoryItem, NudgeStatus } from '../../types/nudges'
 
 interface NudgeHistoryPanelProps {
@@ -21,7 +22,7 @@ const paginationDisabled = computed(() => props.isLoading || props.isLoadingMore
 const statusMessage = computed(() => {
   if (props.isLoading) return props.items.length ? 'Updating nudges. Showing previous results while loading.' : 'Loading nudges.'
   if (props.isLoadingMore) return 'Loading more nudges.'
-  if (props.errorMessage) return props.items.length ? 'Nudges could not be updated. Still showing previous results.' : 'Nudges could not be loaded.'
+  if (props.errorMessage) return '' // The shared snackbar announces failures once.
   return props.items.length ? `${props.items.length} nudges loaded.` : 'No nudges found.'
 })
 
@@ -65,12 +66,7 @@ function completionDuration(item: NudgeHistoryItem): string | null {
 <template>
   <div class="nudge-history">
     <p class="ui-visually-hidden" role="status">{{ statusMessage }}</p>
-    <v-alert v-if="props.errorMessage" class="mb-6" type="error" variant="tonal">
-      <div class="d-flex align-center justify-space-between ga-4">
-        <span>{{ props.errorMessage }}{{ props.items.length ? ' Still showing previous results.' : '' }}</span>
-        <v-btn :disabled="props.isLoading || props.isLoadingMore" size="small" variant="tonal" @click="emit('retry')">Try again</v-btn>
-      </div>
-    </v-alert>
+    <SnackbarFeedback :message="props.errorMessage ? props.errorMessage + (props.items.length ? ' Still showing previous results.' : '') : ''" action-text="Try again" :is-action-disabled="props.isLoading || props.isLoadingMore" @action="emit('retry')" />
 
     <v-card class="surface-card nudge-list" rounded="xl" :aria-busy="props.isLoading || props.isLoadingMore">
       <!-- Retain loaded cards during filter refreshes so the document cannot collapse and reset scroll. -->
@@ -82,8 +78,8 @@ function completionDuration(item: NudgeHistoryItem): string | null {
         <v-avatar color="primary" size="56" variant="tonal">
           <v-icon icon="mdi-message-badge-outline" size="28" />
         </v-avatar>
-        <h2>No nudges here yet</h2>
-        <p>When messages move through your profile, their delivery story will appear in this timeline.</p>
+        <h2>{{ props.errorMessage ? 'Nudge history' : 'No nudges here yet' }}</h2>
+        <p>{{ props.errorMessage ? 'Reload your history to see your nudges.' : 'When messages move through your profile, their delivery story will appear in this timeline.' }}</p>
       </div>
 
       <template v-else>
@@ -150,13 +146,16 @@ function completionDuration(item: NudgeHistoryItem): string | null {
           </v-card>
         </div>
 
-        <div v-if="props.nextLink" class="nudge-list__footer">
+        <div v-if="props.nextLink && !props.errorMessage" class="nudge-list__footer">
           <v-btn :loading="props.isLoadingMore" :disabled="paginationDisabled" variant="tonal" @click="loadMore">
             Load more nudges
             <v-icon end icon="mdi-arrow-down" />
           </v-btn>
         </div>
       </template>
+      <div v-if="props.errorMessage" class="nudge-list__footer">
+        <v-btn :disabled="props.isLoading || props.isLoadingMore" variant="tonal" @click="emit('retry')">Reload nudges</v-btn>
+      </div>
     </v-card>
   </div>
 </template>

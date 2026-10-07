@@ -64,6 +64,8 @@ export function byClass(root, name) {
 
 // Stub only the third-party render boundary. The actual SFCs, refs, injection and lifecycle run.
 export function registerVuetifyStubs(app, selectionHandlers = []) {
+  const snackbar = loadSource('src/lib/snackbar.ts').createSnackbarQueue()
+  app.provide('nudger.snackbar', snackbar)
   const groupKey = Symbol('test-tabs')
   app.component('VTabs', {
     props: ['modelValue'], emits: ['update:modelValue'],
@@ -100,4 +102,5 @@ export function registerVuetifyStubs(app, selectionHandlers = []) {
   app.component('VIcon', props => vue.h('i', props))
   app.component('VBtn', (props, { slots }) => vue.h('button', props, slots.default?.()))
   app.component('VChip', (props, { slots }) => vue.h('span', props, slots.default?.()))
+  return snackbar
 }

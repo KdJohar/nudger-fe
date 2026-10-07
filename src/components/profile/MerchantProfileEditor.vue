@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
+import SnackbarFeedback from '../ui/SnackbarFeedback.vue'
 import { PROFILE_LINK_FIELDS } from '../../data/merchantProfile'
 import { ABOUT_MAX_LENGTH, profileDetailsDraft, profileDetailsPatch, validateProfileDetails } from '../../lib/profileDetails'
 import type { MerchantProfile, MerchantProfileUpdate } from '../../types/merchantProfile'
@@ -96,7 +97,7 @@ function handleCancel(): void {
         :disabled="isSaving || isDisabled" :error-messages="fieldErrors[field.key]" :aria-invalid="Boolean(fieldErrors[field.key])"
       />
     </div>
-    <div role="alert" class="ui-details-editor__error">{{ errorMessage }}</div>
+    <SnackbarFeedback :message="errorMessage" />
     <div class="ui-details-editor__actions">
       <span class="ui-details-editor__status" role="status">{{ isSaving ? 'Saving your profile…' : isDirty ? 'Unsaved changes' : 'No changes yet' }}</span>
       <v-btn class="ui-detail-card__action" type="button" variant="outlined" rounded="pill" :disabled="isSaving || isDisabled" @click="handleCancel">Discard changes</v-btn>

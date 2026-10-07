@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useAudienceOverview } from '../composables/useAudienceOverview'
 import { formatMetric, formatPercent } from '../lib/audienceCharts'
 import { useAuth } from '../composables/useAuth'
+import SnackbarFeedback from '../components/ui/SnackbarFeedback.vue'
 
 const router = useRouter()
 const { displayName, state } = useAuth()
@@ -15,7 +16,7 @@ const today = computed(() => new Intl.DateTimeFormat('en', { weekday: 'long', mo
 <template>
   <section class="dashboard page-view">
     <div class="dashboard__welcome"><div><div class="section-header__eyebrow">{{ today }}</div><h1 class="dashboard__title">Good to see you, {{ firstName }}.</h1><p class="dashboard__description">Here is the clearest signal from your Nudger workspace today.</p></div><v-btn color="primary" prepend-icon="mdi-send-outline" to="/compose">Create a nudge</v-btn></div>
-    <v-alert v-if="errorMessage" class="mb-6" type="error" variant="tonal"><div class="d-flex align-center justify-space-between ga-4"><span>{{ errorMessage }}</span><v-btn size="small" variant="tonal" @click="loadOverview">Try again</v-btn></div></v-alert>
+    <SnackbarFeedback :message="errorMessage" action-text="Try again" :is-action-disabled="isLoading" @action="loadOverview" />
     <div v-if="isLoading" class="dashboard__loading"><v-skeleton-loader v-for="item in 3" :key="item" class="surface-card" type="card" /></div>
     <template v-else-if="overview">
       <v-row class="metric-grid" dense><v-col cols="12" sm="4"><v-card class="metric-card" rounded="xl"><div class="metric-card__content"><div class="metric-card__topline"><span class="metric-card__label">Total audience</span><v-avatar color="primary" variant="tonal"><v-icon icon="mdi-account-multiple-outline" /></v-avatar></div><strong class="metric-card__value">{{ formatMetric(overview.total_audience) }}</strong><span class="metric-card__helper">Across your {{ state.merchantProfile?.profile_type }} profile</span></div></v-card></v-col><v-col cols="12" sm="4"><v-card class="metric-card" rounded="xl"><div class="metric-card__content"><div class="metric-card__topline"><span class="metric-card__label">Audience health</span><v-avatar color="success" variant="tonal"><v-icon icon="mdi-heart-pulse" /></v-avatar></div><strong class="metric-card__value">{{ formatPercent(overview.total_audience ? (overview.reachable_subscribers / overview.total_audience) * 100 : 0) }}</strong><span class="metric-card__helper">Reachable for a nudge</span></div></v-card></v-col><v-col cols="12" sm="4"><v-card class="metric-card" rounded="xl"><div class="metric-card__content"><div class="metric-card__topline"><span class="metric-card__label">New subscribers</span><v-avatar color="secondary" variant="tonal"><v-icon icon="mdi-account-plus-outline" /></v-avatar></div><strong class="metric-card__value">{{ formatMetric(overview.new_subscribers) }}</strong><span class="metric-card__helper">In the last 30 days</span></div></v-card></v-col></v-row>

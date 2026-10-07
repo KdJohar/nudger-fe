@@ -41,12 +41,12 @@ function mount(mode = 'pending', src = '/saved.webp') {
   const Manager = load('src/components/profile/MerchantProfileManager.vue').default
   const root = node('root')
   const app = renderer.createApp({ setup: () => () => vue.h(Manager, { mode }) })
-  registerVuetifyStubs(app)
+  const snackbar = registerVuetifyStubs(app)
   for (const name of ['VCard', 'VAvatar', 'VImg', 'VDivider', 'VAlert', 'VProgressCircular', 'VProgressLinear', 'VFileInput', 'VRadio', 'VRadioGroup', 'VTextField', 'VCol', 'VRow', 'VForm']) {
     app.component(name, (props, { slots }) => vue.h(name, props, slots.default?.()))
   }
   app.mount(root)
-  return { root, calls, profile, finish: value => finish(value), dispose: () => app.unmount() }
+  return { root, calls, profile, snackbar, finish: value => finish(value), dispose: () => app.unmount() }
 }
 
 test('pending and profile share one avatar picker without file metadata inputs', async () => {
@@ -85,7 +85,8 @@ test(`${mode} previews during upload, prevents duplicates, and switches to the s
     await flush()
     assert.equal(image(harness.root).props.src, '/updated.webp')
     assert.equal(picker(harness.root).props.disabled, false)
-    assert.match(text(harness.root), /Profile image updated/)
+    assert.match(harness.snackbar.current.value.message, /Profile image updated/)
+    assert.equal(harness.snackbar.current.value.tone, 'success')
     assert.deepEqual(revoked, ['blob:pending-preview'])
   } finally { harness.dispose() }
 })
@@ -101,7 +102,8 @@ test(`${mode} failed image uploads restore the previous image and allow retry`, 
     await flush()
     assert.equal(image(harness.root).props.src, '/saved.webp')
     assert.equal(picker(harness.root).props.disabled, false)
-    assert.match(text(harness.root), /Unable to update the profile image/)
+    assert.match(harness.snackbar.current.value.message, /Unable to update the profile image/)
+    assert.equal(harness.snackbar.current.value.tone, 'error')
     assert.doesNotMatch(text(harness.root), /Profile image updated/)
     pick(harness.root, file)
     await flush()
@@ -145,6 +147,17 @@ test('profile body leaves account capabilities to the shared header and keeps id
     assert.doesNotMatch(text(harness.root), /For organisations|Transactional nudges|specific user/)
     assert.equal(findAll(harness.root, el => el.props.type === 'radio').length, 0)
   } finally { harness.dispose() }
+})
+
+test('an image upload finishing after leaving the profile does not publish stale success', async () => {
+  const harness = mount('profile')
+  await flush()
+  pick(harness.root, makeFile())
+  await flush()
+  harness.dispose()
+  harness.finish({ ...harness.profile.value, profile_image_url: '/late.webp' })
+  await flush()
+  assert.equal(harness.snackbar.current.value, null)
 })
 
 test('profile handles empty and long public links and keeps non-web URLs non-interactive', async () => {

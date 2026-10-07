@@ -11,6 +11,8 @@
     "test:charts": "node --test tests/chartGeometry.test.mjs",
     "test:api": "node --test tests/ApiClient.test.mjs tests/useNudgeHistory.test.mjs",
     "test:browser:api": "node tests/browser/apiPagination.mjs",
+    "test:snackbar": "node --test tests/Snackbar.test.mjs",
+    "test:browser:snackbar": "node tests/browser/snackbar.mjs",
     "test:browser:navigation": "node tests/browser/bottomNavigation.mjs",
     "test:browser:public-actions": "node tests/browser/publicActions.mjs",
     "test:compose": "node --test tests/BroadcastComposer.test.mjs",

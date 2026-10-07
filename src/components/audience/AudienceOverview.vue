@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import SnackbarFeedback from '../ui/SnackbarFeedback.vue'
 import { useAudienceOverview } from '../../composables/useAudienceOverview'
 import { compareMetric, formatDelta, formatMetric, formatPercent } from '../../lib/audienceCharts'
 import { formatChartDate, type ChartDatum } from '../../lib/chartGeometry'
@@ -63,7 +64,7 @@ const chartPoints = computed<ChartDatum[]>(() => {
 })
 const statusMessage = computed(() => isLoading.value
   ? 'Loading audience for the last ' + period.value.slice(0, -1) + ' days.'
-  : errorMessage.value ? 'Could not refresh audience.' : 'Audience updated. Showing the last ' + periodLabel.value + '.')
+  : errorMessage.value ? '' : 'Audience updated. Showing the last ' + periodLabel.value + '.')
 usePagePresentation(() => ({
   filter: {
     label: 'Audience time window',
@@ -85,11 +86,8 @@ usePagePresentation(() => ({
   <div class="ui-insights">
     <p class="ui-visually-hidden" role="status">{{ statusMessage }}</p>
 
-    <v-alert v-if="errorMessage" class="ui-insights__notice" type="error" variant="tonal" role="alert">
-      <p>{{ errorMessage }}</p>
-      <p v-if="overview">Still showing the last {{ periodLabel }}. Try again to load your selected window.</p>
-      <v-btn class="ui-insights__retry" variant="text" @click="loadOverview">Try again</v-btn>
-    </v-alert>
+    <SnackbarFeedback :message="errorMessage ? errorMessage + (overview ? ` Still showing the last ${periodLabel}.` : '') : ''" action-text="Try again" :is-action-disabled="isLoading" @action="loadOverview" />
+    <v-btn v-if="errorMessage" class="ui-insights__retry" variant="text" :disabled="isLoading" @click="loadOverview">Reload audience</v-btn>
 
     <div v-if="isLoading && !overview" class="ui-insights__loading" aria-label="Loading audience" aria-busy="true">
       <div class="ui-insights__metrics"><v-skeleton-loader v-for="item in 4" :key="item" class="ui-stat" type="list-item-two-line" /></div>

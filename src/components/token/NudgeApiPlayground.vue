@@ -2,6 +2,7 @@
 import { ref, toRef, useId, watch } from 'vue'
 import ChoiceCards from '../ui/ChoiceCards.vue'
 import CodeBlock from '../ui/CodeBlock.vue'
+import SnackbarFeedback from '../ui/SnackbarFeedback.vue'
 import { useNudgeApiPlayground } from '../../composables/useNudgeApiPlayground'
 import { NUDGE_EXAMPLE_LANGUAGES } from '../../lib/nudgeApi'
 import type { ChoiceCardItem } from '../../types/choiceCards'
@@ -29,6 +30,8 @@ function handleSubmit(): void {
 
 <template>
   <section class="ui-panel ui-guide" aria-labelledby="playground-heading">
+    <SnackbarFeedback :message="requestError" action-text="View history" action-to="/nudges" />
+    <SnackbarFeedback :message="!isSending && result ? statusMessage : ''" :tone="result?.status === 202 ? 'success' : 'error'" />
     <div class="ui-guide__heading">
       <div><h2 id="playground-heading" class="ui-panel__title">Try a nudge</h2><p class="ui-guide__description">Build a request. See the code. Send when you’re ready.</p></div>
       <span class="ui-guide__eyebrow"><v-icon icon="mdi-code-braces" size="18" aria-hidden="true" /> API playground</span>
@@ -78,7 +81,6 @@ function handleSubmit(): void {
           <v-btn ref="sendButton" type="submit" color="secondary" rounded="pill" size="large" prepend-icon="mdi-send-outline" aria-haspopup="dialog" :loading="isSending" :disabled="isCredentialBusy">Send test nudge</v-btn>
         </div>
         <p v-if="!token" class="ui-guide__description">Create or load your API token above to copy an example or send a nudge.</p>
-        <v-alert v-if="requestError" type="error" variant="tonal">{{ requestError }} <router-link to="/nudges">View nudge history</router-link></v-alert>
       </form>
       <div class="ui-guide__examples">
         <CodeBlock :code="requestExample" :copy-code="requestCopyExample" :is-copy-disabled="!token || isCredentialBusy" label="Request example">
@@ -108,7 +110,7 @@ function handleSubmit(): void {
       </div>
     </div>
     <div class="ui-response" :class="{ 'is-visible': result || statusMessage }">
-      <p class="ui-feedback" role="status">{{ statusMessage }}</p>
+      <p class="ui-visually-hidden" role="status">{{ isSending ? 'Sending your request…' : '' }}</p>
       <template v-if="result">
         <div class="ui-guide__heading"><h3 class="ui-guide__subtitle">Last response</h3><span class="ui-status-tag" :class="{ 'is-error': result.status !== 202 }">HTTP {{ result.status }}</span></div>
         <CodeBlock :code="resultText" label="API response" />

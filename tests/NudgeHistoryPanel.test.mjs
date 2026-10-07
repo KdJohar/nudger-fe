@@ -16,12 +16,12 @@ function mount(overrides = {}) {
   const app = renderer.createApp({
     setup: () => () => vue.h(NudgeHistoryPanel, { ...props, onRetry: () => events.push('retry'), onLoadMore: () => events.push('loadMore') }),
   })
-  registerVuetifyStubs(app)
+  const snackbar = registerVuetifyStubs(app)
   for (const name of ['VCard', 'VAlert', 'VAvatar', 'VSkeletonLoader']) {
     app.component(name, (attrs, { slots }) => vue.h('div', { ...attrs, 'data-component': name }, slots.default?.()))
   }
   app.mount(root)
-  return { root, props, events, dispose: () => app.unmount() }
+  return { root, props, events, snackbar, dispose: () => app.unmount() }
 }
 const status = root => findAll(root, element => element.props.role === 'status')[0].text
 const pagination = root => findAll(byClass(root, 'nudge-list__footer')[0], element => element.type === 'button')[0]
@@ -60,17 +60,17 @@ test('filter refresh keeps the exact list and cards mounted rather than collapsi
   } finally { harness.dispose() }
 })
 
-test('pagination cannot emit requests while refreshing, appending, or showing a failed refresh', async () => {
+test('pagination cannot emit requests while refreshing or appending', async () => {
   const harness = mount({ items: [item()], nextLink: '/next-page' })
   try {
-    for (const busyState of [{ isLoading: true }, { isLoadingMore: true }, { errorMessage: 'Connection unavailable' }]) {
+    for (const busyState of [{ isLoading: true }, { isLoadingMore: true }]) {
       Object.assign(harness.props, { isLoading: false, isLoadingMore: false, errorMessage: null }, busyState)
       await vue.nextTick()
       assert.equal(pagination(harness.root).props.disabled, true)
       pagination(harness.root).props.onClick()
       assert.deepEqual(harness.events, [])
     }
-    harness.props.errorMessage = null
+    harness.props.isLoadingMore = false
     await vue.nextTick()
     assert.equal(pagination(harness.root).props.disabled, false)
     pagination(harness.root).props.onClick()
@@ -86,11 +86,18 @@ test('failed refresh retains previous cards, explains their state, and allows re
     harness.props.errorMessage = 'Connection unavailable.'
     await vue.nextTick()
     assert.equal(byClass(harness.root, 'nudge-card')[0], card)
-    assert.match(status(harness.root), /Still showing previous results/)
-    const alert = findAll(harness.root, element => element.props['data-component'] === 'VAlert')[0]
-    assert.match(findAll(alert, element => element.type === 'span')[0].text, /Still showing previous results/)
-    findAll(alert, element => element.type === 'button')[0].props.onClick()
+    assert.equal(status(harness.root), '', 'the snackbar owns the error announcement')
+    const notice = harness.snackbar.current.value
+    assert.match(notice.message, /Still showing previous results/)
+    assert.equal(notice.tone, 'error')
+    assert.equal(notice.actionText, 'Try again')
+    notice.onAction()
     assert.deepEqual(harness.events, ['retry'])
+    harness.snackbar.dismiss(notice.id)
+    assert.equal(pagination(harness.root).children[0].text, 'Reload nudges')
+    pagination(harness.root).props.onClick()
+    assert.deepEqual(harness.events, ['retry', 'retry'], 'recovery remains available after dismissal')
+    assert.equal(findAll(harness.root, element => element.props['data-component'] === 'VAlert').length, 0)
   } finally { harness.dispose() }
 })
 

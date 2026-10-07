@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, useId } from 'vue'
+import SnackbarFeedback from '../ui/SnackbarFeedback.vue'
 import { API_TOKEN_MASK } from '../../lib/apiToken'
 import type { MerchantApiTokenData } from '../../types/apiToken'
 
@@ -33,7 +34,9 @@ const rotateButton = ref<{ $el: HTMLElement } | null>(null)
       </div>
       <span v-if="tokenData?.has_token" class="ui-status-tag"><v-icon icon="mdi-check-circle-outline" size="16" aria-hidden="true" /> Active</span>
     </div>
-    <v-alert v-if="errorMessage" class="ui-guide__notice" type="error" variant="tonal">{{ errorMessage }}<v-btn v-if="!tokenData" variant="text" @click="emit('retry')">Try again</v-btn></v-alert>
+    <SnackbarFeedback :message="errorMessage" :action-text="!tokenData ? 'Try again' : undefined" :is-action-disabled="isLoading || isBusy" @action="emit('retry')" />
+    <SnackbarFeedback :message="statusMessage" tone="success" />
+    <v-btn v-if="errorMessage && !tokenData" variant="text" :disabled="isLoading || isBusy" @click="emit('retry')">Reload token</v-btn>
     <div v-if="isLoading" class="ui-credential__loading" role="status"><v-progress-circular color="secondary" size="24" indeterminate /><span>Loading your token…</span></div>
     <template v-else-if="tokenData?.has_token">
       <div class="ui-credential__field">
@@ -53,12 +56,10 @@ const rotateButton = ref<{ $el: HTMLElement } | null>(null)
       <p class="ui-guide__description">Create a token to send nudges from your platform. You can explore the examples below first.</p>
       <v-btn color="secondary" rounded="pill" prepend-icon="mdi-plus" :loading="isBusy" @click="emit('change', 'create', () => {})">Create API token</v-btn>
     </div>
-    <p class="ui-feedback" role="status">{{ statusMessage }}</p>
     <v-dialog v-model="isRotationOpen" max-width="440" :persistent="isBusy" aria-labelledby="rotation-heading" @after-leave="rotateButton?.$el.focus({ preventScroll: true })">
       <v-card class="ui-confirmation">
         <h2 id="rotation-heading" class="ui-panel__title">Rotate your API token?</h2>
         <p class="ui-guide__description">Your current key will stop working. Update every connected integration with the new token after rotating.</p>
-        <p v-if="errorMessage" role="alert" class="ui-confirmation__error">{{ errorMessage }}</p>
         <div class="ui-confirmation__actions">
           <v-btn variant="text" :disabled="isBusy" @click="isRotationOpen = false">Cancel</v-btn>
           <v-btn color="secondary" :loading="isBusy" @click="emit('change', 'rotate', () => { isRotationOpen = false })">Rotate token</v-btn>

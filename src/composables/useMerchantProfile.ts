@@ -101,7 +101,7 @@ export function useMerchantProfile() {
     }
   }
 
-  /** Details save independently of image uploads; the editor owns its inline errors and draft. */
+  /** Details save independently of image uploads; the editor owns validation, feedback and draft. */
   async function updateProfileDetails(changes: MerchantProfileUpdate): Promise<MerchantProfile | null> {
     if (!state.accessToken || !profile.value || isBusy.value) return null
     isBusy.value = true
