@@ -22,7 +22,7 @@ export interface AuthResponse {
     user: IdentityUser
     merchant_profile: MerchantProfile | null
   }
-  errors: Record<string, unknown>
+  errors?: ApiErrorPayload['errors']
 }
 
 export interface AuthSessionResponse {
@@ -31,18 +31,28 @@ export interface AuthSessionResponse {
     user: IdentityUser
     merchant_profile: MerchantProfile | null
   }
-  errors: Record<string, unknown>
+  errors?: ApiErrorPayload['errors']
 }
 
 export interface GoogleStartResponse {
-  authorization_url: string
-  expires_in: number
+  message?: string
+  data?: {
+    authorization_url: string
+    expires_in: number
+  }
+  authorization_url?: string
+  expires_in?: number
+}
+
+export interface ApiErrorDetail {
+  code?: string
+  message?: string
+  retryable?: boolean
+  field_errors?: Record<string, string>
 }
 
 export interface ApiErrorPayload {
+  detail?: { loc?: (string | number)[]; msg?: string }[]
   message?: string
-  errors?: {
-    code?: string
-    retryable?: boolean
-  }
+  errors?: ApiErrorDetail | ApiErrorDetail[] | null
 }

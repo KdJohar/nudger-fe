@@ -1,93 +1,55 @@
-import { onMounted, onUnmounted, ref, type Ref } from 'vue'
-
+import { onMounted, onUnmounted, ref, watch, type Ref } from 'vue'
 import { getNudgeHistory } from '../lib/nudges'
 import type { NudgeHistoryItem, NudgeType } from '../types/nudges'
+import { useAuth } from './useAuth'
 
 export function useNudgeHistory(nudgeType: Ref<NudgeType | null>) {
+  const { state, authenticatedRequest } = useAuth()
   const items = ref<NudgeHistoryItem[]>([])
   const nextLink = ref<string | null>(null)
   const isLoading = ref(true)
   const isLoadingMore = ref(false)
   const errorMessage = ref<string | null>(null)
-  const loadMoreError = ref<string | null>(null)
-  let requestVersion = 0
+  let requestSequence = 0
+  let lastRequestWasAppend = false
+  let loadedNudgeType = nudgeType.value
+  let abortController: AbortController | undefined
 
-  function getErrorMessage(error: unknown): string {
-    return error instanceof Error ? error.message : 'Nudge history could not be loaded. Please try again.'
-  }
-
-  async function loadInitial(): Promise<void> {
-    const version = ++requestVersion
-    isLoading.value = true
+  async function loadHistory(append = false): Promise<void> {
+    if (!state.accessToken) return
+    if (append && (isLoading.value || isLoadingMore.value || !nextLink.value || loadedNudgeType !== nudgeType.value)) return
+    abortController?.abort()
+    abortController = new AbortController()
+    const signal = abortController.signal
+    const requestedNudgeType = nudgeType.value
+    lastRequestWasAppend = append
+    const sequence = ++requestSequence
+    isLoadingMore.value = append
+    isLoading.value = !append
     errorMessage.value = null
-    loadMoreError.value = null
-    items.value = []
-    nextLink.value = null
-
     try {
-      const response = await getNudgeHistory({
-        nudgeType: nudgeType.value ?? undefined,
+      const result = await getNudgeHistory((path, init) => authenticatedRequest(path, { ...init, signal }), {
+        nextLink: append ? nextLink.value : null,
+        nudgeType: nudgeType.value,
       })
-      if (version !== requestVersion) {
-        return
-      }
-      items.value = response.data.items
-      nextLink.value = response.data.next
+      if (sequence !== requestSequence) return
+      // Cursor pages can overlap when new nudges arrive. Keep one card per nudge.
+      items.value = append ? [...new Map([...items.value, ...result.items].map(item => [item.id, item])).values()] : result.items
+      nextLink.value = result.next
+      loadedNudgeType = requestedNudgeType
     } catch (error) {
-      if (version === requestVersion) {
-        errorMessage.value = getErrorMessage(error)
-      }
+      if (sequence === requestSequence) errorMessage.value = error instanceof Error ? error.message : 'Unable to load nudge history.'
     } finally {
-      if (version === requestVersion) {
+      if (sequence === requestSequence) {
         isLoading.value = false
-      }
-    }
-  }
-
-  async function loadMore(): Promise<void> {
-    if (!nextLink.value || isLoadingMore.value) {
-      return
-    }
-
-    const version = requestVersion
-    const link = nextLink.value
-    isLoadingMore.value = true
-    loadMoreError.value = null
-
-    try {
-      const response = await getNudgeHistory({ nextLink: link })
-      if (version !== requestVersion) {
-        return
-      }
-      items.value = [...items.value, ...response.data.items]
-      nextLink.value = response.data.next
-    } catch (error) {
-      if (version === requestVersion) {
-        loadMoreError.value = getErrorMessage(error)
-      }
-    } finally {
-      if (version === requestVersion) {
         isLoadingMore.value = false
       }
     }
   }
 
-  onMounted(() => {
-    void loadInitial()
-  })
+  watch(nudgeType, () => loadHistory())
+  onMounted(() => loadHistory())
+  onUnmounted(() => { requestSequence += 1; abortController?.abort() })
 
-  onUnmounted(() => {
-    requestVersion += 1
-  })
-
-  return {
-    items,
-    nextLink,
-    isLoading,
-    isLoadingMore,
-    errorMessage,
-    loadMoreError,
-    loadInitial,
-    loadMore,
-  }
+  return { items, nextLink, isLoading, isLoadingMore, errorMessage, loadHistory, retryHistory: () => loadHistory(lastRequestWasAppend) }
 }

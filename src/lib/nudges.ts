@@ -1,29 +1,22 @@
-import { authenticatedRequest } from '../composables/useAuth'
-import { API_BASE_URL } from './api'
-import type { NudgeHistoryResponse, NudgeType } from '../types/nudges'
+import { ApiError, type AuthenticatedRequest } from './api'
+import { parseNextLink } from './apiUrl'
+import type { NudgeHistoryPage, NudgeHistoryResponse, NudgeType } from '../types/nudges'
 
-const NUDGE_HISTORY_PATH = '/v1/app-nudger/nudges'
-
-function getApiPath(nextLink: string): string {
-  const url = new URL(nextLink, API_BASE_URL)
-  return `${url.pathname}${url.search}`
-}
-
-export async function getNudgeHistory(options: {
+export interface NudgeHistoryOptions {
   nextLink?: string | null
   pageSize?: number
-  nudgeType?: NudgeType
-} = {}): Promise<NudgeHistoryResponse> {
-  if (options.nextLink) {
-    return authenticatedRequest<NudgeHistoryResponse>(getApiPath(options.nextLink))
-  }
+  nudgeType?: NudgeType | null
+}
 
-  const searchParams = new URLSearchParams({
-    page_size: String(options.pageSize ?? 20),
-  })
-  if (options.nudgeType) {
-    searchParams.set('nudge_type', options.nudgeType)
+export async function getNudgeHistory(request: AuthenticatedRequest, options: NudgeHistoryOptions = {}): Promise<NudgeHistoryPage> {
+  const historyPath = '/v1/app-nudger/nudges'
+  const path = options.nextLink
+    ? parseNextLink(options.nextLink, historyPath)
+    : `${historyPath}?page_size=${options.pageSize ?? 20}${options.nudgeType ? `&nudge_type=${options.nudgeType}` : ''}`
+  const response = await request<NudgeHistoryResponse>(path)
+  if (!response?.data || !Array.isArray(response.data.items) ||
+      (response.data.next !== null && typeof response.data.next !== 'string')) {
+    throw new ApiError('The API returned invalid nudge history. Please try again.', 200, 'API_INVALID_RESPONSE')
   }
-
-  return authenticatedRequest<NudgeHistoryResponse>(`${NUDGE_HISTORY_PATH}?${searchParams.toString()}`)
+  return response.data
 }

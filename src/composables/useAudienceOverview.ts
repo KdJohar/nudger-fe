@@ -1,67 +1,34 @@
-import { onMounted, onUnmounted, ref, watch } from 'vue'
-
-import { ApiError } from '../lib/api'
+import { onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue'
 import { getAudienceOverview } from '../lib/audience'
 import type { AudienceOverview, AudiencePeriod } from '../types/audience'
+import { useAuth } from './useAuth'
 
-const DEFAULT_PERIOD: AudiencePeriod = '30d'
-
-export function useAudienceOverview() {
-  const selectedPeriod = ref<AudiencePeriod>(DEFAULT_PERIOD)
+export function useAudienceOverview(initialPeriod: AudiencePeriod = '30d') {
+  const { state, authenticatedRequest } = useAuth()
+  const period = ref<AudiencePeriod>(initialPeriod)
   const overview = ref<AudienceOverview | null>(null)
-  const isLoading = ref(false)
+  const isLoading = ref(true)
   const errorMessage = ref<string | null>(null)
-  const requestSequence = ref(0)
+  let requestSequence = 0
 
-  async function loadOverview(period: AudiencePeriod = selectedPeriod.value): Promise<void> {
-    const requestId = ++requestSequence.value
+  async function loadOverview(): Promise<void> {
+    if (!state.accessToken) return
+    const sequence = ++requestSequence
     isLoading.value = true
     errorMessage.value = null
-
     try {
-      const response = await getAudienceOverview(period)
-      if (requestId !== requestSequence.value) {
-        return
-      }
-      overview.value = response.data
+      const result = await getAudienceOverview(period.value, authenticatedRequest)
+      if (sequence === requestSequence) overview.value = result
     } catch (error) {
-      if (requestId !== requestSequence.value) {
-        return
-      }
-      errorMessage.value = error instanceof ApiError
-        ? error.message
-        : 'Audience insights could not be loaded. Please try again.'
+      if (sequence === requestSequence) errorMessage.value = error instanceof Error ? error.message : 'Unable to load audience insights.'
     } finally {
-      if (requestId === requestSequence.value) {
-        isLoading.value = false
-      }
+      if (sequence === requestSequence) isLoading.value = false
     }
   }
 
-  function handlePeriodChange(period: AudiencePeriod): void {
-    selectedPeriod.value = period
-  }
+  watch(period as Ref<AudiencePeriod>, loadOverview)
+  onMounted(loadOverview)
+  onBeforeUnmount(() => { requestSequence += 1 })
 
-  let stopPeriodWatch: (() => void) | null = null
-
-  onMounted(() => {
-    stopPeriodWatch = watch(selectedPeriod, (period) => {
-      void loadOverview(period)
-    })
-    void loadOverview()
-  })
-
-  onUnmounted(() => {
-    requestSequence.value += 1
-    stopPeriodWatch?.()
-  })
-
-  return {
-    selectedPeriod,
-    overview,
-    isLoading,
-    errorMessage,
-    loadOverview,
-    handlePeriodChange,
-  }
+  return { period, overview, isLoading, errorMessage, loadOverview }
 }

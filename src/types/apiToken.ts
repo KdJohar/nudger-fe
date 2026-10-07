@@ -9,5 +9,5 @@ export interface MerchantApiTokenData {
 export interface MerchantApiTokenResponse {
   message: string
   data: MerchantApiTokenData
-  errors: Record<string, unknown>
+  errors?: unknown[]
 }

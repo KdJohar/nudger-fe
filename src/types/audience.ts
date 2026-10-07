@@ -17,10 +17,10 @@ export interface AudienceComparisonTrendPoint {
 export interface AudienceBreakdown {
   muted_subscribers: number
   reachable_subscribers: number
-  broadcast_subscribed: number | null
-  broadcast_unsubscribed: number | null
-  transactional_subscribed: number | null
-  transactional_unsubscribed: number | null
+  broadcast_subscribed?: number
+  broadcast_unsubscribed?: number
+  transactional_subscribed?: number
+  transactional_unsubscribed?: number
 }
 
 export interface AudienceSnapshot {
@@ -30,12 +30,12 @@ export interface AudienceSnapshot {
   unsubscribe_rate: number
   muted_subscribers: number
   reachable_subscribers: number
-  broadcast_subscribed: number | null
-  broadcast_unsubscribed: number | null
-  transactional_subscribed: number | null
-  transactional_unsubscribed: number | null
+  broadcast_subscribed?: number
+  broadcast_unsubscribed?: number
+  transactional_subscribed?: number
+  transactional_unsubscribed?: number
   broadcast_reach: number
-  transactional_reach: number | null
+  transactional_reach?: number
 }
 
 export interface AudienceComparison {
@@ -55,7 +55,7 @@ export interface AudienceOverview {
   muted_subscribers: number
   reachable_subscribers: number
   broadcast_reach: number
-  transactional_reach: number | null
+  transactional_reach?: number
   breakdown: AudienceBreakdown
   comparison: AudienceComparison
   trend: AudienceTrendPoint[]
@@ -66,5 +66,5 @@ export interface AudienceOverview {
 export interface AudienceOverviewResponse {
   message: string
   data: AudienceOverview
-  errors: Record<string, unknown>
+  errors?: unknown[]
 }

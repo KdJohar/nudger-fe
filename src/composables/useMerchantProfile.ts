@@ -1,140 +1,120 @@
-import { reactive, readonly } from 'vue'
-
-import { authenticatedRequest, setMerchantProfile } from './useAuth'
-import { ApiError } from '../lib/api'
+import { ref } from 'vue'
+import { latestProfile } from '../lib/profileDetails'
 import { convertProfileImage, uploadProfileImage } from '../lib/profileImages'
-import type {
-  MerchantProfile,
-  MerchantProfileForm,
-  MerchantProfileImagePresignResponse,
-  MerchantProfileResponse,
-} from '../types/merchantProfile'
-
-interface MerchantProfileState {
-  profile: MerchantProfile | null
-  isLoading: boolean
-  isBusy: boolean
-  uploadProgress: number
-  errorMessage: string | null
-}
-
-const state = reactive<MerchantProfileState>({
-  profile: null,
-  isLoading: false,
-  isBusy: false,
-  uploadProgress: 0,
-  errorMessage: null,
-})
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback
-}
-
-function nullable(value: string): string | null {
-  const normalized = value.trim()
-  return normalized || null
-}
-
-async function prepareAndUpload(file: File): Promise<string> {
-  const webp = await convertProfileImage(file)
-  const presign = await authenticatedRequest<MerchantProfileImagePresignResponse>('/v1/app-nudger/profile/image/presign', {
-    method: 'POST',
-    body: JSON.stringify({
-      content_type: 'image/webp',
-      size_bytes: webp.size,
-    }),
-  })
-
-  state.uploadProgress = 0
-  await uploadProfileImage(presign.data.upload_url, webp, (progress) => {
-    state.uploadProgress = progress
-  })
-  return presign.data.object_key
-}
-
-async function loadProfile(): Promise<void> {
-  state.isLoading = true
-  state.errorMessage = null
-
-  try {
-    const response = await authenticatedRequest<MerchantProfileResponse>('/v1/app-nudger/profile')
-    state.profile = response.data
-    setMerchantProfile(response.data)
-  } catch (error) {
-    if (error instanceof ApiError && error.code === 'MERCHANT_PROFILE_NOT_FOUND') {
-      state.profile = null
-      setMerchantProfile(null)
-    } else {
-      state.errorMessage = getErrorMessage(error, 'Your merchant profile could not be loaded.')
-    }
-  } finally {
-    state.isLoading = false
-  }
-}
-
-async function createProfile(form: MerchantProfileForm, file: File): Promise<boolean> {
-  state.isBusy = true
-  state.errorMessage = null
-  state.uploadProgress = 0
-
-  try {
-    const profileImageKey = await prepareAndUpload(file)
-    const response = await authenticatedRequest<MerchantProfileResponse>('/v1/app-nudger/profile', {
-      method: 'POST',
-      body: JSON.stringify({
-        ...form,
-        display_name: form.display_name.trim(),
-        profile_image_key: profileImageKey,
-        website_url: nullable(form.website_url),
-        instagram_url: nullable(form.instagram_url),
-        youtube_url: nullable(form.youtube_url),
-        facebook_url: nullable(form.facebook_url),
-        linkedin_url: nullable(form.linkedin_url),
-        x_url: nullable(form.x_url),
-      }),
-    })
-    state.profile = response.data
-    setMerchantProfile(response.data)
-    return true
-  } catch (error) {
-    state.errorMessage = getErrorMessage(error, 'Your merchant profile could not be created.')
-    return false
-  } finally {
-    state.isBusy = false
-  }
-}
-
-async function changeProfileImage(file: File): Promise<boolean> {
-  if (!state.profile) {
-    return false
-  }
-
-  state.isBusy = true
-  state.errorMessage = null
-  state.uploadProgress = 0
-
-  try {
-    const profileImageKey = await prepareAndUpload(file)
-    const response = await authenticatedRequest<MerchantProfileResponse>('/v1/app-nudger/profile/image', {
-      method: 'PATCH',
-      body: JSON.stringify({ profile_image_key: profileImageKey }),
-    })
-    state.profile = response.data
-    setMerchantProfile(response.data)
-    return true
-  } catch (error) {
-    state.errorMessage = getErrorMessage(error, 'Your profile image could not be changed.')
-    return false
-  } finally {
-    state.isBusy = false
-  }
-}
+import type { MerchantProfile, MerchantProfileForm, MerchantProfileImagePresignResponse, MerchantProfileResponse, MerchantProfileUpdate } from '../types/merchantProfile'
+import { useAuth } from './useAuth'
 
 export function useMerchantProfile() {
-  return {
-    state: readonly(state),
-    loadProfile,
-    createProfile,
-    changeProfileImage,
+  const { state, authenticatedRequest, setMerchantProfile } = useAuth()
+  const profile = ref<MerchantProfile | null>(state.merchantProfile)
+  const isLoading = ref(false)
+  const isBusy = ref(false)
+  const isUpdatingDetails = ref(false)
+  const uploadProgress = ref(0)
+  const errorMessage = ref<string | null>(null)
+
+  function syncProfile(nextProfile: MerchantProfile | null): void {
+    setMerchantProfile(nextProfile)
+    profile.value = latestProfile(latestProfile(profile.value, nextProfile), state.merchantProfile || nextProfile)
   }
+
+  async function loadProfile(): Promise<MerchantProfile | null> {
+    if (!state.accessToken) return null
+    isLoading.value = true
+    errorMessage.value = null
+    try {
+      const response = await authenticatedRequest<MerchantProfileResponse>('/v1/app-nudger/profile')
+      syncProfile(response.data)
+      return profile.value
+    } catch (error) {
+      const apiError = error as { code?: string }
+      if (apiError.code === 'MERCHANT_PROFILE_NOT_FOUND') {
+        syncProfile(null)
+        return null
+      }
+      errorMessage.value = error instanceof Error ? error.message : 'Unable to load your profile.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function saveProfile(form: MerchantProfileForm, imageFile?: File | null): Promise<MerchantProfile | null> {
+    if (!state.accessToken) return null
+    isBusy.value = true
+    uploadProgress.value = 0
+    errorMessage.value = null
+    let previewUrl: string | undefined
+    try {
+      let profileImageKey: string | undefined
+      if (imageFile) {
+        const converted = await convertProfileImage(imageFile)
+        previewUrl = converted.previewUrl
+        const presign = await authenticatedRequest<MerchantProfileImagePresignResponse>('/v1/app-nudger/profile/image/presign', {
+          method: 'POST',
+          body: JSON.stringify({ content_type: 'image/webp', size_bytes: converted.blob.size }),
+        })
+        await uploadProfileImage(presign.data.upload_url, converted.blob, (progress) => { uploadProgress.value = progress })
+        profileImageKey = presign.data.object_key
+      }
+      const response = await authenticatedRequest<MerchantProfileResponse>('/v1/app-nudger/profile', {
+        method: 'POST',
+        body: JSON.stringify({ ...form, ...(profileImageKey ? { profile_image_key: profileImageKey } : {}) }),
+      })
+      syncProfile(response.data)
+      return response.data
+    } catch (error) {
+      errorMessage.value = error instanceof Error ? error.message : 'Unable to save your profile.'
+      return null
+    } finally {
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
+      isBusy.value = false
+    }
+  }
+
+  async function updateProfileImage(imageFile: File): Promise<MerchantProfile | null> {
+    if (!state.accessToken || !profile.value) return null
+    isBusy.value = true
+    uploadProgress.value = 0
+    errorMessage.value = null
+    let previewUrl: string | undefined
+    try {
+      const converted = await convertProfileImage(imageFile)
+      previewUrl = converted.previewUrl
+      const presign = await authenticatedRequest<MerchantProfileImagePresignResponse>('/v1/app-nudger/profile/image/presign', {
+        method: 'POST',
+        body: JSON.stringify({ content_type: 'image/webp', size_bytes: converted.blob.size }),
+      })
+      await uploadProfileImage(presign.data.upload_url, converted.blob, (progress) => { uploadProgress.value = progress })
+      const response = await authenticatedRequest<MerchantProfileResponse>('/v1/app-nudger/profile/image', {
+        method: 'PATCH',
+        body: JSON.stringify({ profile_image_key: presign.data.object_key }),
+      })
+      syncProfile(response.data)
+      return response.data
+    } catch (error) {
+      errorMessage.value = error instanceof Error ? error.message : 'Unable to update the profile image.'
+      return null
+    } finally {
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
+      isBusy.value = false
+    }
+  }
+
+  /** Details save independently of image uploads; the editor owns its inline errors and draft. */
+  async function updateProfileDetails(changes: MerchantProfileUpdate): Promise<MerchantProfile | null> {
+    if (!state.accessToken || !profile.value || isBusy.value) return null
+    isBusy.value = true
+    isUpdatingDetails.value = true
+    errorMessage.value = null
+    try {
+      const response = await authenticatedRequest<MerchantProfileResponse>('/v1/app-nudger/profile', {
+        method: 'PATCH', body: JSON.stringify(changes),
+      })
+      syncProfile(response.data)
+      return profile.value
+    } finally { isBusy.value = false; isUpdatingDetails.value = false }
+  }
+
+  return { profile, isLoading, isBusy, isUpdatingDetails, uploadProgress, errorMessage, loadProfile, saveProfile, updateProfileImage, updateProfileDetails }
 }

@@ -1,16 +1,19 @@
-import { authenticatedRequest } from '../composables/useAuth'
-import type { MerchantApiTokenResponse } from '../types/apiToken'
+import type { AuthenticatedRequest } from './api'
+import type { MerchantApiTokenData, MerchantApiTokenResponse } from '../types/apiToken'
 
-const API_TOKEN_PATH = '/v1/app-nudger/token'
+export const API_TOKEN_MASK = '•••• •••• •••• •••• ••••'
 
-export function getMerchantApiToken(): Promise<MerchantApiTokenResponse> {
-  return authenticatedRequest<MerchantApiTokenResponse>(API_TOKEN_PATH)
+export async function getApiToken(request: AuthenticatedRequest): Promise<MerchantApiTokenData> {
+  const response = await request<MerchantApiTokenResponse>('/v1/app-nudger/token')
+  return response.data
 }
 
-export function generateMerchantApiToken(): Promise<MerchantApiTokenResponse> {
-  return authenticatedRequest<MerchantApiTokenResponse>(API_TOKEN_PATH, { method: 'POST' })
+export async function createApiToken(request: AuthenticatedRequest): Promise<MerchantApiTokenData> {
+  const response = await request<MerchantApiTokenResponse>('/v1/app-nudger/token', { method: 'POST' })
+  return response.data
 }
 
-export function rotateMerchantApiToken(): Promise<MerchantApiTokenResponse> {
-  return authenticatedRequest<MerchantApiTokenResponse>(`${API_TOKEN_PATH}/rotate`, { method: 'POST' })
+export async function rotateApiToken(request: AuthenticatedRequest): Promise<MerchantApiTokenData> {
+  const response = await request<MerchantApiTokenResponse>('/v1/app-nudger/token/rotate', { method: 'POST' })
+  return response.data
 }

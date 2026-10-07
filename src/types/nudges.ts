@@ -1,7 +1,5 @@
 export type NudgeType = 'transactional' | 'broadcast'
-
 export type NudgeSender = 'creator' | 'platform' | 'merchant'
-
 export type NudgeStatus = 'created' | 'processing' | 'completed'
 
 export interface NudgeDeliveryStats {
@@ -18,10 +16,10 @@ export interface NudgeHistoryItem {
   message: string
   sender: NudgeSender
   nudge_type: NudgeType
-  merchant_platform_user_id: string | null
+  merchant_platform_user_id?: string | null
   status: NudgeStatus
   created_at: string
-  completed_at: string | null
+  completed_at?: string | null
   stats: NudgeDeliveryStats
 }
 
@@ -34,5 +32,5 @@ export interface NudgeHistoryPage {
 export interface NudgeHistoryResponse {
   message: string
   data: NudgeHistoryPage
-  errors: Record<string, unknown>
+  errors?: unknown[]
 }
