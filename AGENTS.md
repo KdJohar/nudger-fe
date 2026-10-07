@@ -1,6 +1,9 @@
 # Plug & Nudge frontend instructions
 
-Read `docs/vue-architecture.md` before changing Vue layouts, routes, components, or CSS.
+Read `docs/app-context.md`, `docs/design-language.md`, and `docs/vue-architecture.md`
+before changing Vue layouts, routes, components, or CSS. Read `docs/api-client.md`
+before changing frontend requests. Update the owning context document when an
+approved product/design rule changes; keep README as the entry point.
 
 ## Scope and stack
 
@@ -29,16 +32,20 @@ Read `docs/vue-architecture.md` before changing Vue layouts, routes, components,
 ## Styling and reuse
 
 - All application styling belongs in `src/styles/main.css`. No inline `style`, template style bindings, or new SFC style blocks.
+- Move static SVG presentation into CSS too; keep chart coordinates/path data in markup. Do not inject styles from application JavaScript.
+- Vuetify's generated theme styles and runtime geometry are library-owned exceptions, not permission for app-authored inline CSS. Preserve documented component APIs and pointer/viewport behavior.
 - Share components **and** their DOM structure, not just comma-separated CSS selectors that imitate each other.
 - Header rules use `.page-layout .header__*`; do not introduce page-specific header classes such as `ui-insights__header`.
 - Let Vuetify generate `v-slide-group__container`, `v-slide-group__content`, and `v-window__container`; never hand-create those classes to imitate its markup.
 - Brand primary: `#FF6B4A`, used sparingly. Secondary/interactive accent: `#4338CA`.
+- Background and surface match: light `#FFFFFF`, dark `#171B25`. Appearance defaults to System; keep transparent merchant avatars and the supplied `nudge.png` brand mark.
+- Shared success/error snackbars stay top-right for 20 seconds with manual close and hover/focus pause. Keep field validation beside inputs.
 - Keep light/dark themes, 48px tap targets, keyboard focus, reduced-motion support, and mobile safe areas.
 - Do not change navigation, body cards/charts/forms, or unrelated responsive layouts as a side effect of header work.
 
 ## Verification
 
-- Run `npm run test:ui`, `npm run test:audience`, and `npm run build`.
+- Run `npm run test:styles`, `npm run test:ui`, `npm run test:audience`, and `npm run build`. Build also enforces style ownership.
 - Structure tests must assert persistence of header/window elements across all five workspace routes.
 - Test initial/default filters, repeated selections, route cleanup, metadata updates, and creators without filters.
 - Check 375px, 768px, 1440px (plus 320px reflow), both themes, sticky filters, keyboard controls, and route navigation.

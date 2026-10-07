@@ -43,10 +43,17 @@ files. See [API client conventions](docs/api-client.md) when adding requests.
 - `npm run preview` — preview the production build locally
 - `npm run test:ui` — shared layout persistence, controls, and page structure tests
 - `npm run test:audience` — audience/chart state and geometry regression tests
+- `npm run test:styles` — enforce external CSS, SVG presentation, and documented brand/theme values (also runs before build)
+- `npm run test:browser:styles` — verify chart styling from CSS, keyboard interaction and responsive geometry using mocked APIs
+- `npm run test:snackbar` / `npm run test:browser:snackbar` — shared feedback lifecycle, top-right placement, 20-second timeout, actions and modal focus
 
 ## Structure
 
-Read [AGENTS.md](AGENTS.md) and [Vue architecture](docs/vue-architecture.md) before changing layouts or adding workspace pages. All five workspace routes share one persistent header and content window; only the routed body changes.
+Start with [AGENTS.md](AGENTS.md), [app context](docs/app-context.md),
+[design language](docs/design-language.md), and [Vue architecture](docs/vue-architecture.md).
+The app context owns product scope, the design guide owns visual/CSS rules, and the
+architecture guide owns component structure. All five workspace routes share one
+persistent header and content window; only the routed body changes.
 
 
 - `src/layouts/AppShell.vue` — authenticated shell with persistent navigation, theme toggle, account actions, and mobile bottom navigation
@@ -77,5 +84,11 @@ Read [AGENTS.md](AGENTS.md) and [Vue architecture](docs/vue-architecture.md) bef
 
 - Primary: `#FF6B4A`
 - Secondary / hover / active indigo: `#4338CA`
+- Matching light background/surface: `#FFFFFF`
+- Matching dark background/surface: `#171B25`
+
+Appearance defaults to System. [Design language](docs/design-language.md) covers
+semantic status colours, supplied logos, transparent avatars, responsive navigation,
+shared feedback and the distinction between authored CSS and Vuetify runtime styles.
 
 The app intentionally excludes Nudgee merchant discovery/subscription workflows. Responsive mobile layout is implemented in the UI; device/network configuration remains a separate deployment concern.

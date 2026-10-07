@@ -81,6 +81,7 @@
 .ui-trend__gridline { stroke: rgba(var(--v-theme-on-surface-variant), 0.18); stroke-width: 1; vector-effect: non-scaling-stroke; stroke-dasharray: 3 5; }
 .ui-trend__area { fill: var(--ui-chart-current); opacity: 0.055; }
 .ui-trend__line { fill: none; stroke: var(--ui-chart-current); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.ui-trend__line, .ui-trend__point { vector-effect: non-scaling-stroke; }
 .ui-trend__line--comparison { stroke: var(--ui-chart-comparison); stroke-width: 2; stroke-dasharray: 5 6; }
 .ui-trend__cursor { stroke: rgb(var(--v-theme-on-surface-variant)); stroke-width: 1; stroke-dasharray: 3 4; opacity: 0.55; vector-effect: non-scaling-stroke; }
 .ui-trend__point { fill: var(--ui-chart-current); stroke: rgb(var(--v-theme-surface)); stroke-width: 2; }

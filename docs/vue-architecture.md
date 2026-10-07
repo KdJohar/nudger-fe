@@ -2,6 +2,10 @@
 
 Accepted: 6 October 2026, following the user's confirmation of a persistent, identical page frame.
 
+Companion context: [app scope and journeys](app-context.md), [design language and CSS ownership](design-language.md),
+and [API client conventions](api-client.md). This document owns layout/component
+structure; the design guide owns colours, styling rules and visual behavior.
+
 ## The rule
 
 Reuse the whole structure, not merely the visual appearance. Every authenticated workspace page has the same layout and header. Titles and filter options change as data; only the routed body changes structurally.
@@ -77,6 +81,12 @@ Tabs point to the layout-owned panel. The panel is labelled by the selected tab 
 Keep a single h1, 48px targets, visible keyboard focus, reduced-motion handling, and native Vuetify tab keyboard behaviour. Hidden filters must not enter the focus order.
 
 ## CSS and layout
+
+All authored rules live in `src/styles/main.css`; template classes select those
+rules. No inline CSS, SFC style blocks, direct DOM styling or static SVG presentation
+attributes. Preserve library-generated Vuetify styles and data-driven SVG geometry;
+see the explicit boundaries in [design language](design-language.md).
+`npm run test:styles` enforces this contract during every production build.
 
 Use `header` and `header__*` consistently, scoped beneath `.page-layout` in main.css. Header structure never depends on the route.
 

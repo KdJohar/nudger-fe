@@ -57,11 +57,11 @@ watch(() => props.points, points => { selectedIndex.value = Math.max(0, points.l
           <svg viewBox="0 0 600 180" preserveAspectRatio="none" class="ui-trend__svg" aria-hidden="true">
             <line v-for="tick in ticks" :key="tick" class="ui-trend__gridline" x1="8" x2="592" :y1="chartCoordinate(0, 1, tick, scale).y" :y2="chartCoordinate(0, 1, tick, scale).y" />
             <path class="ui-trend__area" :d="areaPath" />
-            <path v-if="hasComparison" class="ui-trend__line ui-trend__line--comparison" :d="comparisonPath" vector-effect="non-scaling-stroke" />
-            <path class="ui-trend__line" :d="currentPath" vector-effect="non-scaling-stroke" />
+            <path v-if="hasComparison" class="ui-trend__line ui-trend__line--comparison" :d="comparisonPath" />
+            <path class="ui-trend__line" :d="currentPath" />
             <line class="ui-trend__cursor" :x1="selectedCoordinate.x" :x2="selectedCoordinate.x" y1="8" y2="172" />
-            <circle v-if="comparisonCoordinate" class="ui-trend__point ui-trend__point--comparison" :cx="comparisonCoordinate.x" :cy="comparisonCoordinate.y" r="4" vector-effect="non-scaling-stroke" />
-            <circle class="ui-trend__point" :cx="selectedCoordinate.x" :cy="selectedCoordinate.y" r="5" vector-effect="non-scaling-stroke" />
+            <circle v-if="comparisonCoordinate" class="ui-trend__point ui-trend__point--comparison" :cx="comparisonCoordinate.x" :cy="comparisonCoordinate.y" r="4" />
+            <circle class="ui-trend__point" :cx="selectedCoordinate.x" :cy="selectedCoordinate.y" r="5" />
           </svg>
           <input
             v-model.number="selectedIndex"
