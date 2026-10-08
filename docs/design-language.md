@@ -110,3 +110,23 @@ browser at 320/375/768/1440px in light/dark. Check keyboard access, 48px control
 200% zoom/reflow, safe areas, reduced motion, stable shared layout and error recovery.
 Use mocked data only. `npm run test:browser:styles` checks chart CSS and geometry
 after moving presentation out of markup. See architecture docs for other browser suites.
+
+## Installable web app and SEO
+
+The public SPA is installable on iOS and Android through `manifest.webmanifest`.
+It uses `standalone` display, `/` as its start URL and scope, the supplied Nudge
+logo, a white surface background and the coral brand theme. `index.html` keeps the
+iOS standalone metadata and Apple touch icon alongside the manifest link.
+
+The router owns route-aware document metadata. Public pages are indexable and set
+their title, description, canonical URL, Open Graph/Twitter cards and JSON-LD;
+login, callback, onboarding, pending and authenticated workspace routes are
+`noindex,nofollow`. `robots.txt` and `sitemap.xml` expose only public URLs. Keep
+canonical URLs on `https://plugandnudge.com` and do not add private or tokenized
+URLs to the sitemap.
+
+The service worker is a static-shell enhancement, not an API cache. It may cache
+the built app assets and fall back to the SPA entrypoint during an unavailable
+network, but must never cache `runtime-config.js`, authenticated API responses or
+private user data. Notification click handling must stay same-origin and use the
+existing SPA routes.

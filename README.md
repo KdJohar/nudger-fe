@@ -40,6 +40,7 @@ files. See [API client conventions](docs/api-client.md) when adding requests.
 - `npm run dev` — start the Vite development server
 - `npm run typecheck` — run Vue TypeScript checks
 - `npm run build` — typecheck and create a production build
+- `npm run test:pwa` — validate the manifest, icons, SEO entrypoints, robots rules, and service worker boundaries
 - `npm run preview` — preview the production build locally
 - `npm run test:ui` — shared layout persistence, controls, and page structure tests
 - `npm run test:audience` — audience/chart state and geometry regression tests
@@ -91,5 +92,11 @@ persistent header and content window; only the routed body changes.
 Appearance defaults to System. [Design language](docs/design-language.md) covers
 semantic status colours, supplied logos, transparent avatars, responsive navigation,
 shared feedback and the distinction between authored CSS and Vuetify runtime styles.
+
+The public SPA also publishes `manifest.webmanifest`, `robots.txt`, and
+`sitemap.xml`. Route navigation updates canonical, description, Open Graph, Twitter,
+robots, and JSON-LD metadata. Private workspace/auth routes are marked `noindex`;
+the service worker caches static assets only and never caches runtime configuration
+or API responses.
 
 The app intentionally excludes Nudgee merchant discovery/subscription workflows. Responsive mobile layout is implemented in the UI; device/network configuration remains a separate deployment concern.
