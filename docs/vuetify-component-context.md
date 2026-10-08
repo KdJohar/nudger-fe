@@ -160,7 +160,7 @@ classes such as `v-slide-group__container`.
 | --- | --- |
 | Filter pills | Desktop: 52px tall, 13px labels. Mobile: Nudgee-style 32px visual track, 30px selection, 48px targets and 11px labels. Maximum 264px wide with pill rounding |
 | Filter row | Desktop sticks while the title scrolls. Mobile stays above the scrolling window without a top logo bar; Audience/Nudges headings are visually hidden. Selection retains the scroll owner offset |
-| Mobile bottom navigation | 56px tall, 52px while compact; 16px side insets, 8px bottom gap plus safe area; fixed width while shrinking |
+| Mobile bottom navigation | 56px tall, 52px while compact; 16px side insets; app-frame anchored with a bottom gap of max(4px, safe-area minus 8px); fixed width while shrinking |
 | Bottom-nav glass | Theme surface at 0.76 alpha, 20px blur, 135% saturation; opaque fallback for unavailable blur/reduced transparency |
 | Navigation breakpoint | Share Vuetify `smAndDown` in shell and FAB; mobile navigation below 960px, sidebar from 960px |
 | Main frame | Outer container maximum 1600px; shared page maximum 1360px; mobile uses a bounded 100dvh shell with one content scroll owner and safe-area/nav clearance |

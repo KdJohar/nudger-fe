@@ -11,8 +11,10 @@ pull-to-refresh features do not belong in this sender workspace.
 - Keep `width=device-width, initial-scale=1.0, viewport-fit=cover`. Never add
   `user-scalable=no`, maximum-scale restrictions or global touch preventDefault.
 - At Vuetify `smAndDown` (below 960px), AppShell adds `app-shell--mobile`.
-  Central CSS locks html/body/#app only while that class is present, fixes the
-  body and uses `100vh` followed by `100dvh` for the bounded shell.
+  Central CSS locks html/body/#app only while that class is present and uses
+  `100vh` followed by `100dvh` for the bounded shell. Keep the body in normal
+  flow; the navigation is absolute inside the positioned app wrap so iOS
+  standalone mode cannot add a second fixed-body viewport offset.
 - Mobile has no top app/brand bar or reserved toolbar height. Shared page
   controls start below the top safe area, above `page-layout__window`. Audience
   and Nudges visually hide their heading/description row while retaining the
@@ -22,8 +24,10 @@ pull-to-refresh features do not belong in this sender workspace.
   Page navigation resets internal scroll; filtering and loading retain the offset.
   Bottom-nav compaction listens to that window and clears after idle/navigation.
 - Keep safe-area clearance at all four edges, including bottom navigation, FAB,
-  last content row and sheets. Content padding also clears the floating send
-  action on the history route. Short landscape screens reduce header spacing.
+  last content row and sheets. The bottom-navigation pill sits closer to the lower
+  edge like Nudgee: 4px on rectangular screens, or the bottom safe-area inset minus
+  8px around a home indicator. Content padding also clears the floating send action
+  on the history route. Short landscape screens reduce header spacing.
 - Public marketing, onboarding and pending review retain document scrolling.
   Sign-in uses a separate bounded welcome surface, neutral branding and an
   indigo Google pill matching Nudgee; short screens omit decorative examples.
@@ -57,8 +61,8 @@ into document handlers or cache private API data.
 
 Run the required styles, UI, audience and production build checks, plus
 `npm run test:browser:mobile` with Vite running and Playwright/Chrome installed.
-It uses mocked APIs only and checks all five routes at 320/375/414/768px, short
-844px landscape, both themes, frame overflow, actual content scrolling, absent
+It uses mocked APIs only and checks all five routes at 320/375/390/440/412/768px,
+short 844px landscape, both themes, frame overflow, actual content scrolling, absent
 app bar, accessible compact headings, filter offsets, final-row clearance, deep-link reload, focus, reduced
 viewport sheets, resizing and public-page scrolling. Existing navigation and
 style browser suites still cover contrast, keyboard and creator restrictions.
@@ -68,6 +72,9 @@ preview URL. `MOBILE_NATIVE_ARTIFACT_DIR` selects screenshot output (default
 `/tmp/nudger-mobile-native`). Before an edit, run the browser script with
 `--capture-desktop` to record the geometry/computed styles of all five 1440px
 routes in both themes; its next normal run compares the unchanged desktop.
+Run with `BROWSER_ENGINE=webkit` for Safari-engine coverage; optionally set
+`WEBKIT_EXECUTABLE_PATH` to an existing compatible browser. Chromium also verifies
+explicit iPhone and Android safe-area insets, scroll and viewport-height changes.
 
 Browser automation cannot prove physical Safari keyboard/gesture behavior or
 Home Screen installation. Before release, check iOS Safari browser/standalone

@@ -84,7 +84,8 @@ production build. Runtime framework styling is intentionally outside that source
   Never shrink hit areas below 48px.
   Noninteractive mobile status chips are 24px tall with 11px labels.
 - Mobile bottom nav: 56px normally, 52px compact during scroll, subtle glass surface,
-  16px side insets and 8px bottom gap plus safe area. Shrink without sliding it away.
+  16px side insets and a lower edge treatment matching Nudgee: 4px on rectangular
+  screens or the bottom safe-area inset minus 8px. Shrink without sliding it away.
 - Use short purposeful transitions and respect reduced motion/forced colours.
   Preserve the opaque fallback for unsupported blur or reduced transparency.
 

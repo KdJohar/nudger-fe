@@ -106,7 +106,7 @@ async function signOut(): Promise<void> {
       </v-container>
     </v-main>
 
-    <v-bottom-navigation v-if="smAndDown" class="app-bottom-nav" :class="{ 'app-bottom-nav--compact': isBottomNavigationCompact }" grow aria-label="Workspace navigation">
+    <v-bottom-navigation v-if="smAndDown" class="app-bottom-nav" :class="{ 'app-bottom-nav--compact': isBottomNavigationCompact }" absolute grow aria-label="Workspace navigation">
       <v-btn v-for="item in mobileNavigationItems" :key="item.to" :to="item.to" :value="item.to"
         :class="{ 'app-bottom-nav__avatar': item.mobileVariant === 'avatar' }" :aria-label="item.mobileLabel ?? item.label">
         <Avatar v-if="item.mobileVariant === 'avatar'" :src="state.merchantProfile?.profile_image_url" />

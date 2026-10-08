@@ -989,7 +989,7 @@ button, input, textarea, select { font: inherit; }
    Status chips are compact visuals, while interactive filters retain 48px targets. */
 @media (max-width: 959.98px) {
   html:has(.app-shell--mobile), body:has(.app-shell--mobile), #app:has(.app-shell--mobile) { height: 100%; overflow: hidden; overscroll-behavior: none; }
-  body:has(.app-shell--mobile) { position: fixed; inset: 0; width: 100%; }
+  body:has(.app-shell--mobile) { position: relative; height: 100vh; height: 100dvh; min-height: 0; width: 100%; }
   .app-shell--mobile, .app-shell--mobile > .v-application__wrap { height: 100vh; height: 100dvh; min-height: 0; max-height: 100vh; max-height: 100dvh; overflow: hidden; touch-action: pan-y; }
   .app-shell--mobile .app-main { display: flex; height: 100%; min-height: 0; overflow: hidden; padding: 0 !important; }
   .app-shell--mobile .app-main__container { display: flex; height: 100%; min-height: 0; padding: calc(8px + env(safe-area-inset-top, 0px)) calc(15px + env(safe-area-inset-right, 0px)) 0 calc(15px + env(safe-area-inset-left, 0px)); }
@@ -1008,6 +1008,8 @@ button, input, textarea, select { font: inherit; }
   .app-shell--mobile .page-layout__window:has(.nudges-view__fab) > .v-window__container { padding-block-end: calc(144px + env(safe-area-inset-bottom, 0px)); }
   .app-shell--mobile .page-layout__window .v-window-item:focus-visible { outline-offset: -2px; }
   .app-shell--mobile .app-bottom-nav { right: calc(16px + env(safe-area-inset-right, 0px)) !important; left: calc(16px + env(safe-area-inset-left, 0px)) !important; width: calc(100% - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)) !important; }
+  /* Anchor to the bounded app frame, avoiding iOS standalone fixed-body offsets. */
+  .app-shell--mobile .app-bottom-nav { position: absolute !important; top: auto; margin: 0; bottom: max(4px, calc(env(safe-area-inset-bottom, 0px) - 8px)) !important; }
   .app-shell--mobile .nudges-view__fab.v-btn { right: calc(24px + env(safe-area-inset-right, 0px)); bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
 
   .app-shell--mobile .ui-pill-tabs--mobile-compact.v-tabs { height: 48px; }

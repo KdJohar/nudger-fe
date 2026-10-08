@@ -3,11 +3,16 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 // All API traffic is fixture-only. Never send or update a real account.
-const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright')
+const playwright = await import(process.env.PLAYWRIGHT_MODULE || 'playwright')
+const browserEngine = process.env.BROWSER_ENGINE || 'chromium'
+assert.ok(['chromium', 'webkit'].includes(browserEngine))
 const baseUrl = process.env.UI_BASE_URL || 'http://127.0.0.1:5174'
 const artifactDir = process.env.MOBILE_NATIVE_ARTIFACT_DIR || '/tmp/nudger-mobile-native'
 const captureDesktop = process.argv.includes('--capture-desktop')
-const browser = await chromium.launch({ headless: true, channel: 'chrome' })
+const browser = await playwright[browserEngine].launch({ headless: true,
+  ...(browserEngine === 'chromium' ? { channel: 'chrome' }
+    : process.env.WEBKIT_EXECUTABLE_PATH ? { executablePath: process.env.WEBKIT_EXECUTABLE_PATH } : {}),
+})
 const failures = []
 const profile = { id: 'fixture-merchant', user_id: 'fixture-user', display_name: 'Studio Notes', nudger_id: 'studio-notes', profile_type: 'platform', is_active: true, profile_image_url: '/nudge.png' }
 const snapshot = { total_audience: 100, new_subscribers: 10, unsubscribed_users: 2, unsubscribe_rate: 2, muted_subscribers: 3, reachable_subscribers: 97, broadcast_reach: 97, transactional_reach: 97 }
@@ -52,6 +57,20 @@ async function desktopLayout(page) {
   })
 }
 
+async function assertDock(page, expectedBottomGap = 4) {
+  const dock = await page.locator('.app-bottom-nav').evaluate(el => {
+    const rect = el.getBoundingClientRect(), wrap = el.closest('.v-application__wrap').getBoundingClientRect()
+    return { bottomGap: innerHeight - rect.bottom, frameBottom: wrap.bottom,
+      buttons: [...el.querySelectorAll('a')].map(button => {
+        const bounds = button.getBoundingClientRect()
+        return { width: bounds.width, height: bounds.height }
+      }) }
+  })
+  assert.ok(Math.abs(dock.frameBottom - await page.evaluate(() => innerHeight)) <= 1, 'App frame fills the visible viewport')
+  assert.ok(Math.abs(dock.bottomGap - expectedBottomGap) <= 1, `Unexpected bottom gap: ${JSON.stringify(dock)}`)
+  assert.ok(dock.buttons.every(button => button.width >= 48 && button.height >= 48), 'Navigation keeps 48px targets')
+}
+
 async function assertFrame(page) {
   const frame = await page.evaluate(() => {
     const scrolling = document.scrollingElement, panel = document.querySelector('.page-layout__window')
@@ -64,6 +83,7 @@ async function assertFrame(page) {
   assert.equal(frame.panelOverflow, 'auto')
   assert.equal(frame.touchAction, 'pan-y')
   assert.equal(await page.locator('.app-bar, .v-toolbar__content').count(), 0, 'Mobile starts directly with the page frame')
+  await assertDock(page)
   if (['/audience', '/nudges'].includes(frame.path)) {
     const headingRow = await page.locator('.header__content').boundingBox()
     assert.equal(headingRow.height, 1, 'Page heading remains accessible without taking visual space')
@@ -93,7 +113,7 @@ try {
   } else {
     try { assert.deepEqual(desktop, JSON.parse(await readFile(baseline, 'utf8'))); console.log('PASS desktop: all five routes match pre-change geometry and computed styles in both themes') }
     catch (error) { if (error.code !== 'ENOENT') throw error; console.log('No local pre-change baseline; desktop sidebar/route assertions passed') }
-    for (const theme of ['light', 'dark']) for (const [width, height] of [[320, 812], [375, 812], [414, 812], [768, 812], [844, 390]]) {
+    for (const theme of ['light', 'dark']) for (const [width, height] of [[320, 812], [375, 812], [390, 844], [440, 956], [412, 915], [768, 812], [844, 390]]) {
       const { page, context } = await setup(width, theme, height, true)
       for (const path of paths) { await open(page, path); await assertFrame(page) }
       await open(page, '/nudges')
@@ -149,7 +169,9 @@ try {
       if (width === 375) {
         await open(page, '/nudges')
         const trigger = page.getByRole('button', { name: 'Send a nudge', exact: true })
-        await trigger.tap(); await page.getByRole('dialog').waitFor()
+        // Use keyboard activation to test a defined focus origin across browser engines.
+        await trigger.focus()
+        await page.keyboard.press('Enter'); await page.getByRole('dialog').waitFor()
         await page.waitForFunction(() => document.getElementById('app').inert)
         await page.waitForFunction(() => document.querySelector('.ui-sheet__title') === document.activeElement)
         await page.setViewportSize({ width, height: 540 })
@@ -174,8 +196,36 @@ try {
         await page.evaluate(() => scrollTo(0, 400))
         assert.ok(await page.evaluate(() => scrollY > 0), 'Public pages retain normal document scrolling')
       }
-      console.log(`PASS ${width}x${height} ${theme}: fixed frame, content scroll, pinned controls, compact filters/chips, route persistence and deep links`)
+      console.log(`PASS ${browserEngine} ${width}x${height} ${theme}: bounded frame, bottom dock, content scroll, pinned controls, route persistence and deep links`)
       await context.close()
+    }
+    if (browserEngine === 'chromium') {
+      for (const theme of ['light', 'dark']) for (const device of [
+        { name: 'iPhone 14 safe areas', width: 390, height: 844, top: 47, bottom: 34 },
+        { name: 'iPhone 16 Pro Max safe areas', width: 440, height: 956, top: 62, bottom: 34 },
+        { name: 'Android gesture navigation', width: 412, height: 915, top: 24, bottom: 24 },
+        { name: 'Android without bottom inset', width: 384, height: 854, top: 24, bottom: 0 },
+      ]) {
+        const { page, context } = await setup(device.width, theme, device.height, true)
+        const session = await context.newCDPSession(page)
+        await session.send('Emulation.setSafeAreaInsetsOverride', { insets: { top: device.top, bottom: device.bottom, left: 0, right: 0 } })
+        const bottomGap = Math.max(4, device.bottom - 8)
+        for (const path of ['/audience', '/nudges', '/profile']) {
+          await open(page, path); await assertDock(page, bottomGap)
+          const panel = page.locator('.page-layout__window')
+          await panel.evaluate(el => { el.scrollTop = el.scrollHeight })
+          await assertDock(page, bottomGap)
+        }
+        // Android browser chrome and an on-screen keyboard can reduce the available height.
+        await page.setViewportSize({ width: device.width, height: 540 })
+        await page.waitForFunction(() => Math.abs(document.querySelector('.v-application__wrap').getBoundingClientRect().bottom - innerHeight) <= 1)
+        await assertDock(page, bottomGap)
+        await page.setViewportSize({ width: device.width, height: device.height })
+        await page.waitForFunction(() => Math.abs(document.querySelector('.v-application__wrap').getBoundingClientRect().bottom - innerHeight) <= 1)
+        await assertDock(page, bottomGap)
+        console.log(`PASS ${device.name} ${theme}: safe-area dock after scrolling, navigation and viewport changes`)
+        await context.close()
+      }
     }
   }
   assert.deepEqual(failures, [])
