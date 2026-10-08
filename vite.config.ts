@@ -16,6 +16,17 @@ export default defineConfig(({ command }) => {
     profileImageFinalMaxBytes: env.VITE_PROFILE_IMAGE_FINAL_MAX_BYTES,
     profileImageMaxDimension: env.VITE_PROFILE_IMAGE_MAX_DIMENSION,
     profileImageWebpQuality: env.VITE_PROFILE_IMAGE_WEBP_QUALITY,
+    gaMeasurementId: env.VITE_GA_MEASUREMENT_ID,
+    sentryDsn: env.VITE_SENTRY_DSN,
+    sentryEnvironment: env.VITE_SENTRY_ENVIRONMENT,
+    sentryTracesSampleRate: env.VITE_SENTRY_TRACES_SAMPLE_RATE,
+    newRelicAccountId: env.VITE_NEW_RELIC_ACCOUNT_ID,
+    newRelicApplicationId: env.VITE_NEW_RELIC_APPLICATION_ID,
+    newRelicAgentId: env.VITE_NEW_RELIC_AGENT_ID,
+    newRelicLicenseKey: env.VITE_NEW_RELIC_LICENSE_KEY,
+    newRelicBeacon: env.VITE_NEW_RELIC_BEACON,
+    newRelicErrorBeacon: env.VITE_NEW_RELIC_ERROR_BEACON,
+    newRelicTrustKey: env.VITE_NEW_RELIC_TRUST_KEY,
   })
   const upstream = env.API_PROXY_UPSTREAM
   if (!upstream || !/^https?:\/\//.test(upstream)) throw new Error('API_PROXY_UPSTREAM is required in the selected environment file.')

@@ -5,7 +5,6 @@ import { useRoute } from 'vue-router'
 
 import BrandLogo from '../components/ui/BrandLogo.vue'
 import PublicEntryActions from '../components/public/PublicEntryActions.vue'
-import { resolveApiUrl } from '../lib/apiUrl'
 import { useAppTheme } from '../composables/useAppTheme'
 
 const isMenuOpen = ref(false)
@@ -14,7 +13,6 @@ const { smAndDown } = useDisplay()
 const hasActionDock = computed(() => smAndDown.value && route.name === 'home')
 const { isDark, initializeTheme, toggleTheme } = useAppTheme()
 initializeTheme()
-const apiDocsUrl = resolveApiUrl('/docs')
 
 function closeMenu(): void {
   isMenuOpen.value = false
@@ -62,7 +60,6 @@ function handleMenuToggle(): void {
             <RouterLink to="/privacy">Privacy Policy</RouterLink>
             <RouterLink to="/terms">Terms of Service</RouterLink>
             <RouterLink to="/security">Security Statement</RouterLink>
-            <a :href="apiDocsUrl" target="_blank" rel="noopener noreferrer">Developer API Docs <span class="site-footer__external" aria-label="opens in a new tab">↗</span></a>
           </nav>
         </div>
         <div class="site-footer__bottom"><span>© {{ new Date().getFullYear() }} Plug &amp; Nudge</span><span>Private by design. In control by default.</span></div>

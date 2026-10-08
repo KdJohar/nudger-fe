@@ -59,3 +59,13 @@ test('SPA route metadata includes indexable public pages and private noindex pag
   assert.match(router, /description: 'Intentional notifications for your lock screen\./)
   assert.match(router, /description: 'Send useful updates to subscribers/)
 })
+
+test('public legal pages contain the privacy promise and the footer omits API docs', () => {
+  const legal = read('src/views/PublicInfoView.vue')
+  const footer = read('src/layouts/PublicLayout.vue')
+  for (const path of ['/privacy', '/security', '/terms']) assert.match(read('src/router/index.ts'), new RegExp(`path: '${path.slice(1)}'`), path)
+  assert.match(legal, /PII is never shared with channel creators, other subscribers, or advertisers/)
+  assert.match(legal, /We do not sell PII/)
+  assert.doesNotMatch(legal, /Full document coming soon/)
+  assert.doesNotMatch(footer, /Developer API Docs/)
+})
