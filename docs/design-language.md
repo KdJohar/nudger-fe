@@ -79,8 +79,10 @@ production build. Runtime framework styling is intentionally outside that source
   and code. Do not add a new web-font dependency for a local styling edit.
 - Use the existing 4/8-point spacing rhythm, `--app-radius` (20px), subtle borders,
   and soft shadows. Round pill tabs/navigation including hover and selected areas.
-- Standard filter pill: 52px tall, max 264px wide, at least 48px tap targets. Keep
-  labels readable; never achieve compactness by shrinking hit areas below 48px.
+- Desktop filter pill: 52px tall, max 264px wide. Mobile matches Nudgee with a
+  32px visual track, 30px selected pill and 11px labels inside 48px tabs.
+  Never shrink hit areas below 48px.
+  Noninteractive mobile status chips are 24px tall with 11px labels.
 - Mobile bottom nav: 56px normally, 52px compact during scroll, subtle glass surface,
   16px side insets and 8px bottom gap plus safe area. Shrink without sliding it away.
 - Use short purposeful transitions and respect reduced motion/forced colours.
@@ -89,14 +91,23 @@ production build. Runtime framework styling is intentionally outside that source
 ## Shared structure and feedback
 
 Desktop: sidebar and main content; no app-bar header. Sidebar keeps the theme
-shortcut. Mobile: no sidebar/drawer, no app-bar theme/profile controls; centred
-logo bar scrolls away. Bottom nav is Audience, Nudges, API token (platform only),
+shortcut. Mobile starts below the safe area without a sidebar/drawer or top app
+bar. Bottom nav is Audience, Nudges, API token (platform only),
 then Profile avatar. Appearance settings are Light/Dark/System, with System default.
 
-Every workspace route reuses AppShell → PageLayout → PageHeader + VWindow. Filters
-remain sticky while the logo/header scrolls. Windows are transparent and borderless;
+Every workspace route reuses AppShell → PageLayout → PageHeader + VWindow. Desktop
+keeps document scrolling and sticky filters. Mobile pins shared controls and
+filters, and scrolls only the content window. Audience and Nudges visually hide
+the heading/description row, retaining a single accessible h1. Other workspace
+headings remain visible. Windows are transparent and borderless;
 cards own their borders. History uses one card per row on mobile and desktop.
 Do not rebuild the page frame when filters change or requests fail.
+See [mobile design context](mobile-design-context.md) for viewport and gesture rules.
+
+Login uses Nudgee's neutral welcome composition with the supplied logo, a coral
+ampersand, restrained preview cards and a 48px indigo Google sign-in pill. Its
+dynamic viewport frame stays still; short screens reduce decoration. No network
+prompt or appearance toggle is rendered on this surface.
 
 All operation success/error feedback uses the one shared SnackbarHost. Top-right,
 20 seconds, manual close, timer paused on hover/keyboard focus, one queued message

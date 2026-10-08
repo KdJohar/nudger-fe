@@ -46,6 +46,7 @@ files. See [API client conventions](docs/api-client.md) when adding requests.
 - `npm run test:audience` — audience/chart state and geometry regression tests
 - `npm run test:styles` — enforce external CSS, SVG presentation, and documented brand/theme values (also runs before build)
 - `npm run test:browser:styles` — verify chart styling from CSS, keyboard interaction and responsive geometry using mocked APIs
+- `npm run test:browser:mobile` — verify the bounded mobile shell, compact filters/chips, internal scroll, sheet focus, deep links and desktop regression using mocked APIs
 - `npm run test:snackbar` / `npm run test:browser:snackbar` — shared feedback lifecycle, top-right placement, 20-second timeout, actions and modal focus
 
 ## Structure
@@ -53,6 +54,8 @@ files. See [API client conventions](docs/api-client.md) when adding requests.
 Start with [AGENTS.md](AGENTS.md), [app context](docs/app-context.md),
 [design language](docs/design-language.md), [shared Vuetify component context](docs/vuetify-component-context.md),
 and [Vue architecture](docs/vue-architecture.md).
+Read [mobile design context](docs/mobile-design-context.md) for the fixed mobile
+frame, safe areas, density and keyboard/gesture verification contract.
 The app context owns product scope, the design guide owns visual/CSS rules, and the
 architecture guide owns component structure. All five workspace routes share one
 persistent header and content window; only the routed body changes.

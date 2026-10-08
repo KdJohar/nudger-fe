@@ -141,13 +141,12 @@ test('workspace bodies cannot reintroduce page headers, tab bars or content wind
   assert.match(manager, /v-if="mode !== 'profile'" class="section-header/)
 })
 
-test('mobile bar uses document scrolling and filters reserve no fixed-header gap', () => {
+test('mobile shell has no app bar and the shared window owns content scrolling', () => {
   const shell = readFileSync(new URL('../src/layouts/AppShell.vue', import.meta.url), 'utf8')
   const bars = shell.match(/<v-app-bar(?=[\s>])[^>]*>/g) ?? []
-  assert.equal(bars.length, 1)
-  assert.match(bars[0], /v-if="smAndDown"/)
-  assert.match(bars[0], /\sabsolute(?:\s|>)/)
-  assert.doesNotMatch(bars[0], /scroll-behavior/)
+  assert.equal(bars.length, 0)
+  assert.match(shell, /@content-scroll="handleContentScroll"/)
+  assert.doesNotMatch(shell, /window\.addEventListener\('scroll'/)
   const styles = readFileSync(new URL('../src/styles/main.css', import.meta.url), 'utf8')
   const offsets = [...styles.matchAll(/--page-sticky-offset:\s*([^;]+);/g)].map(match => match[1])
   assert.deepEqual(offsets, ['0px'])

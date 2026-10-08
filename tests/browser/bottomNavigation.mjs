@@ -51,7 +51,7 @@ async function setup(width, theme, touch = false, options = {}) {
     await route.fulfill({ contentType: 'application/json', body: JSON.stringify(body) })
   })
   await page.goto(`${baseUrl}/audience`)
-  await page.locator('.page-layout .header__title').waitFor()
+  await page.locator('.page-layout .header__title').waitFor({ state: 'attached' })
   return { page, context, controls }
 }
 

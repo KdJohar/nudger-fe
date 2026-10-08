@@ -4,10 +4,12 @@ export const WORKSPACE_PAGES: Record<string, PageDefinition> = {
   audience: {
     title: 'Your audience',
     description: 'See who’s joining and who you can reach.',
+    mobileHeadingHidden: true,
   },
   nudges: {
     title: 'Your nudges',
     description: 'Review the updates you’ve sent.',
+    mobileHeadingHidden: true,
   },
   compose: {
     title: 'Send a nudge',

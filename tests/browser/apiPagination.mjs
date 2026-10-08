@@ -75,13 +75,17 @@ try {
     assert.equal(await page.locator('.page-layout .header').evaluate((el, original) => el === original, header), true)
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
     if (width !== 375) {
-      await page.evaluate(() => scrollTo(0, 500))
+      await page.evaluate(() => {
+        if (document.querySelector('.app-shell--mobile')) document.querySelector('.page-layout__window').scrollTop = 500
+        else scrollTo(0, 500)
+      })
       const transactional = page.getByRole('tab', { name: 'Transactional' })
       await transactional.focus()
       await page.keyboard.press('Enter')
       await page.waitForFunction(() => document.querySelectorAll('.nudge-card').length === 20)
       assert.equal(calls.at(-1).searchParams.get('nudge_type'), 'transactional')
-      assert.ok(await page.evaluate(() => scrollY > 100), 'filter changes retain a scrolled document')
+      assert.ok(await page.evaluate(() => document.querySelector('.app-shell--mobile')
+        ? document.querySelector('.page-layout__window').scrollTop > 100 : scrollY > 100), 'filter changes retain the active scroll owner offset')
     }
     console.log(`PASS ${width}px ${theme}: absolute cursor, retained cards, retry, deduplication, creator restrictions and stable layout`)
     await context.close()

@@ -25,6 +25,7 @@ export interface PageAction {
 export interface PageDefinition {
   title: string
   description: string
+  mobileHeadingHidden?: boolean
   action?: PageAction
   badge?: PageBadge
 }

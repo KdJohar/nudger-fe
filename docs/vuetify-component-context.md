@@ -99,7 +99,7 @@ custom sizing and decorative styling belong in CSS.
 | --- | --- |
 | `VApp`, `VMain`, `VContainer` | App layout and main content; the workspace shell owns them |
 | `VNavigationDrawer`, `VList`, `VListItem`, `VDivider` | Desktop sidebar and route links; drawer width is 272px |
-| `VAppBar`, `VAppBarTitle` | Mobile shell bar; scrolls with the document, rather than staying fixed |
+| `VAppBar`, `VAppBarTitle` | Not rendered in the workspace; mobile controls start below the safe area |
 | `VBottomNavigation`, `VBtn` | Mobile pill navigation, with rounded hover/selected regions |
 | `VTabs`, `VTab` | `PillTabs` filtering; icons optional, `slider-transition="grow"` |
 | `VWindow`, `VWindowItem` | Single persistent content region owned by `PageLayout` |
@@ -127,7 +127,7 @@ rebuilding their markup. Feature containers own fetching, permissions and workfl
 | --- | --- |
 | `PageLayout.vue` | Persistent shared header, panel IDs, one content window and routed slot |
 | `PageHeader.vue` | Same title/description/metadata/actions/filter structure on every workspace route |
-| `PillTabs.vue` | Typed `modelValue`, items, label and panel/tab IDs; emits selection and does not fetch or render a window |
+| `PillTabs.vue` | Typed `modelValue`, items, label and panel/tab IDs; optional `mobileCompact` presentation; emits selection and does not fetch or render a window |
 | `BrandLogo.vue` | Supplied `public/nudge.png`, shared small/medium/large presentation and alt text |
 | `Avatar.vue` | Transparent merchant image with broken/missing-image user-icon fallback; enclosing action owns its accessible name |
 | `AvatarPicker.vue` | Image preview, accessible upload/change action, busy state and identity label slot |
@@ -158,12 +158,12 @@ classes such as `v-slide-group__container`.
 
 | Pattern | Current dimensions / behaviour |
 | --- | --- |
-| Filter pills | 52px tall, maximum 264px wide, 999px rounding; 48px minimum tab targets, 4px internal gap, 13px labels, flat surface |
-| Sticky filter row | Sticks at viewport top; title and logo bar scroll away; selection updates data without jumping scroll |
+| Filter pills | Desktop: 52px tall, 13px labels. Mobile: Nudgee-style 32px visual track, 30px selection, 48px targets and 11px labels. Maximum 264px wide with pill rounding |
+| Filter row | Desktop sticks while the title scrolls. Mobile stays above the scrolling window without a top logo bar; Audience/Nudges headings are visually hidden. Selection retains the scroll owner offset |
 | Mobile bottom navigation | 56px tall, 52px while compact; 16px side insets, 8px bottom gap plus safe area; fixed width while shrinking |
 | Bottom-nav glass | Theme surface at 0.76 alpha, 20px blur, 135% saturation; opaque fallback for unavailable blur/reduced transparency |
 | Navigation breakpoint | Share Vuetify `smAndDown` in shell and FAB; mobile navigation below 960px, sidebar from 960px |
-| Main frame | Outer container maximum 1600px; shared page maximum 1360px; existing CSS owns padding and bottom-nav clearance |
+| Main frame | Outer container maximum 1600px; shared page maximum 1360px; mobile uses a bounded 100dvh shell with one content scroll owner and safe-area/nav clearance |
 | Cards | 20px base radius, thin neutral border; compact 16–20px padding and 24px where space permits |
 | History | One card per row in mobile and desktop; footer delivery/timing align to opposite sides |
 | Audience metrics | Two columns on narrow screens; four at the existing 1200px layout breakpoint |
@@ -174,6 +174,8 @@ avatar. No mobile sidebar or theme shortcut; appearance and logout live in Profi
 Desktop keeps sidebar navigation and its theme shortcut with no app bar.
 Share feature state between responsive presentations. Do not copy an entire page
 or introduce a second breakpoint for the same navigation behaviour.
+See [mobile design context](mobile-design-context.md) for scroll, gestures,
+compact status chips, forms and real-device verification.
 
 Typography uses `Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
 "Segoe UI", sans-serif`; no added font download is required. Body starts at 15px;

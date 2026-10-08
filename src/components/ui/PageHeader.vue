@@ -16,7 +16,7 @@ const badge = computed(() => props.presentation.badge ?? props.definition.badge)
 
 <template>
   <header class="header">
-    <div class="header__content">
+    <div class="header__content" :class="{ 'header__content--mobile-hidden': definition.mobileHeadingHidden }">
       <div class="header__copy">
         <h1 :id="headingId" class="header__title">{{ definition.title }}</h1>
         <p class="header__description">{{ definition.description }}</p>
@@ -47,6 +47,7 @@ const badge = computed(() => props.presentation.badge ?? props.definition.badge)
     </div>
     <div class="header__filters" :hidden="!presentation.filter">
       <PillTabs
+        mobile-compact
         :model-value="presentation.filter?.modelValue ?? ''"
         :items="presentation.filter?.items ?? []"
         :label="presentation.filter?.label ?? 'Page filters'"
