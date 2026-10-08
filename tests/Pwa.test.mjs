@@ -9,7 +9,7 @@ const read = path => readFileSync(resolve(root, path), 'utf8')
 test('PWA manifest has installable iOS and Android metadata', () => {
   const manifest = JSON.parse(read('public/manifest.webmanifest'))
   assert.equal(manifest.name, 'Plug & Nudge')
-  assert.equal(manifest.short_name, 'Nudge')
+  assert.equal(manifest.short_name, 'Nudger')
   assert.equal(manifest.start_url, '/')
   assert.equal(manifest.scope, '/')
   assert.equal(manifest.display, 'standalone')
@@ -23,6 +23,8 @@ test('PWA manifest has installable iOS and Android metadata', () => {
 
 test('HTML entrypoint exposes PWA and static SEO metadata', () => {
   const html = read('index.html')
+  assert.match(html, /name="application-name" content="Nudger"/)
+  assert.match(html, /name="apple-mobile-web-app-title" content="Nudger"/)
   for (const expected of [
     'rel="manifest" href="/manifest.webmanifest"',
     'name="apple-mobile-web-app-capable" content="yes"',

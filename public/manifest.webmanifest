@@ -1,7 +1,7 @@
 {
   "id": "/",
   "name": "Plug & Nudge",
-  "short_name": "Nudge",
+  "short_name": "Nudger",
   "description": "Intentional notifications for your lock screen, without unwanted noise.",
   "start_url": "/",
   "scope": "/",
