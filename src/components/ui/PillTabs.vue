@@ -7,6 +7,7 @@ const props = defineProps<{
   label: string
   tabsId: string
   panelId: string
+  mobileCompact?: boolean
 }>()
 const emit = defineEmits<{ 'update:modelValue': [value: Value] }>()
 
@@ -22,6 +23,7 @@ function handleSelection(value: unknown): void {
     :model-value="modelValue"
     :aria-label="label"
     class="ui-pill-tabs"
+    :class="{ 'ui-pill-tabs--mobile-compact': mobileCompact }"
     grow
     inset
     inset-padding="4"

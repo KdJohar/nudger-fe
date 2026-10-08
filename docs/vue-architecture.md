@@ -14,7 +14,7 @@ Reuse the whole structure, not merely the visual appearance. Every authenticated
 
 ```text
 AppShell
-  Sidebar / mobile app bar
+  Desktop sidebar (no mobile app bar)
   Main > Container
     PageLayout                         persistent
       PageHeader <header class="header">
@@ -32,7 +32,7 @@ AppShell
   Mobile bottom navigation
 ```
 
-The desktop app bar remains removed. This is a shared **page header inside main content**, not a replacement global navigation bar.
+The workspace does not render an app bar. Its shared page header lives inside main content.
 
 ## File ownership
 
@@ -92,9 +92,22 @@ see the explicit boundaries in [design language](design-language.md).
 
 Use `header` and `header__*` consistently, scoped beneath `.page-layout` in main.css. Header structure never depends on the route.
 
-The semantic header uses `display: contents` so its filter row can remain sticky within the full page rather than being constrained by a short header box. The heading scrolls normally; filters stick at the viewport top on both mobile and desktop, without a reserved fixed-header gap.
+The semantic header uses `display: contents`. Desktop retains normal document
+scrolling with sticky filters. Below the shared 960px breakpoint, PageLayout is a
+bounded flex column: the shared controls and filters stay above its one scrolling
+`page-layout__window`. Keep its generated container mounted across routes.
 
-The mobile logo bar uses Vuetify's absolute layout mode: its initial space remains reserved, but it scrolls away with the document and returns only when the user scrolls back to it. Do not substitute hide-on-scroll behavior that reappears over the sticky filters. Desktop has no app bar; mobile bottom navigation remains fixed. Verify scroll-down, scroll-up, route changes, and breakpoint resizing in the browser when changing this behavior.
+Mobile has no top logo/app bar or reserved 64px offset. The main container owns
+top/side safe-area padding. `PageDefinition.mobileHeadingHidden` selects an
+accessible, visually hidden heading row on Audience/Nudges through shared CSS;
+the same PageHeader/h1 remains mounted across routes and desktop keeps its title.
+`PillTabs.mobileCompact` selects the Nudgee-style compact mobile presentation.
+Mobile workspace document scrolling is locked while `app-shell--mobile` is
+present; public/setup layouts and desktop retain normal document behavior.
+Login has its own bounded welcome surface. Bottom navigation compacts from `contentScroll` events emitted
+by PageLayout, not window scroll. Changing pageKey resets the window to the top;
+filter/data refreshes do not. Route/breakpoint changes clear the compact state and
+its timer. See [mobile design context](mobile-design-context.md).
 
 Mobile navigation uses the same `smAndDown` breakpoint everywhere. The sidebar is
 mounted only on desktop; mobile has no drawer, More action or app-bar theme button.

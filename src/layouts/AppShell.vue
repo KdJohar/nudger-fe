@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 import { useRoute, useRouter } from 'vue-router'
 import { NAVIGATION_ITEMS } from '../data/navigation'
@@ -29,8 +29,8 @@ let scrollIdleTimer: number | undefined
 
 initializeTheme()
 
-function handleWindowScroll(): void {
-  const currentScrollTop = Math.max(window.scrollY, 0)
+function handleContentScroll(event: Event): void {
+  const currentScrollTop = Math.max((event.currentTarget as HTMLElement).scrollTop, 0)
   const scrollDelta = currentScrollTop - previousScrollTop
   previousScrollTop = currentScrollTop
 
@@ -49,13 +49,13 @@ function handleWindowScroll(): void {
   }, 500)
 }
 
-onMounted(() => {
-  previousScrollTop = window.scrollY
-  window.addEventListener('scroll', handleWindowScroll, { passive: true })
+watch([() => route.path, smAndDown], () => {
+  previousScrollTop = 0
+  isBottomNavigationCompact.value = false
+  if (scrollIdleTimer !== undefined) window.clearTimeout(scrollIdleTimer)
 })
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', handleWindowScroll)
   if (scrollIdleTimer !== undefined) window.clearTimeout(scrollIdleTimer)
 })
 
@@ -66,7 +66,7 @@ async function signOut(): Promise<void> {
 </script>
 
 <template>
-  <v-app>
+  <v-app class="app-shell" :class="{ 'app-shell--mobile': smAndDown }">
     <a class="app-shell__skip-link" href="#main-content">Skip to main content</a>
     <v-navigation-drawer v-if="!smAndDown" :model-value="true" class="app-drawer" permanent width="272">
       <div class="app-drawer__brand">
@@ -98,22 +98,15 @@ async function signOut(): Promise<void> {
       </template>
     </v-navigation-drawer>
 
-    <!-- Absolute layout mode preserves header space but lets the bar scroll with the document. -->
-    <v-app-bar v-if="smAndDown" class="app-bar" absolute flat>
-      <v-app-bar-title class="app-bar__title">{{ pageTitle }}</v-app-bar-title>
-      <div class="app-bar__mobile-brand" aria-label="Plug&Nudge"><BrandLogo alt="Plug&Nudge logo" size="small" /></div>
-      <div class="app-bar__actions"><div class="app-bar__context"><span class="app-bar__context-dot" /> Live workspace</div></div>
-    </v-app-bar>
-
     <v-main id="main-content" class="app-main">
       <v-container class="app-main__container" fluid>
-        <PageLayout :page-key="String(route.name ?? route.path)" :definition="pageDefinition">
+        <PageLayout :page-key="String(route.name ?? route.path)" :definition="pageDefinition" @content-scroll="handleContentScroll">
           <router-view v-slot="{ Component }"><Suspense><component :is="Component" /><template #fallback><div class="app-loading" role="status"><v-progress-circular color="primary" indeterminate /><span>Loading workspace…</span></div></template></Suspense></router-view>
         </PageLayout>
       </v-container>
     </v-main>
 
-    <v-bottom-navigation v-if="smAndDown" class="app-bottom-nav" :class="{ 'app-bottom-nav--compact': isBottomNavigationCompact }" grow aria-label="Workspace navigation">
+    <v-bottom-navigation v-if="smAndDown" class="app-bottom-nav" :class="{ 'app-bottom-nav--compact': isBottomNavigationCompact }" absolute grow aria-label="Workspace navigation">
       <v-btn v-for="item in mobileNavigationItems" :key="item.to" :to="item.to" :value="item.to"
         :class="{ 'app-bottom-nav__avatar': item.mobileVariant === 'avatar' }" :aria-label="item.mobileLabel ?? item.label">
         <Avatar v-if="item.mobileVariant === 'avatar'" :src="state.merchantProfile?.profile_image_url" />

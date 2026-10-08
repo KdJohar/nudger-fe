@@ -164,7 +164,7 @@ button, input, textarea, select { font: inherit; }
 .brand-logo__image { display: block; width: 100%; height: 100%; object-fit: contain; }
 .app-drawer__brand-name { color: rgb(var(--v-theme-on-surface)); font-size: 17px; font-weight: 750; letter-spacing: -0.03em; }
 .app-drawer__brand-name span, .auth-brand > span > span { color: var(--app-primary); }
-.app-drawer__brand-caption, .app-drawer__section-label, .section-header__eyebrow, .surface-card__eyebrow, .auth-card__eyebrow, .profile-card__eyebrow, .dashboard-card__eyebrow { color: rgb(var(--v-theme-on-surface-variant)); font-size: 11px; font-weight: 750; letter-spacing: 0.1em; line-height: 1.2; text-transform: uppercase; }
+.app-drawer__brand-caption, .app-drawer__section-label, .section-header__eyebrow, .surface-card__eyebrow, .auth-card__eyebrow, .profile-card__eyebrow, .dashboard-card__eyebrow, .ui-eyebrow { color: rgb(var(--v-theme-on-surface-variant)); font-size: 11px; font-weight: 750; letter-spacing: 0.1em; line-height: 1.2; text-transform: uppercase; }
 .app-drawer__brand-caption { margin-top: 2px; font-size: 10px; letter-spacing: 0.08em; }
 .app-drawer__divider { margin: 0 20px 22px; }
 .app-drawer__section-label { padding: 0 22px 8px; font-size: 10px; }
@@ -983,6 +983,124 @@ button, input, textarea, select { font: inherit; }
   .auth-visual__copy p { font-size: 13px; }
   .auth-panel { padding: 18px 15px 30px; }
   .auth-card { margin: 14px auto; padding: 26px 20px; }
+}
+
+/* The accepted workspace design stays shared; only mobile owns a fixed frame.
+   Status chips are compact visuals, while interactive filters retain 48px targets. */
+@media (max-width: 959.98px) {
+  html:has(.app-shell--mobile), body:has(.app-shell--mobile), #app:has(.app-shell--mobile) { height: 100%; overflow: hidden; overscroll-behavior: none; }
+  body:has(.app-shell--mobile) { position: relative; height: 100vh; height: 100dvh; min-height: 0; width: 100%; }
+  .app-shell--mobile, .app-shell--mobile > .v-application__wrap { height: 100vh; height: 100dvh; min-height: 0; max-height: 100vh; max-height: 100dvh; overflow: hidden; touch-action: pan-y; }
+  .app-shell--mobile .app-main { display: flex; height: 100%; min-height: 0; overflow: hidden; padding: 0 !important; }
+  .app-shell--mobile .app-main__container { display: flex; height: 100%; min-height: 0; padding: calc(8px + env(safe-area-inset-top, 0px)) calc(15px + env(safe-area-inset-right, 0px)) 0 calc(15px + env(safe-area-inset-left, 0px)); }
+  .app-shell--mobile .page-layout { display: flex; flex: 1; flex-direction: column; height: 100%; min-height: 0; overflow: hidden; }
+  .app-shell--mobile .header__content { flex: 0 0 auto; gap: 6px 12px; min-height: 0; margin-bottom: 8px; }
+  /* Keep the same named heading for assistive technology without a visual row. */
+  .app-shell--mobile .header__content--mobile-hidden { position: absolute; inset-block-start: 0; inset-inline-start: 0; width: 1px; height: 1px; min-height: 0; margin: 0; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .app-shell--mobile .header__copy { flex-basis: 180px; }
+  .app-shell--mobile .header__title { font-size: 24px; }
+  .app-shell--mobile .header__description { margin-top: 4px; font-size: 12px; }
+  .app-shell--mobile .header__metadata { display: none; }
+  .app-shell--mobile .header__actions { gap: 6px; }
+  .app-shell--mobile .header__filters { position: static; flex: 0 0 auto; margin-bottom: 8px; padding-block: 0; }
+  .app-shell--mobile .page-layout__window.v-window { flex: 1 1 0; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior-x: none; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+  .app-shell--mobile .page-layout__window > .v-window__container { padding-block: 4px calc(104px + env(safe-area-inset-bottom, 0px)); }
+  .app-shell--mobile .page-layout__window:has(.nudges-view__fab) > .v-window__container { padding-block-end: calc(144px + env(safe-area-inset-bottom, 0px)); }
+  .app-shell--mobile .page-layout__window .v-window-item:focus-visible { outline-offset: -2px; }
+  .app-shell--mobile .app-bottom-nav { right: calc(16px + env(safe-area-inset-right, 0px)) !important; left: calc(16px + env(safe-area-inset-left, 0px)) !important; width: calc(100% - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)) !important; }
+  /* Anchor to the bounded app frame, avoiding iOS standalone fixed-body offsets. */
+  .app-shell--mobile .app-bottom-nav { position: absolute !important; top: auto; margin: 0; bottom: max(4px, calc(env(safe-area-inset-bottom, 0px) - 8px)) !important; }
+  .app-shell--mobile .nudges-view__fab.v-btn { right: calc(24px + env(safe-area-inset-right, 0px)); bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
+
+  .app-shell--mobile .ui-pill-tabs--mobile-compact.v-tabs { height: 48px; }
+  .app-shell--mobile .ui-pill-tabs--mobile-compact .v-slide-group__container { height: 48px; padding: 0; border: 0; border-radius: 0; background: transparent; }
+  .app-shell--mobile .ui-pill-tabs--mobile-compact .v-slide-group__content { position: relative; gap: 0; }
+  .app-shell--mobile .ui-pill-tabs--mobile-compact .v-slide-group__content::before { position: absolute; inset: 8px 0; border: 1px solid var(--app-border); border-radius: 999px; background: rgba(var(--v-theme-on-surface), 0.025); content: ""; pointer-events: none; }
+  .app-shell--mobile .ui-pill-tabs--mobile-compact .v-tab.v-btn { flex: 1 1 auto; height: 48px; padding: 4px; font-size: 11px; font-weight: 650; }
+  .app-shell--mobile .ui-pill-tabs--mobile-compact .v-tab .v-icon--start { margin-inline-end: 4px; font-size: 16px; }
+  .app-shell--mobile .ui-pill-tabs--mobile-compact .v-tab__slider { inset: 9px 2px; }
+  .app-shell--mobile .ui-pill-tabs--mobile-compact .v-tab[aria-selected="true"]:focus-visible { outline-color: var(--ui-pill-focus); }
+  .app-shell--mobile .ui-pill-tabs--mobile-compact .v-tab:not([aria-selected="true"]):hover { background: transparent; }
+  .app-shell--mobile .ui-pill-tabs--mobile-compact .v-tab:not([aria-selected="true"]):hover::before { position: absolute; inset: 9px 2px; border-radius: 999px; background: rgba(var(--v-theme-secondary), 0.06); content: ""; }
+  .app-shell--mobile :is(.header__actions, .nudge-card, .ui-detail-card) .v-chip:not(.v-chip--link) { height: 24px; padding-inline: 8px; font-size: 11px; }
+  .app-shell--mobile :is(.header__actions, .nudge-card, .ui-detail-card) .v-chip:not(.v-chip--link) .v-icon { font-size: 14px; }
+  .app-shell--mobile .ui-insights__metrics { gap: 10px; }
+  .app-shell--mobile .ui-stat { padding: 14px 12px; }
+  .app-shell--mobile .ui-stat__heading { gap: 6px; }
+  .app-shell--mobile .ui-stat__value { margin-top: 8px; font-size: 26px; }
+  .app-shell--mobile .ui-insights__grid { gap: 12px; margin-top: 16px; }
+  .app-shell--mobile .ui-insights__support, .app-shell--mobile .ui-content-stack { gap: 12px; }
+  .app-shell--mobile .ui-panel, .app-shell--mobile .ui-detail-card, .app-shell--mobile .ui-editor-panel { padding: 16px; }
+  .app-shell--mobile .ui-detail-card__body { gap: 16px; margin-top: 16px; }
+  .app-shell--mobile .ui-detail-card__section { margin-top: 16px; }
+  .app-shell--mobile .ui-link-list { gap: 8px; margin-top: 16px; }
+  .app-shell--mobile .ui-link-list__row { min-height: 56px; gap: 8px; padding: 10px; }
+  .app-shell--mobile :is(input, textarea, select), .profile-app :is(input, textarea, select), .ui-sheet :is(input, textarea, select) { font-size: 16px; }
+  .ui-sheet__surface { padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px); }
+  .auth-main, .auth-callback { min-height: 100vh; min-height: 100dvh; }
+  .auth-layout { min-height: calc(100vh - 52px); min-height: calc(100dvh - 52px); }
+  .auth-panel { padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px)); }
+  .auth-callback { padding: calc(24px + env(safe-area-inset-top, 0px)) calc(24px + env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) calc(24px + env(safe-area-inset-left, 0px)); }
+}
+@media (max-width: 720px) {
+  .auth-layout { min-height: 100vh; min-height: 100dvh; }
+  .auth-visual { padding: calc(26px + env(safe-area-inset-top, 0px)) calc(22px + env(safe-area-inset-right, 0px)) 26px calc(22px + env(safe-area-inset-left, 0px)); }
+  .auth-panel { padding-inline: calc(15px + env(safe-area-inset-left, 0px)) calc(15px + env(safe-area-inset-right, 0px)); }
+  .profile-main { padding: calc(26px + env(safe-area-inset-top, 0px)) calc(15px + env(safe-area-inset-right, 0px)) calc(40px + env(safe-area-inset-bottom, 0px)) calc(15px + env(safe-area-inset-left, 0px)); }
+}
+@media (max-width: 959.98px) and (max-height: 500px) {
+  .app-shell--mobile .app-main__container { padding-top: calc(8px + env(safe-area-inset-top, 0px)); }
+  .app-shell--mobile .header__content { margin-bottom: 4px; }
+  .app-shell--mobile .header__description { display: none; }
+  .app-shell--mobile .header__filters { margin-bottom: 4px; }
+}
+
+/* Shared Nudge welcome language: neutral surface, coral brand mark and an
+   indigo pill action. This is the login's single mobile-first composition. */
+html:has(.ui-welcome-app), body:has(.ui-welcome-app), #app:has(.ui-welcome-app) { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; overscroll-behavior-y: none; }
+body:has(.ui-welcome-app) > .ui-visually-hidden { position: fixed; }
+.ui-welcome-app > .v-application__wrap { height: 100vh; height: 100dvh; min-height: 0; }
+.ui-welcome { display: flex; width: 100%; max-width: 440px; height: 100%; min-height: 0; flex-direction: column; margin: auto; overflow: hidden; padding: calc(20px + env(safe-area-inset-top, 0px)) 28px calc(24px + env(safe-area-inset-bottom, 0px)); }
+.ui-welcome__visual { display: flex; min-height: 0; flex: 1 1 0; flex-direction: column; justify-content: center; gap: 10px; padding-block: clamp(16px, 4dvh, 40px); }
+.ui-welcome__ring { display: flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: 10px; margin-block-end: clamp(16px, 4dvh, 32px); }
+.ui-welcome__wordmark { color: rgb(var(--v-theme-on-surface)); font-size: 24px; font-weight: 780; letter-spacing: -0.04em; white-space: nowrap; }
+.ui-welcome__brand-mark { color: var(--app-primary); }
+.ui-welcome__note { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--app-border); border-radius: 18px; background: rgb(var(--v-theme-surface)); box-shadow: var(--app-shadow); }
+.ui-welcome__note:nth-child(3) { margin-inline-start: 20px; }
+.ui-welcome__note > .v-icon { color: var(--app-secondary); }
+.v-theme--dark .ui-welcome__note > .v-icon { color: #b5aeff; }
+.ui-welcome__note > div { display: grid; gap: 4px; }
+.ui-welcome__note strong { font-size: 12px; }
+.ui-welcome__note span { color: rgb(var(--v-theme-on-surface-variant)); font-size: 11px; }
+.ui-welcome__copy h1 { margin: 12px 0; color: rgb(var(--v-theme-on-surface)); font-size: clamp(30px, 4.8dvh, 38px); font-weight: 780; letter-spacing: -0.065em; line-height: 1.1; }
+.ui-welcome__copy h1 span { color: var(--app-primary); }
+.ui-welcome__copy p { margin: 0; color: rgb(var(--v-theme-on-surface-variant)); font-size: 15px; line-height: 1.65; }
+.ui-welcome__actions { flex: 0 0 auto; padding-block-start: 24px; }
+.ui-welcome__actions .v-btn { min-height: 48px; box-shadow: none; }
+.ui-welcome__actions p { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 12px 0 0; color: rgb(var(--v-theme-on-surface-variant)); font-size: 12px; }
+
+@media (max-height: 650px) {
+  .ui-welcome { padding-block-start: calc(12px + env(safe-area-inset-top, 0px)); padding-block-end: calc(12px + env(safe-area-inset-bottom, 0px)); }
+  .ui-welcome__visual { gap: 8px; padding-block: 12px; }
+  .ui-welcome__ring { margin-block-end: 16px; }
+  .ui-welcome__note { padding: 12px; }
+  .ui-welcome__copy h1 { margin-block: 8px; }
+  .ui-welcome__copy p { font-size: 14px; line-height: 1.5; }
+  .ui-welcome__actions { padding-block-start: 20px; }
+}
+
+@media (max-height: 500px) {
+  .ui-welcome__note { display: none; }
+  .ui-welcome__ring { margin-block-end: 0; }
+  .ui-welcome__visual { padding-block: 8px 16px; }
+  .ui-welcome__actions { padding-block-start: 16px; }
+}
+
+@media (max-height: 380px) {
+  .ui-welcome__visual { padding-block: 4px 8px; }
+  .ui-welcome__copy h1 { margin-block: 4px; font-size: 28px; }
+  .ui-welcome__actions { padding-block-start: 12px; }
+  .ui-welcome__actions p { margin-block-start: 8px; }
 }
 
 /* Public site: all presentation rules live here so templates stay declarative. */

@@ -4,6 +4,7 @@ Read `docs/app-context.md`, `docs/design-language.md`, `docs/vuetify-component-c
 before changing Vue layouts, routes, components, or CSS. Read `docs/api-client.md`
 before changing frontend requests. Update the owning context document when an
 approved product/design rule changes; keep README as the entry point.
+Read `docs/mobile-design-context.md` before mobile shell, density or gesture work.
 
 ## Scope and stack
 
