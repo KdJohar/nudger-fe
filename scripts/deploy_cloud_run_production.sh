@@ -19,7 +19,7 @@ BACKEND_SERVICE="${CLOUD_RUN_FE_BACKEND_SERVICE:-nudger-fe-backend}"
 URL_MAP="${CLOUD_RUN_URL_MAP:-nudge-api-url-map}"
 HTTPS_PROXY="${CLOUD_RUN_HTTPS_PROXY:-nudge-api-https-proxy}"
 API_CERTIFICATE="${CLOUD_RUN_API_CERTIFICATE:-nudge-api-managed-cert}"
-FE_CERTIFICATE="${CLOUD_RUN_FE_CERTIFICATE:-nudger-fe-managed-cert-v2}"
+FE_CERTIFICATE="${CLOUD_RUN_FE_CERTIFICATE:-nudger-fe-managed-cert}"
 FE_PATH_MATCHER="${CLOUD_RUN_FE_PATH_MATCHER:-nudger-fe-hosts}"
 FE_DOMAIN="${CLOUD_RUN_FE_DOMAIN:-plugandnudge.com}"
 
