@@ -4,9 +4,16 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import { vuetify } from './plugins/vuetify'
+import { getNudgerConfig } from './config'
+import { initializeProductionTelemetry } from './lib/productionTelemetry'
 import './styles/main.css'
 
-createApp(App)
+const app = createApp(App)
+const runtimeConfig = getNudgerConfig()
+
+initializeProductionTelemetry(app, router, runtimeConfig)
+
+app
   .use(createPinia())
   .use(router)
   .use(vuetify)

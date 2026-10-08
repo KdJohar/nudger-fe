@@ -4,6 +4,17 @@ export interface NudgerRuntimeConfig {
   profileImageFinalMaxBytes: number
   profileImageMaxDimension: number
   profileImageWebpQuality: number
+  gaMeasurementId: string
+  sentryDsn: string
+  sentryEnvironment: string
+  sentryTracesSampleRate: number
+  newRelicAccountId: string
+  newRelicApplicationId: string
+  newRelicAgentId: string
+  newRelicLicenseKey: string
+  newRelicBeacon: string
+  newRelicErrorBeacon: string
+  newRelicTrustKey: string
 }
 
 export function validateRuntimeConfig(input: Record<string, unknown> = {}): NudgerRuntimeConfig {
@@ -22,6 +33,18 @@ export function validateRuntimeConfig(input: Record<string, unknown> = {}): Nudg
     }
     return parsed
   }
+  function optionalString(key: string): string {
+    return typeof input[key] === 'string' ? input[key].trim() : ''
+  }
+  function optionalRate(key: string, envName: string, fallback: number): number {
+    const rawValue = optionalString(key)
+    if (!rawValue) return fallback
+    const parsed = Number(rawValue)
+    if (!Number.isFinite(parsed) || parsed < 0 || parsed > 1) {
+      throw new Error(`${envName} must be a number between 0 and 1.`)
+    }
+    return parsed
+  }
   const profileImageWebpQuality = positiveNumber('profileImageWebpQuality', 'VITE_PROFILE_IMAGE_WEBP_QUALITY', false)
   if (profileImageWebpQuality > 1) throw new Error('VITE_PROFILE_IMAGE_WEBP_QUALITY must be at most 1.')
   return {
@@ -30,5 +53,16 @@ export function validateRuntimeConfig(input: Record<string, unknown> = {}): Nudg
     profileImageFinalMaxBytes: positiveNumber('profileImageFinalMaxBytes', 'VITE_PROFILE_IMAGE_FINAL_MAX_BYTES'),
     profileImageMaxDimension: positiveNumber('profileImageMaxDimension', 'VITE_PROFILE_IMAGE_MAX_DIMENSION'),
     profileImageWebpQuality,
+    gaMeasurementId: optionalString('gaMeasurementId'),
+    sentryDsn: optionalString('sentryDsn'),
+    sentryEnvironment: optionalString('sentryEnvironment'),
+    sentryTracesSampleRate: optionalRate('sentryTracesSampleRate', 'VITE_SENTRY_TRACES_SAMPLE_RATE', 0.1),
+    newRelicAccountId: optionalString('newRelicAccountId'),
+    newRelicApplicationId: optionalString('newRelicApplicationId'),
+    newRelicAgentId: optionalString('newRelicAgentId'),
+    newRelicLicenseKey: optionalString('newRelicLicenseKey'),
+    newRelicBeacon: optionalString('newRelicBeacon'),
+    newRelicErrorBeacon: optionalString('newRelicErrorBeacon'),
+    newRelicTrustKey: optionalString('newRelicTrustKey'),
   }
 }
