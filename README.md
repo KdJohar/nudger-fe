@@ -1,5 +1,9 @@
 # Plug&Nudge — Nudger workspace
 
+Read [shared project context](docs/project-context.md) and
+[Nudger repository context](docs/repository-context.md) first. This checkout is
+the only production website source for `https://plugandnudge.com`.
+
 A Vue 3 + TypeScript + Vuetify 3 SPA for authenticated Nudger workflows. It uses the Nudger identity/profile, audience, nudge history, and platform token APIs from the local Plug&Nudge backend.
 
 ## Run locally

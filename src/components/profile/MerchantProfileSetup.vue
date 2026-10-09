@@ -13,12 +13,14 @@ const nameFieldRef = ref<{ focus: () => void } | null>(null)
 const pickerRef = ref<{ focus: () => void } | null>(null)
 const profileType = ref<MerchantProfileType>('creator')
 const displayName = ref('')
+const about = ref('')
 const imageFile = ref<File | null>(null)
 const imageError = ref<string | null>(null)
 const links = reactive({ website_url: '', instagram_url: '', youtube_url: '', facebook_url: '', linkedin_url: '', x_url: '' })
 const imageMaxBytes = getNudgerConfig().profileImageSourceMaxBytes
 const initials = computed(() => displayName.value.trim().slice(0, 1).toUpperCase())
 const displayNameRules = [(value: string) => Boolean(value?.trim()) || 'Display name is required.']
+const aboutRules = [(value: string) => Array.from(value?.trim() || '').length <= 500 || 'Keep About me to 500 characters or fewer.']
 const publicLinkFields = PROFILE_LINK_FIELDS
 
 function handleImageSelection(file: File | null): void {
@@ -39,6 +41,7 @@ async function handleSubmit(): Promise<void> {
   emit('submit', {
     profile_type: profileType.value,
     display_name: displayName.value.trim(),
+    about: about.value.trim() || undefined,
     ...Object.fromEntries(publicLinkFields.map(field => [field.key, links[field.key].trim() || undefined])),
   }, imageFile.value)
 }
@@ -81,6 +84,21 @@ async function handleSubmit(): Promise<void> {
         prepend-inner-icon="mdi-account-outline"
         color="secondary"
         required
+      />
+      <v-textarea
+        v-model="about"
+        :rules="aboutRules"
+        label="About me"
+        name="about"
+        placeholder="A short description of what you share with your audience"
+        rows="3"
+        auto-grow
+        maxlength="500"
+        counter="500"
+        hint="Optional · Visible to Nudgees on your public profile."
+        persistent-hint
+        prepend-inner-icon="mdi-text-account-outline"
+        color="secondary"
       />
     </section>
 

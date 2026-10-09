@@ -1,5 +1,9 @@
 # Nudger FE deployment context
 
+Start with [shared project context](project-context.md) and
+[Nudger repository context](repository-context.md) for current ownership,
+dated live observations and release regression checks.
+
 This document is the reusable deployment contract for the Plug & Nudge
 frontend. The checked-in `Dockerfile`, `Makefile` and
 `scripts/deploy_cloud_run_production.sh` are authoritative when this document
@@ -15,6 +19,7 @@ and an implementation disagree.
 | `nudger-fe` | Production web frontend | This repository is the only frontend deployed to `plugandnudge.com`. |
 | `nudgee-fe` | Reference frontend for mobile-app work | Never deploy this repository to the production web domain. |
 | `nudge-ios` | Native iOS app | Uses the production API directly; it is not the web frontend deployment source. |
+| `nudge-android` | Planned native Android app | Documentation only; not a website source. |
 
 The frontend is a static Vue SPA served by Nginx in one Cloud Run service:
 
@@ -39,7 +44,7 @@ Browser -> https://plugandnudge.com/v1/*
         -> nudge-api
 ```
 
-`VITE_API_BASE_URL=/` is intentional. It keeps cookies, OAuth start requests,
+`VITE_API_BASE_URL=/` is intentional. It keeps OAuth start requests,
 and API calls on the frontend origin. The mobile application continues to use
 `https://api.plugandnudge.com`; that public API host is not embedded in the
 production frontend image.
@@ -123,6 +128,8 @@ telemetry.
 
 ## Verification checklist
 
+- Verify Git root/remote, Docker build context and source provenance. The existing
+  service/image/domain guard does not itself prove that the source is this repo.
 - `make create-image` passes tests, type-check/build and creates the image.
 - `make publish-image` pushes the latest image and reports its digest.
 - Cloud Run service has min 1 / max 5 and internal-and-load-balancing ingress.
@@ -133,6 +140,8 @@ telemetry.
 - Browser network calls use `https://plugandnudge.com/v1/...`, not
   `api.plugandnudge.com`.
 - API OAuth start and callback return to the production frontend.
+- Verify the OAuth start response is backend JSON with the correct Google URL,
+  not just a 200 SPA fallback or an HTML response on an API path.
 - `api.plugandnudge.com` still routes to `nudge-api` for mobile clients.
 - GA4, Sentry and New Relic production integrations load only when their
   production runtime values are present.

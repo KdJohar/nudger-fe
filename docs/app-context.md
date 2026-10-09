@@ -1,5 +1,9 @@
 # Plug & Nudge app context
 
+Read [shared project context](project-context.md) and
+[Nudger repository context](repository-context.md) for current ownership:
+this is the sole merchant/landing website deployed to `plugandnudge.com`.
+
 Current product decisions, 7 October 2026. Read this with [design language](design-language.md),
 [Vue architecture](vue-architecture.md), and [API client conventions](api-client.md).
 Update the owning document when an approved behavior changes; do not copy competing

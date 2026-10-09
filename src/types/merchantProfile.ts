@@ -22,6 +22,7 @@ export interface MerchantProfile {
 export interface MerchantProfileForm {
   profile_type: MerchantProfileType
   display_name: string
+  about?: string
   website_url?: string
   instagram_url?: string
   youtube_url?: string
