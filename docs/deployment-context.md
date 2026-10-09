@@ -7,6 +7,15 @@ and an implementation disagree.
 
 ## Runtime shape
 
+## Repository ownership
+
+| Repository | Role | Deployment rule |
+| --- | --- | --- |
+| `plugnudge-be` | Backend API and worker | Deploy backend services only; production API is `api.plugandnudge.com`. |
+| `nudger-fe` | Production web frontend | This repository is the only frontend deployed to `plugandnudge.com`. |
+| `nudgee-fe` | Reference frontend for mobile-app work | Never deploy this repository to the production web domain. |
+| `nudge-ios` | Native iOS app | Uses the production API directly; it is not the web frontend deployment source. |
+
 The frontend is a static Vue SPA served by Nginx in one Cloud Run service:
 
 | Resource | Purpose | Default runtime contract |
