@@ -33,6 +33,12 @@ function mount(Component, initial, handlers = {}, validation = { valid: true }) 
       return () => vue.h('input', { ...attrs, value: props.modelValue, onInput: value => emit('update:modelValue', value) })
     },
   })
+  app.component('VTextarea', {
+    props: ['modelValue'], emits: ['update:modelValue'],
+    setup(props, { attrs, emit }) {
+      return () => vue.h('textarea', { ...attrs, value: props.modelValue, onInput: value => emit('update:modelValue', value) })
+    },
+  })
   for (const name of ['VProgressCircular', 'VProgressLinear', 'VCard', 'VAvatar', 'VImg', 'VDivider', 'VAlert']) {
     app.component(name, (props, { slots }) => vue.h('div', props, slots.default?.()))
   }
@@ -149,6 +155,7 @@ test('onboarding emits the existing contract, keeps values while busy, and suppo
   const harness = mount(Setup, { isBusy: false, uploadProgress: 0 }, { onSubmit: (...args) => events.push(args) })
   try {
     findAll(harness.root, el => el.props.name === 'display_name')[0].props.onInput('  Example app  ')
+    findAll(harness.root, el => el.props.name === 'about')[0].props.onInput('  Practical updates for busy teams.  ')
     findAll(harness.root, el => el.props.name === 'website_url')[0].props.onInput('  https://example.com  ')
     findAll(harness.root, el => el.props.type === 'radio' && el.props.value === 'platform')[0].props.onChange()
     const chosen = file()
@@ -157,7 +164,7 @@ test('onboarding emits the existing contract, keeps values while busy, and suppo
     const submit = () => findAll(harness.root, el => el.type === 'form')[0].props.onSubmit({ preventDefault() {} })
     await submit()
     assert.equal(events.length, 1)
-    assert.deepEqual(events[0], [{ profile_type: 'platform', display_name: 'Example app', website_url: 'https://example.com', instagram_url: undefined, youtube_url: undefined, facebook_url: undefined, linkedin_url: undefined, x_url: undefined }, chosen])
+    assert.deepEqual(events[0], [{ profile_type: 'platform', display_name: 'Example app', about: 'Practical updates for busy teams.', website_url: 'https://example.com', instagram_url: undefined, youtube_url: undefined, facebook_url: undefined, linkedin_url: undefined, x_url: undefined }, chosen])
     harness.props.isBusy = true
     harness.props.uploadProgress = 50
     await flush()

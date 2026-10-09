@@ -1,5 +1,10 @@
 # Plug & Nudge frontend instructions
 
+Read `docs/project-context.md` and `docs/repository-context.md` first for
+repository ownership, production routing and the current operational snapshot.
+This repo alone owns plugandnudge.com. Never deploy nudgee-fe to that domain.
+Check actual Git/build-source provenance as well as service/image deployment guards.
+
 Read `docs/app-context.md`, `docs/design-language.md`, `docs/vuetify-component-context.md`, and `docs/vue-architecture.md`
 before changing Vue layouts, routes, components, or CSS. Read `docs/api-client.md`
 before changing frontend requests. Update the owning context document when an
