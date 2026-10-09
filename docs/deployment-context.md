@@ -23,9 +23,10 @@ The frontend is a static Vue SPA served by Nginx in one Cloud Run service:
 | `nudger-fe` | Production SPA and same-origin API proxy | 1 vCPU, 512 MiB, concurrency 80, min 1 / max 5, port 80 |
 | `nudger-fe-app` | Artifact Registry Docker repository | `asia-south1`, image `nudger-fe:latest` |
 
-The service uses `internal-and-cloud-load-balancing` ingress. Users reach the
-frontend through the global HTTPS load balancer at `https://plugandnudge.com`;
-the Cloud Run `run.app` URL is not the public application URL.
+The service uses `internal-and-cloud-load-balancing` ingress and Direct VPC
+egress on the production `default` subnet. Users reach the frontend through
+the global HTTPS load balancer at `https://plugandnudge.com`; the Cloud Run
+`run.app` URL is not the public application URL.
 
 ## Browser/API boundary
 
@@ -34,7 +35,7 @@ Production browser configuration uses:
 ```text
 Browser -> https://plugandnudge.com/v1/*
         -> Nginx in nudger-fe
-        -> https://nudge-api-...a.run.app (same-project Cloud Run internal path)
+        -> https://nudge-api-...a.run.app (same-project VPC path)
         -> nudge-api
 ```
 
@@ -45,8 +46,10 @@ production frontend image.
 
 `API_PROXY_UPSTREAM` is a runtime-only environment value. It must be an HTTPS
 origin without a path and must point at the API Cloud Run service URL. The
-frontend container never receives database, Redis, OAuth client-secret or other
-backend secrets.
+frontend uses Direct VPC egress with all traffic routed through the VPC and
+Private Google Access enabled on the subnet, so this proxy never traverses the
+public API load balancer. The frontend container never receives database,
+Redis, OAuth client-secret or other backend secrets.
 
 ## Image lifecycle
 
@@ -123,6 +126,8 @@ telemetry.
 - `make create-image` passes tests, type-check/build and creates the image.
 - `make publish-image` pushes the latest image and reports its digest.
 - Cloud Run service has min 1 / max 5 and internal-and-load-balancing ingress.
+- Frontend Direct VPC egress is attached to the same VPC/subnet as the API,
+  with Private Google Access enabled and all traffic routed through the VPC.
 - `https://plugandnudge.com/`, `/audience`, `/nudges` and `/auth/callback`
   resolve through SPA fallback.
 - Browser network calls use `https://plugandnudge.com/v1/...`, not

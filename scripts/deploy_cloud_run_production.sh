@@ -22,6 +22,9 @@ API_CERTIFICATE="${CLOUD_RUN_API_CERTIFICATE:-nudge-api-managed-cert}"
 FE_CERTIFICATE="${CLOUD_RUN_FE_CERTIFICATE:-nudger-fe-managed-cert}"
 FE_PATH_MATCHER="${CLOUD_RUN_FE_PATH_MATCHER:-nudger-fe-hosts}"
 FE_DOMAIN="${CLOUD_RUN_FE_DOMAIN:-plugandnudge.com}"
+VPC_NETWORK="${CLOUD_RUN_FE_VPC_NETWORK:-default}"
+VPC_SUBNET="${CLOUD_RUN_FE_VPC_SUBNET:-default}"
+VPC_TAG="${CLOUD_RUN_FE_NETWORK_TAG:-nudge-cloudrun}"
 
 require_command() {
   command -v "$1" >/dev/null 2>&1 || {
@@ -31,6 +34,12 @@ require_command() {
 }
 
 require_command gcloud
+
+if [ "$SERVICE_NAME" != "nudger-fe" ] || [ "$IMAGE_REPOSITORY" != "nudger-fe-app" ] || [ "$IMAGE_NAME" != "nudger-fe" ] || [ "$FE_DOMAIN" != "plugandnudge.com" ]; then
+  echo 'Production frontend deployment is locked to nudger-fe -> plugandnudge.com.' >&2
+  echo 'nudgee-fe is reference-only and must never be deployed by this script.' >&2
+  exit 1
+fi
 
 [ -f "$ENV_FILE" ] || {
   echo "Missing production environment file: $ENV_FILE" >&2
@@ -80,6 +89,15 @@ if ! printf '%s\n' "$API_PROXY_UPSTREAM" | grep -Eq '^https://([A-Za-z0-9.-]+|\[
   exit 1
 fi
 
+private_google_access="$(gcloud compute networks subnets describe "$VPC_SUBNET" \
+  --project="$PROJECT_ID" --region="$REGION" --format='value(privateIpGoogleAccess)')"
+if [ "$private_google_access" != "True" ]; then
+  gcloud compute networks subnets update "$VPC_SUBNET" \
+    --project="$PROJECT_ID" \
+    --region="$REGION" \
+    --enable-private-ip-google-access
+fi
+
 image_digest="$(gcloud artifacts docker images describe "${IMAGE_PATH}:${IMAGE_TAG}" \
   --project="$PROJECT_ID" --format='value(image_summary.digest)')"
 [ -n "$image_digest" ] || {
@@ -103,6 +121,10 @@ gcloud run deploy "$SERVICE_NAME" \
   --max=5 \
   --ingress=internal-and-cloud-load-balancing \
   --allow-unauthenticated \
+  --network="$VPC_NETWORK" \
+  --subnet="$VPC_SUBNET" \
+  --network-tags="$VPC_TAG" \
+  --vpc-egress=all-traffic \
   --execution-environment=gen2 \
   --set-env-vars="$runtime_env"
 
