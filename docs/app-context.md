@@ -36,7 +36,7 @@ There is no Tailwind or separate official Material Web component layer.
   **coming soon**, not invented store URLs. Its mobile action dock adapts to session
   and onboarding state; pending profiles reach the review screen.
 - `/login`, `/auth/callback`: Google sign-in handoff; use the existing auth flow.
-- `/onboarding`, `/pending`: shared profile setup/image handling and functional logout.
+- `/onboarding`, `/pending`: shared profile setup/image handling and functional logout. Pending review is only for a submitted, non-active profile (including a suspended profile when the backend represents it as `is_active: false`); direct navigation or refresh with an active profile redirects to `/audience`, and an account without a submitted profile returns to `/onboarding`.
 - `/audience`: audience trend, reach and subscriber metrics; 7/30/90-day filtering.
 - `/nudges`: single-column history cards, default Broadcast; platforms additionally
   get Transactional filtering. Preserve loaded cards and scroll during refresh.

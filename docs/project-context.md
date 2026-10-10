@@ -1,6 +1,6 @@
 # Plug & Nudge — shared project context
 
-Updated 2026-10-09. This contract is mirrored in all five project directories.
+Updated 2026-10-10. This contract is mirrored in all five project directories.
 Read it before choosing a repository, build source, production target or API URL.
 Read [repository context](repository-context.md) next for this directory's responsibilities.
 
@@ -15,15 +15,16 @@ configuration. Report discrepancies rather than silently changing scope.
 | --- | --- | --- | --- |
 | `nudgee-fe` | `/Users/kd/projects/nudgee-fe` | Receiver reference/design prototype and currently shared Vue screens | Never deploy as a production website or to `plugandnudge.com`. |
 | `nudge-ios` | `/Users/kd/projects/nudge-ios` | Installed iOS receiver; Capacitor host plus native integrations | Build/sign/install independently; calls the public production API. |
-| `nudge-android` | `/Users/kd/projects/nudge-android` | Planned installed Android receiver | Documentation only as of this update; app, OAuth client and release setup are not implemented. |
+| `nudge-android` | `/Users/kd/projects/nudge-android` | Installed Android receiver; Capacitor host with Material 3 native integrations | Debug OAuth/Firebase configured; build/install independently. Play release and real-device acceptance are separate. |
 | `plugnudge-be` | `/Users/kd/projects/plugnudge-be` | Shared FastAPI backend, workers, migrations and notification contracts | Deploy `nudge-api`, `nudge-worker` and `nudge-migrate` from here only. |
 | `nudger-fe` | `/Users/kd/projects/nudger-fe` | Merchant/creator workspace and public landing/legal pages | The only website source for `https://plugandnudge.com`. |
 
 “Nudge BE” means `plugnudge-be`. “Nudger FE” means `nudger-fe`, not
 `nudgee-fe`. The Nudgee local directory's GitHub remote is
 `KdJohar/nudge-app`; the different remote name does not change its role.
-The iOS checkout currently has no Git remote. Do not claim its commits were pushed,
-merged into remote main, or released to the App Store.
+The iOS checkout now has remote `git@github.com:KdJohar/nudge-ios.git` and consolidated
+main `550e115`. A Git push is not an App Store release. Android has a local feature
+branch and no configured remote; do not invent a published Play release.
 
 The iOS app is currently a **Capacitor application**, not a completed pure SwiftUI
 rewrite: its build consumes the sibling Nudgee Vue source and packages local assets
@@ -37,7 +38,7 @@ native screens would require a separately approved migration.
 1. Agree behavior and validate mobile screens in `nudgee-fe`.
 2. Update the receiver's design/behavior acceptance rules.
 3. Implement/package the iOS integration in `nudge-ios`.
-4. Implement the Android equivalent in `nudge-android` when Android work begins.
+4. Implement/package Android integration independently in `nudge-android`.
 5. Change shared API, sessions, registrations or payloads in `plugnudge-be` only.
 6. Change merchant workflows/landing pages in `nudger-fe` only.
 7. Test and release each production target independently.
@@ -147,6 +148,20 @@ Never add a competing notification plugin without reviewing ownership regression
 tests. Focus, silent mode, permission and iOS layout remain system-controlled;
 haptic delivery is not guaranteed by setting sound.
 
+Android package is also `nudge.com`, Firebase project `nudge-cd06e`. The Android
+host reuses accepted shared screens, with Material 3 native bottom navigation,
+Credential Manager sign-in, Keystore storage and SDK 26 registered Firebase FIDs.
+Google/Firebase have this Mac's debug signing fingerprints. Play App Signing needs
+its own certificate/OAuth client and backend allowlist before a store release.
+Android's single FirebaseMessagingService receives high-priority data messages
+with title/body and existing sender identity. APNs keeps explicit alert title/body,
+sound and mutable-content. No global FCM notification field may bypass Android's
+custom background presentation. Android MessagingStyle/Person displays the sender
+avatar and a small Nudge badge; final layout/permissions/DND are platform-controlled.
+See the Android repository's docs/android-runtime.md and backend
+docs/native-android-auth-push.md. No browser push or competing Capacitor notification
+plugin is allowed. Synthetic emulator tests are not real-device/cloud push proof.
+
 The user confirmed working iPhone notifications and accepted sender styling.
 Fresh builds still need real-device regression tests: registration after installation,
 foreground, background/locked delivery and tap-to-inbox. Backend acceptance or
@@ -186,7 +201,8 @@ Do not conclude zero production records from a frontend empty state alone.
 Do not commit secrets or synced ChatGPT `sources/` material. Check and preserve
 existing changes; commit/push/PR/merge/deploy only when authorized for the current
 task. App changes require rebuilding/reinstalling iOS; backend-only changes do not
-automatically require a new native build. Android has no release pipeline yet.
+automatically require a new native build. Android has local APK builds/tests;
+Play release/distribution is not yet configured.
 
 ## Evidence and historical conflicts
 

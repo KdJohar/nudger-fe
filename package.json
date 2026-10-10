@@ -17,12 +17,13 @@
     "test:snackbar": "node --test tests/Snackbar.test.mjs",
     "test:browser:snackbar": "node tests/browser/snackbar.mjs",
     "test:browser:navigation": "node tests/browser/bottomNavigation.mjs",
+    "test:browser:pending": "node tests/browser/pendingAccess.mjs",
     "test:browser:mobile": "node tests/browser/mobileNative.mjs",
     "test:browser:public-actions": "node tests/browser/publicActions.mjs",
     "test:compose": "node --test tests/BroadcastComposer.test.mjs",
     "test:api-access": "node --test tests/ApiAccess.test.mjs",
     "test:profile": "node --test tests/ProfileDetails.test.mjs tests/profileErrors.test.mjs tests/ProfileLayout.test.mjs tests/AppTheme.test.mjs",
-    "test:ui": "node --test tests/PillTabs.test.mjs tests/PageLayout.test.mjs tests/NudgeHistoryPanel.test.mjs tests/Onboarding.test.mjs tests/PendingProfile.test.mjs tests/SetupLogout.test.mjs tests/profileErrors.test.mjs",
+    "test:ui": "node --test tests/PillTabs.test.mjs tests/PageLayout.test.mjs tests/NudgeHistoryPanel.test.mjs tests/Onboarding.test.mjs tests/PendingProfile.test.mjs tests/RouteAccess.test.mjs tests/SetupLogout.test.mjs tests/profileErrors.test.mjs",
     "test:audience": "node --test tests/chartGeometry.test.mjs tests/useAudienceOverview.test.mjs"
   },
   "dependencies": {
