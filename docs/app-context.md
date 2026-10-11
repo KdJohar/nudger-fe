@@ -40,7 +40,7 @@ There is no Tailwind or separate official Material Web component layer.
 - `/audience`: audience trend, reach and subscriber metrics; 7/30/90-day filtering.
 - `/nudges`: single-column history cards, default Broadcast; platforms additionally
   get Transactional filtering. Preserve loaded cards and scroll during refresh.
-- `/compose`: broadcast editor, live client-time lock-screen preview, confirmation,
+- `/compose`: broadcast editor, shared live notification-card preview, confirmation,
   and queued result. The Nudges FAB opens this route on desktop and a sheet on mobile.
 - `/profile`: read-only display name/handle/type; editable About, website/social links,
   image, and local appearance preferences. Mobile logout follows Settings.

@@ -89,6 +89,15 @@ production build. Runtime framework styling is intentionally outside that source
 - Use short purposeful transitions and respect reduced motion/forced colours.
   Preserve the opaque fallback for unsupported blur or reduced transparency.
 
+## Notification previews
+
+- Show the notification itself, never a miniature phone, status bar or lock-screen clock. Use the same `NotificationPreview` in desktop Compose, the mobile sheet and confirmation. The marketing `PhonePreview` is separate and unchanged.
+- Sender identity is a prominent 40–48px circular merchant avatar with a 22px white Nudge app badge overlapping its bottom-right. Reuse `Avatar` fallbacks and the actual `BrandLogo` asset. Never substitute content media for sender identity.
+- Merchant name is the title; typed message is the body. Keep a small illustrative “now” timestamp. Use readable 14–16px text, wrap long words/emoji, and clamp only the preview body to four lines. Full message remains available in review; appearance on an actual device can vary.
+- Rich content uses an optional 48–56px thumbnail on the right. Without an image, Basic and Rich use the full text width. A broken image has a compact fallback; it never replaces the avatar or removes the message. CTA/destination remain in review details rather than inventing a button inside the collapsed notification.
+- Preserve neutral theme surfaces, subtle borders, existing type and indigo controls. Share the same card rules across placements; do not add separate mobile/desktop renderers or phone variants.
+- Format → message → destination/CTA/optional image → review. Keep 24px between field groups and 12px between group labels and choices. Basic/Rich and CTA choices each use two equal columns with at least 48px touch targets. This spacing is scoped to notification fields, not unrelated settings controls.
+
 ## Shared structure and feedback
 
 Desktop: sidebar and main content; no app-bar header. Sidebar keeps the theme

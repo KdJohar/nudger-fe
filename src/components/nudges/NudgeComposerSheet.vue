@@ -75,13 +75,9 @@ watch(isOpen, (opened) => {
       <p class="ui-composer__copy">Delivery is running in the background. You can check its progress in your history.</p>
     </div>
     <div v-else class="ui-composer">
-      <aside class="ui-composer__preview" aria-label="Live notification preview">
-        <div class="ui-composer__preview-label">
-          <span><v-icon icon="mdi-cellphone" size="16" /> Lock screen</span>
-          <span class="ui-composer__live"><span aria-hidden="true" /> Live preview</span>
-        </div>
+      <aside class="ui-composer__preview" aria-label="Notification preview">
         <NotificationPreview
-          :is-active="isOpen"
+          :is-live="!isReviewing"
           :image-url="profile?.profile_image_url"
           :message="isReviewing ? confirmedMessage : message"
           :title="title"
@@ -91,14 +87,17 @@ watch(isOpen, (opened) => {
 
       <div v-if="isReviewing" class="ui-composer__review">
         <span class="ui-composer__audience"><v-icon icon="mdi-account-group-outline" size="18" /> Broadcast to your subscribers</span>
-        <div class="ui-composer__review-message"><strong>{{ title }}</strong><p>{{ confirmedMessage }}</p></div>
+        <div class="ui-composer__review-message"><strong>Full message</strong><p>{{ confirmedMessage }}</p></div>
         <ContentSummary v-if="confirmedPayload" :content="confirmedPayload" />
         <p class="ui-composer__copy">Subscribers receive this based on their notification preferences.</p>
       </div>
 
       <form v-else :id="formId" class="ui-composer__editor" novalidate @submit.prevent="handleReview">
-        <NotificationFields ref="notificationFields" :model="notification" :is-disabled="isSending" />
-        <MessageField ref="messageField" v-model="message" :limit="messageLimit" :error="fieldError" />
+        <NotificationFields ref="notificationFields" :model="notification" :is-disabled="isSending">
+          <template #message>
+            <MessageField ref="messageField" v-model="message" :limit="messageLimit" :error="fieldError" :is-disabled="isSending" />
+          </template>
+        </NotificationFields>
         <span class="ui-composer__audience"><v-icon icon="mdi-account-group-outline" size="18" /> Broadcast to your subscribers</span>
       </form>
     </div>

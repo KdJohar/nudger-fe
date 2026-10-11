@@ -28,14 +28,19 @@ defineExpose({ focusError: () => {
       <p class="ui-editor-panel__hint">{{ model.capabilityError.value }}</p>
       <v-btn variant="text" rounded="pill" :disabled="isDisabled" @click="model.loadCapabilities">Load options</v-btn>
     </div>
-    <ChoiceCards v-else v-model="model.draft.notificationFormat" :items="formats" label="Notification format" variant="inline" :is-disabled="isDisabled" />
-    <p v-if="model.errors.value.notificationFormat" class="ui-content-fields__error" role="alert">{{ model.errors.value.notificationFormat }}</p>
+    <div v-else class="ui-content-fields__group">
+      <ChoiceCards v-model="model.draft.notificationFormat" class="ui-content-fields__choices" :items="formats" label="Notification format" variant="inline" :is-disabled="isDisabled" />
+      <p v-if="model.errors.value.notificationFormat" class="ui-content-fields__error" role="alert">{{ model.errors.value.notificationFormat }}</p>
+    </div>
+    <slot name="message" />
     <template v-if="model.draft.notificationFormat === 'rich'">
       <v-text-field ref="destinationInput" v-model="model.draft.destinationUrl" label="Destination URL" name="destination_url" type="url" inputmode="url" autocomplete="off" placeholder="https://www.youtube.com/watch?v=…" color="secondary" :disabled="isDisabled" :error-messages="model.errors.value.destinationUrl" :aria-invalid="Boolean(model.errors.value.destinationUrl)" hint="Where Watch now or Learn more will take your subscriber." persistent-hint />
-      <ChoiceCards v-model="model.draft.ctaLabel" :items="presets" label="Call to action" variant="inline" :is-disabled="isDisabled" />
-      <p v-if="model.errors.value.ctaLabel" class="ui-content-fields__error" role="alert">{{ model.errors.value.ctaLabel }}</p>
+      <div class="ui-content-fields__group">
+        <ChoiceCards v-model="model.draft.ctaLabel" class="ui-content-fields__choices" :items="presets" label="Call to action" variant="inline" :is-disabled="isDisabled" />
+        <p v-if="model.errors.value.ctaLabel" class="ui-content-fields__error" role="alert">{{ model.errors.value.ctaLabel }}</p>
+      </div>
       <div class="ui-content-fields__media">
-        <span class="ui-choice-cards__legend">Image <span class="ui-editor-panel__hint">· optional</span></span>
+        <span class="ui-content-fields__media-label">Image <span>Optional</span></span>
         <MediaPreview :src="model.draft.mediaUrl" />
         <input ref="fileInput" class="ui-visually-hidden" type="file" accept="image/jpeg,image/png,image/webp" tabindex="-1" aria-label="Select notification image" :disabled="isDisabled" @change="handleFile" />
         <div class="ui-content-fields__actions">

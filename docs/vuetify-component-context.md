@@ -135,7 +135,7 @@ rebuilding their markup. Feature containers own fetching, permissions and workfl
 | `MetricCard.vue` | Audience statistic with icon, semantic tone, value, change and optional detail |
 | `LineChart.vue` | Shared trend drawing, keyboard/touch exploration and accessible daily-value table; SVG geometry stays data-driven |
 | `MessageField.vue` | Labelled compact native textarea, character count, limit, validation and exposed input focus |
-| `NotificationPreview.vue` | Merchant image/name/message and live client clock; adaptive composer presentation |
+| `NotificationPreview.vue` | One notification card shared by compose, mobile sheet and review; merchant avatar with Nudge badge, title/message, optional right thumbnail; no phone frame or live clock |
 | `PhonePreview.vue` | Public landing-page demo; distinct from the live sender preview |
 | `Sheet.vue` | Labelled bottom sheet, header/body/footer slots, drag/tap close, focus handling and keyboard viewport adaptation |
 | `CodeBlock.vue` | Selectable code and explicit copying; secret display and copied code have separate contracts |

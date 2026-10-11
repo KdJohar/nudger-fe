@@ -45,27 +45,30 @@ function handleSubmit(): void {
     <div class="ui-split-layout">
       <form class="ui-request-form" novalidate :aria-busy="isSending" @submit.prevent="handleSubmit">
         <ChoiceCards v-model="draft.nudgeType" class="ui-choice-cards--compact" :items="availableTypes" label="Nudge type" :is-disabled="isSending || isConfirmationOpen" />
-        <NotificationFields ref="notificationFields" :model="notification" :is-disabled="isSending || isCredentialBusy || isConfirmationOpen" />
-        <div>
-          <v-textarea
-            :id="`${fieldId}-message`"
-            ref="messageInput"
-            v-model="draft.message"
-            label="Message"
-            name="message"
-            autocomplete="off"
-            placeholder="What would you like your audience to know?"
-            variant="outlined"
-            color="secondary"
-            rounded="lg"
-            rows="4"
-            :disabled="isSending"
-            :error-messages="errors.message"
-            :aria-invalid="Boolean(errors.message)"
-            :aria-describedby="`${fieldId}-message-messages message-length-hint`"
-          />
-          <p id="message-length-hint" class="ui-request-form__counter" :class="{ 'is-invalid': characterCount > messageLimit }"><span>Short messages work best on a lock screen.</span><span>{{ characterCount.toLocaleString() }} / {{ messageLimit.toLocaleString() }}</span></p>
-        </div>
+        <NotificationFields ref="notificationFields" :model="notification" :is-disabled="isSending || isCredentialBusy || isConfirmationOpen">
+          <template #message>
+            <div>
+              <v-textarea
+                :id="`${fieldId}-message`"
+                ref="messageInput"
+                v-model="draft.message"
+                label="Message"
+                name="message"
+                autocomplete="off"
+                placeholder="What would you like your audience to know?"
+                variant="outlined"
+                color="secondary"
+                rounded="lg"
+                rows="4"
+                :disabled="isSending"
+                :error-messages="errors.message"
+                :aria-invalid="Boolean(errors.message)"
+                :aria-describedby="`${fieldId}-message-messages message-length-hint`"
+              />
+              <p id="message-length-hint" class="ui-request-form__counter" :class="{ 'is-invalid': characterCount > messageLimit }"><span>Short messages work best on a lock screen.</span><span>{{ characterCount.toLocaleString() }} / {{ messageLimit.toLocaleString() }}</span></p>
+            </div>
+          </template>
+        </NotificationFields>
         <v-text-field
           v-if="draft.nudgeType === 'transactional'"
           ref="recipientInput"

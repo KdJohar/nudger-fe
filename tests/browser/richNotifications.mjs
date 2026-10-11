@@ -9,7 +9,10 @@ const output = process.env.RICH_SCREENSHOT_DIR || '/tmp/nudger-rich-qa'
 const widths = (process.env.RICH_VIEWPORTS || '320,375,414,768,1440').split(',').map(Number)
 mkdirSync(output, { recursive: true })
 const image = readFileSync(new URL('../../public/icon-192.png', import.meta.url))
-const profile = { id: 'fixture-merchant', user_id: 'fixture-user', display_name: 'Studio Notes', nudger_id: 'studio-notes', profile_type: 'platform', is_active: true, profile_image_url: '/icon-192.png' }
+const profile = { id: 'fixture-merchant', user_id: 'fixture-user', display_name: 'Studio Notes', nudger_id: 'studio-notes', profile_type: 'platform', is_active: true, profile_image_url: 'https://assets.example.com/avatar.svg' }
+// Deliberately distinct sender/content fixtures catch accidental Nudge-logo reuse.
+const avatarImage = '<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96"><rect width="96" height="96" rx="48" fill="#4338CA"/><text x="48" y="61" text-anchor="middle" fill="white" font-family="sans-serif" font-size="36">SN</text></svg>'
+const thumbnailImage = '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180"><rect width="320" height="180" fill="#154E61"/><circle cx="160" cy="90" r="42" fill="#DDF4ED"/><path d="M150 67 L150 113 L183 90Z" fill="#154E61"/></svg>'
 const richHistory = { id: 'fixture-nudge', title: profile.display_name, message: 'A new tutorial is ready.', sender: 'platform', nudge_type: 'broadcast', status: 'completed', created_at: new Date().toISOString(), completed_at: new Date().toISOString(), stats: { total_audience: 0, total_devices: 0, delivered_users: 0, muted_users: 0, failed_deliveries: 0 }, notification_format: 'rich', destination_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', cta_label: 'watch_now', media_url: 'https://assets.example.com/ready.webp' }
 const errors = []
 async function select(page, name) {
@@ -29,7 +32,9 @@ async function setup(width, theme, options = {}) {
     }
   })
   await context.route('**/runtime-config.js', route => route.fulfill({ contentType: 'application/javascript', body: 'window.__NUDGER_CONFIG__={apiBaseUrl:"/",profileImageSourceMaxBytes:10485760,profileImageFinalMaxBytes:1000000,profileImageMaxDimension:1280,profileImageWebpQuality:0.86}' }))
-  await context.route('https://assets.example.com/**', route => route.fulfill({ contentType: 'image/png', body: image }))
+  await context.route('https://assets.example.com/**', route => options.brokenImages
+    ? route.fulfill({ status: 404, body: '' })
+    : route.fulfill({ contentType: 'image/svg+xml', body: route.request().url().endsWith('avatar.svg') ? avatarImage : thumbnailImage }))
   await context.route('https://storage.example.com/**', route => {
     assert.equal(route.request().method(), 'PUT')
     assert.equal(route.request().headers().authorization, undefined)
@@ -48,7 +53,7 @@ async function setup(width, theme, options = {}) {
     const request = route.request(), path = new URL(request.url()).pathname, payload = request.postData() ? request.postDataJSON() : null
     calls.push({ path, method: request.method(), payload })
     const respond = (data, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify({ message: status >= 400 ? `Request failed with status ${status}` : 'Fixture', data, errors: {} }) })
-    const merchant = { ...profile, profile_type: options.creator ? 'creator' : 'platform' }
+    const merchant = { ...profile, ...options.profile, profile_type: options.creator ? 'creator' : 'platform' }
     if (path.endsWith('/refresh')) return respond({ auth: { access_token: 'fixture-session', refresh_token: 'fixture-refresh', expires_in: 900 }, user: { id: 'fixture-user', name: 'Studio', email: 'fixture@example.test' }, merchant_profile: merchant })
     if (path.endsWith('/profile')) return respond(merchant)
     if (path.endsWith('/capabilities')) return respond(controls.failCapabilities ? null : { ...notificationCapabilities, delivery_types: options.creator ? ['broadcast'] : ['broadcast', 'transactional'] })
@@ -73,16 +78,59 @@ async function checkFrame(page, width) {
     assert.equal(await page.locator('.v-toolbar__content').count(), 0)
   }
 }
+async function checkPreview(root, hasMedia) {
+  const preview = root.locator('.ui-notification-preview').first()
+  const geometry = await preview.evaluate(el => {
+    const box = selector => {
+      const r = el.querySelector(selector).getBoundingClientRect()
+      return { x: r.x, y: r.y, right: r.right, bottom: r.bottom, width: r.width, height: r.height }
+    }
+    const text = el.querySelector('.ui-notification-preview__message'), style = getComputedStyle(text)
+    return { card: box('.ui-notification-preview__card'), sender: box('.ui-notification-preview__sender'), badge: box('.ui-notification-preview__badge'), message: box('.ui-notification-preview__message'),
+      media: el.querySelector('.ui-media') ? box('.ui-media') : null,
+      fontSize: parseFloat(style.fontSize), lineHeight: parseFloat(style.lineHeight), clamp: style.webkitLineClamp }
+  })
+  assert.ok(geometry.fontSize >= 14, 'Readable preview type at every width')
+  assert.equal(geometry.clamp, '4')
+  assert.ok(geometry.message.height <= geometry.lineHeight * 4 + 1)
+  assert.ok(geometry.sender.width >= 40, 'Sender has a prominent avatar')
+  assert.ok(geometry.badge.x > geometry.sender.x && geometry.badge.x < geometry.sender.right, 'Small Nudge badge overlaps sender bottom-right')
+  assert.ok(geometry.badge.y > geometry.sender.y && geometry.badge.y < geometry.sender.bottom)
+  assert.equal(Boolean(geometry.media), hasMedia)
+  if (hasMedia) {
+    assert.ok(geometry.media.x >= geometry.message.right, 'Content thumbnail sits to the right, not below the text')
+    assert.ok(geometry.media.right < geometry.card.right && geometry.media.bottom < geometry.card.bottom)
+  }
+  assert.equal(await root.locator('.device-preview__frame').count(), 0, 'No phone frame')
+  return geometry
+}
+async function checkFieldOrder(root) {
+  const fields = root.locator('.ui-content-fields')
+  const layout = await fields.evaluate(el => {
+    const format = el.querySelector('fieldset'), message = el.querySelector('textarea'), destination = el.querySelector('input[name=destination_url]')
+    const legend = format.querySelector('legend').getBoundingClientRect(), choices = format.querySelector('.ui-choice-cards__grid').getBoundingClientRect()
+    return { beforeMessage: Boolean(format.compareDocumentPosition(message) & Node.DOCUMENT_POSITION_FOLLOWING), beforeDestination: !destination || Boolean(message.compareDocumentPosition(destination) & Node.DOCUMENT_POSITION_FOLLOWING), labelGap: choices.top - legend.bottom,
+      targets: [...el.querySelectorAll('.ui-choice-cards__option')].map(option => option.getBoundingClientRect().height) }
+  })
+  assert.ok(layout.beforeMessage && layout.beforeDestination, 'Format → message → Rich fields')
+  assert.ok(layout.labelGap >= 11, 'Format label has deliberate spacing before its controls')
+  assert.ok(layout.targets.every(height => height >= 48), 'Choices retain touch targets')
+}
 try {
   for (const width of widths) for (const theme of ['light', 'dark']) {
     const { context, page, calls } = await setup(width, theme)
     await page.goto(`${base}/compose`)
     await page.getByRole('radio', { name: 'Rich', exact: true }).waitFor()
     await checkFrame(page, width)
-    await select(page, 'Rich')
+    if (width === widths[0]) {
+      await page.getByRole('radio', { name: 'Basic', exact: true }).focus()
+      await page.keyboard.press('ArrowRight')
+      assert.ok(await page.getByRole('radio', { name: 'Rich', exact: true }).isChecked(), 'Format choices work with native keyboard navigation')
+    } else await select(page, 'Rich')
     await page.getByRole('textbox', { name: 'Your message', exact: true }).fill('A new tutorial is ready. 👋')
     await page.getByRole('button', { name: 'Review & send', exact: true }).click()
     assert.equal(await page.getByRole('dialog').count(), 0, 'Missing destination cannot open confirmation')
+    assert.ok(await page.getByRole('textbox', { name: 'Destination URL' }).evaluate(el => el === document.activeElement), 'Invalid destination gets focus')
     await page.getByRole('textbox', { name: 'Destination URL' }).fill('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
     await page.getByRole('button', { name: 'Use YouTube thumbnail' }).click()
     await page.getByText('Image ready.', { exact: true }).waitFor()
@@ -93,17 +141,18 @@ try {
     const upload = await page.evaluate(() => window.__fixtureUploads.at(-1)), presign = calls.findLast(item => item.path.endsWith('/media/presign')).payload
     assert.equal(upload.size, presign.size_bytes); assert.equal(upload.type, presign.content_type)
     assert.ok(upload.size <= (upload.type === 'image/webp' ? notificationCapabilities.final_max_bytes : notificationCapabilities.source_max_bytes))
-    const axe = await new AxeBuilder({ page }).include('.ui-content-fields').analyze()
+    const axe = await new AxeBuilder({ page }).include('.ui-content-fields').include('.ui-notification-preview').analyze()
     assert.deepEqual(axe.violations.map(item => ({ id: item.id, impact: item.impact })), [], `Rich form accessibility ${width}/${theme}`)
     await checkFrame(page, width)
-    if (width >= 960) {
-      const preview = await page.locator('.device-preview__frame').boundingBox(), action = await page.locator('.device-preview__action').boundingBox()
-      assert.ok(action.y + action.height < preview.y + preview.height - 8, 'Rich CTA fits in the phone preview')
-    }
+    await checkPreview(page, true)
+    await checkFieldOrder(page)
+    await page.locator('.ui-notification-preview').scrollIntoViewIfNeeded()
     await page.screenshot({ path: `${output}/composer-${width}-${theme}.png`, fullPage: width >= 960 })
     await page.getByRole('button', { name: 'Review & send', exact: true }).click()
     const dialog = page.getByRole('dialog')
     await dialog.waitFor()
+    await checkPreview(dialog, true)
+    assert.equal(await dialog.locator('.ui-notification-preview__live').count(), 0)
     assert.ok(await dialog.getByText('Learn more', { exact: true }).count())
     await dialog.getByRole('button', { name: 'Send nudge', exact: true }).click()
     await page.getByRole('heading', { name: 'Your nudge is queued.' }).waitFor()
@@ -113,6 +162,7 @@ try {
     assert.equal(sent[0].payload.cta_label, 'learn_more')
     assert.equal(sent[0].payload.media_url, 'https://assets.example.com/ready.webp')
     await page.getByRole('button', { name: 'Write another' }).click()
+    await checkPreview(page, false)
     await page.getByRole('textbox', { name: 'Your message', exact: true }).fill('Basic update')
     await page.getByRole('button', { name: 'Review & send', exact: true }).click()
     await page.getByRole('dialog').getByRole('button', { name: 'Send nudge', exact: true }).click()
@@ -152,6 +202,7 @@ try {
     await select(page, /Transactional/)
     await page.getByRole('textbox', { name: 'Recipient Nudge ID' }).fill('482193')
     await checkFrame(page, width)
+    await checkFieldOrder(page)
     const code = page.locator('pre').first()
     assert.ok((await code.innerText()).includes('notification_format'))
     assert.ok(!(await code.innerText()).includes('nudge_live_fixture'))
@@ -168,16 +219,51 @@ try {
       const sheet = page.getByRole('dialog')
       await select(sheet, 'Rich')
       await sheet.getByRole('textbox', { name: 'Destination URL' }).fill('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+      await sheet.getByRole('textbox', { name: 'Your message', exact: true }).fill('A new tutorial is ready. 👋')
+      await sheet.getByRole('button', { name: 'Use YouTube thumbnail' }).click()
+      await sheet.getByText('Image ready.', { exact: true }).waitFor()
+      await checkPreview(sheet, true)
+      await checkFieldOrder(sheet)
+      await sheet.locator('.ui-notification-preview').scrollIntoViewIfNeeded()
+      await page.screenshot({ path: `${output}/mobile-sheet-rich.png` })
+      await sheet.getByRole('button', { name: 'Remove image', exact: true }).click()
       controls.failImport = true
       await sheet.getByRole('button', { name: 'Use YouTube thumbnail' }).click()
       await sheet.getByRole('button', { name: 'Retry image' }).waitFor()
       await sheet.getByRole('textbox', { name: 'Your message', exact: true }).fill('Image-less Rich still works')
+      await checkPreview(sheet, false)
       await sheet.getByRole('button', { name: 'Review & send', exact: true }).click()
+      await checkPreview(sheet, false)
       await sheet.getByRole('button', { name: 'Send nudge', exact: true }).click()
       await sheet.getByText('Your update is on its way.').waitFor()
       await page.screenshot({ path: `${output}/mobile-sheet-result.png` })
     }
     await context.close(); console.log(`PASS playground/history/sheet ${width}px`)
+  }
+  for (const width of [320, 1440]) {
+    const longMessage = 'Update 👋\n' + 'An unbroken link or name must wrap: ' + 'x'.repeat(400)
+    const { context, page, calls } = await setup(width, 'light', { brokenImages: true, profile: { display_name: 'Studio Notes with a long merchant name '.repeat(3).trim() } })
+    await page.goto(`${base}/compose`)
+    await select(page, 'Rich')
+    await page.getByRole('textbox', { name: 'Your message', exact: true }).fill(longMessage)
+    await page.getByRole('textbox', { name: 'Destination URL' }).fill('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+    await page.getByRole('button', { name: 'Use YouTube thumbnail' }).click()
+    const preview = page.locator('.ui-notification-preview')
+    await preview.locator('.ui-media__fallback').waitFor()
+    assert.equal(await preview.locator('.ui-avatar-image img').count(), 0)
+    assert.equal(await preview.locator('.ui-notification-preview__badge img').count(), 1)
+    await checkPreview(page, true)
+    await checkFrame(page, width)
+    assert.equal(await preview.locator('.ui-notification-preview__message').textContent(), longMessage)
+    await page.getByRole('button', { name: 'Review & send' }).click()
+    const dialog = page.getByRole('dialog')
+    assert.equal(await dialog.locator('.ui-editor-confirmation__message p').textContent(), longMessage, 'Full text is not truncated in review')
+    await dialog.getByRole('button', { name: 'Keep editing' }).click()
+    await select(page, 'Basic')
+    await checkPreview(page, false)
+    assert.equal(await page.getByRole('textbox', { name: 'Your message' }).inputValue(), longMessage)
+    assert.equal(calls.filter(item => item.path.endsWith('/nudge/broadcast')).length, 0, 'Preview and editing never send')
+    await context.close(); console.log(`PASS long text, image failures, full review and Basic reset ${width}px`)
   }
   assert.deepEqual(errors, [])
 } finally { await browser.close() }

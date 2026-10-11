@@ -76,14 +76,15 @@ function handleDialogClosed(): void {
 
       <div class="ui-editor-panel__body">
         <aside class="ui-editor-panel__preview" aria-label="Live notification preview">
-          <div class="ui-editor-panel__preview-label"><span><v-icon icon="mdi-cellphone" size="16" aria-hidden="true" /> Lock screen preview</span><span class="ui-editor-panel__live"><span aria-hidden="true" /> Live</span></div>
-          <NotificationPreview variant="adaptive" :title="title" :message="message" :image-url="profile?.profile_image_url" :content="{ notification_format: notification.draft.notificationFormat, media_url: notification.draft.mediaUrl, destination_url: notification.draft.destinationUrl, cta_label: notification.draft.ctaLabel }" />
-          <p class="ui-editor-panel__preview-note">A preview, not a screenshot. Appearance varies by device.</p>
+          <NotificationPreview :title="title" :message="message" :image-url="profile?.profile_image_url" :content="{ notification_format: notification.draft.notificationFormat, media_url: notification.draft.mediaUrl, destination_url: notification.draft.destinationUrl, cta_label: notification.draft.ctaLabel }" />
         </aside>
 
         <form class="ui-editor-panel__form" novalidate @submit.prevent="handleSubmit">
-          <NotificationFields ref="notificationFields" :model="notification" :is-disabled="isSending || isReviewing" />
-          <MessageField ref="messageField" v-model="message" :limit="messageLimit" :error="fieldError" :is-disabled="isSending" placeholder="I'm going live in 15 minutes. Come join me!" />
+          <NotificationFields ref="notificationFields" :model="notification" :is-disabled="isSending || isReviewing">
+            <template #message>
+              <MessageField ref="messageField" v-model="message" :limit="messageLimit" :error="fieldError" :is-disabled="isSending || isReviewing" placeholder="I'm going live in 15 minutes. Come join me!" />
+            </template>
+          </NotificationFields>
           <div class="ui-editor-panel__delivery"><v-icon icon="mdi-bell-outline" size="20" aria-hidden="true" /><p>One update. Your whole audience.<span>Delivered according to each subscriber’s notification preferences.</span></p></div>
           <div class="ui-editor-panel__actions">
             <p class="ui-editor-panel__hint"><v-icon icon="mdi-check-circle-outline" size="16" aria-hidden="true" /> You’ll confirm before sending.</p>
@@ -98,7 +99,8 @@ function handleDialogClosed(): void {
       <v-card class="ui-editor-confirmation">
         <h2 :id="dialogTitleId" ref="confirmationTitle" class="ui-panel__title" tabindex="-1">Send to your subscribers?</h2>
         <p :id="dialogDescriptionId" class="ui-editor-panel__hint">This queues a broadcast now. Check your message before sending.</p>
-        <div class="ui-editor-confirmation__message"><strong>{{ title }}</strong><p>{{ confirmedMessage }}</p></div>
+        <NotificationPreview :title="title" :message="confirmedMessage" :image-url="profile?.profile_image_url" :content="confirmedPayload || undefined" :is-live="false" />
+        <div class="ui-editor-confirmation__message"><strong>Full message</strong><p>{{ confirmedMessage }}</p></div>
         <ContentSummary v-if="confirmedPayload" :content="confirmedPayload" />
         <div class="ui-editor-confirmation__actions">
           <v-btn variant="text" rounded="pill" :disabled="isSending" @click="handleEdit">Keep editing</v-btn>
