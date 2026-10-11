@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref, toRef, useId, watch } from 'vue'
+import { computed, ref, toRef, useId, watch } from 'vue'
+import NotificationFields from '../nudges/NotificationFields.vue'
+import ContentSummary from '../ui/ContentSummary.vue'
 import ChoiceCards from '../ui/ChoiceCards.vue'
 import CodeBlock from '../ui/CodeBlock.vue'
 import SnackbarFeedback from '../ui/SnackbarFeedback.vue'
@@ -10,7 +12,8 @@ import type { ApiNudgeType } from '../../types/nudgeApi'
 
 const props = defineProps<{ token: string | null; isCredentialBusy: boolean; isRevealed: boolean }>()
 const emit = defineEmits<{ busy: [value: boolean]; reveal: [] }>()
-const { draft, language, errors, isSending, isConfirmationOpen, confirmedPayload, result, requestError, statusMessage, characterCount, requestExample, requestCopyExample, responseExample, resultText, handleReview, handleSend, endpoint, messageLimit } = useNudgeApiPlayground(toRef(props, 'token'), toRef(props, 'isCredentialBusy'), toRef(props, 'isRevealed'))
+const { notification, draft, language, errors, isSending, isConfirmationOpen, confirmedPayload, result, requestError, statusMessage, characterCount, exampleUsesSamples, requestExample, requestCopyExample, responseExample, resultText, handleReview, handleSend, endpoint, messageLimit } = useNudgeApiPlayground(toRef(props, 'token'), toRef(props, 'isCredentialBusy'), toRef(props, 'isRevealed'))
+const notificationFields = ref<InstanceType<typeof NotificationFields> | null>(null)
 const messageInput = ref<{ focus: () => void } | null>(null)
 const recipientInput = ref<{ focus: () => void } | null>(null)
 const sendButton = ref<{ $el: HTMLElement } | null>(null)
@@ -19,11 +22,13 @@ const nudgeTypes: ChoiceCardItem<ApiNudgeType>[] = [
   { value: 'broadcast', title: 'Broadcast', icon: 'mdi-bullhorn-outline', description: 'An update for your audience.', detail: 'All eligible subscribers' },
   { value: 'transactional', title: 'Transactional', icon: 'mdi-account-arrow-right-outline', description: 'An update for one person.', detail: 'Requires their Nudge ID' },
 ]
+const availableTypes = computed(() => nudgeTypes.filter(item => notification.capabilities.value?.delivery_types.includes(item.value)))
 watch(isSending, value => emit('busy', value), { flush: 'sync' })
 function handleSubmit(): void {
   if (!handleReview()) {
     if (errors.value.message) messageInput.value?.focus()
     else if (errors.value.recipientId) recipientInput.value?.focus()
+    else notificationFields.value?.focusError()
   }
 }
 </script>
@@ -39,7 +44,8 @@ function handleSubmit(): void {
     <div class="ui-endpoint"><span class="ui-endpoint__method">POST</span><code class="ui-endpoint__path">/v1/app-nudger/nudge/send</code></div>
     <div class="ui-split-layout">
       <form class="ui-request-form" novalidate :aria-busy="isSending" @submit.prevent="handleSubmit">
-        <ChoiceCards v-model="draft.nudgeType" class="ui-choice-cards--compact" :items="nudgeTypes" label="Nudge type" :is-disabled="isSending" />
+        <ChoiceCards v-model="draft.nudgeType" class="ui-choice-cards--compact" :items="availableTypes" label="Nudge type" :is-disabled="isSending || isConfirmationOpen" />
+        <NotificationFields ref="notificationFields" :model="notification" :is-disabled="isSending || isCredentialBusy || isConfirmationOpen" />
         <div>
           <v-textarea
             :id="`${fieldId}-message`"
@@ -58,7 +64,7 @@ function handleSubmit(): void {
             :aria-invalid="Boolean(errors.message)"
             :aria-describedby="`${fieldId}-message-messages message-length-hint`"
           />
-          <p id="message-length-hint" class="ui-request-form__counter" :class="{ 'is-invalid': characterCount > messageLimit }"><span>Short messages work best on a lock screen.</span><span>{{ characterCount.toLocaleString() }} / 4,096</span></p>
+          <p id="message-length-hint" class="ui-request-form__counter" :class="{ 'is-invalid': characterCount > messageLimit }"><span>Short messages work best on a lock screen.</span><span>{{ characterCount.toLocaleString() }} / {{ messageLimit.toLocaleString() }}</span></p>
         </div>
         <v-text-field
           v-if="draft.nudgeType === 'transactional'"
@@ -101,7 +107,7 @@ function handleSubmit(): void {
           </template>
         </CodeBlock>
         <p v-if="token" class="ui-guide__description">Both eye buttons reveal or hide the same token. Copying an example includes your current token, even while masked. Run the code on your server.</p>
-        <p v-if="token && (!draft.message || (draft.nudgeType === 'transactional' && !/^[1-9]\d{5}$/.test(draft.recipientId.trim())))" class="ui-guide__description">The example uses a sample message or recipient where a field is empty or invalid. Replace these before running it.</p>
+        <p v-if="token && exampleUsesSamples" class="ui-guide__description">The example uses sample message, recipient or destination values where a field is empty or invalid. Replace these before running it. Sending always validates your actual fields.</p>
         <details class="ui-disclosure">
           <summary>Expected response <span>202 Accepted</span></summary>
           <CodeBlock :code="responseExample" label="Example response" :can-copy="false" />
@@ -122,6 +128,7 @@ function handleSubmit(): void {
         <h2 id="send-confirmation-heading" class="ui-panel__title">{{ confirmedPayload?.nudge_type === 'broadcast' ? 'Send to your audience?' : 'Send to this subscriber?' }}</h2>
         <p class="ui-guide__description">{{ confirmedPayload?.nudge_type === 'transactional' ? `Recipient Nudge ID: ${confirmedPayload.nudge_user_id}` : 'This broadcast will be queued for all eligible subscribers.' }} This is a live API request.</p>
         <blockquote class="ui-confirmation__message">{{ confirmedPayload?.message }}</blockquote>
+        <ContentSummary v-if="confirmedPayload" :content="confirmedPayload" />
         <p class="ui-guide__hint">{{ endpoint }}</p>
         <div class="ui-confirmation__actions"><v-btn variant="text" :disabled="isSending" @click="isConfirmationOpen = false">Cancel</v-btn><v-btn color="secondary" :loading="isSending" @click="handleSend">Confirm &amp; send</v-btn></div>
       </v-card>

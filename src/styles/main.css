@@ -1379,3 +1379,25 @@ body:has(.ui-welcome-app) > .ui-visually-hidden { position: fixed; }
 @media (prefers-reduced-motion: reduce) {
   .public-app *, .public-app *::before, .public-app *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
+/* Rich content extends existing forms/preview cards; avatars keep their own identity. */
+.ui-content-fields, .ui-content-fields__media, .ui-content-fields__status, .ui-content-summary { display: grid; gap: 12px; min-width: 0; }
+.ui-content-fields__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.ui-content-fields__actions > .v-btn, .ui-content-fields__status > .v-btn { min-height: 48px; }
+.ui-content-fields__error { color: rgb(var(--v-theme-error)); font-size: 14px; margin: 0; }
+.ui-content-summary { margin-block: 12px; }
+.ui-content-summary > .ui-status-tag { justify-self: start; }
+.ui-content-summary__destination { display: grid; gap: 4px; overflow-wrap: anywhere; font-size: 14px; }
+.ui-content-summary__destination > span { color: rgb(var(--v-theme-on-surface-variant)); }
+.ui-media { min-width: 0; overflow: hidden; border-radius: 16px; background: rgb(var(--v-theme-surface-variant)); }
+.ui-media > img { display: block; width: 100%; max-height: 280px; object-fit: contain; }
+.ui-media--compact > img { max-height: 96px; }
+.ui-media__fallback { display: flex; align-items: center; gap: 8px; padding: 16px; color: rgb(var(--v-theme-on-surface-variant)); font-size: 14px; }
+.device-preview__action { display: block; margin-block-start: 8px; font-size: 12px; font-weight: 600; color: #4338CA; }
+.device-preview__notification .ui-media { margin-block-start: 8px; }
+.ui-editor-confirmation, .ui-confirmation { max-height: 85dvh; overflow-y: auto; }
+.ui-content-fields .v-field__input { font-size: 16px; }
+@media (min-width: 960px) {
+  .device-preview--adaptive.has-media .device-preview__lock { margin-top: 20px; }
+  .device-preview--adaptive.has-media .device-preview__card { margin-top: 16px; }
+  .device-preview--adaptive .device-preview__notification .ui-media > img { max-height: 48px; }
+}

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { notificationCapabilities } from '../helpers/notificationFixtures.mjs'
 
 // All API traffic is fixture-only. Never send or update a real account.
 const playwright = await import(process.env.PLAYWRIGHT_MODULE || 'playwright')
@@ -31,6 +32,7 @@ async function setup(width, theme, height = 812, touch = false) {
     if (url.pathname.endsWith('/refresh')) body = { data: { auth: { access_token: 'fixture-session', refresh_token: 'fixture-refresh', expires_in: 900 }, user: { id: 'fixture-user', name: 'Studio Notes', email: 'fixture@example.test' }, merchant_profile: profile } }
     else if (request.method() !== 'GET') { failures.push(`Unexpected mutation: ${request.method()} ${url.pathname}`); await route.abort(); return }
     else if (url.pathname.endsWith('/profile')) body = { data: profile }
+    else if (url.pathname.endsWith('/capabilities')) body = { data: notificationCapabilities }
     else if (url.pathname.endsWith('/token')) body = { data: { has_token: false, token: null, token_prefix: null, created_at: null, rotated_at: null } }
     else if (url.pathname.endsWith('/audience/overview')) body = { data: { ...snapshot, merchant_profile_id: profile.id, profile_type: 'platform', active_subscribers: 100, period: url.searchParams.get('period') || '30d', breakdown: snapshot, comparison: { period: '30d', current: snapshot, previous: snapshot }, trend: [], comparison_trend: [], generated_at: '2026-10-07T00:00:00Z' } }
     else body = { data: { items: history, next: null, page_size: 20 } }

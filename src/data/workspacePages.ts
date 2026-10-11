@@ -12,6 +12,7 @@ export const WORKSPACE_PAGES: Record<string, PageDefinition> = {
     mobileHeadingHidden: true,
   },
   compose: {
+    mobileHeadingHidden: true,
     title: 'Send a nudge',
     description: 'Write an update for your subscribers.',
     action: { label: 'View history', icon: 'mdi-history', to: '/nudges' },
@@ -21,6 +22,7 @@ export const WORKSPACE_PAGES: Record<string, PageDefinition> = {
     description: 'Manage your public identity.',
   },
   token: {
+    mobileHeadingHidden: true,
     title: 'API access',
     description: 'Connect your platform. Send something that matters.',
     badge: { label: 'Platform only', icon: 'mdi-shield-lock-outline', tone: 'secondary' },

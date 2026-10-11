@@ -52,6 +52,7 @@ files. See [API client conventions](docs/api-client.md) when adding requests.
 - `npm run test:browser:styles` — verify chart styling from CSS, keyboard interaction and responsive geometry using mocked APIs
 - `npm run test:browser:mobile` — verify the bounded mobile shell, compact filters/chips, internal scroll, sheet focus, deep links and desktop regression using mocked APIs
 - `npm run test:snackbar` / `npm run test:browser:snackbar` — shared feedback lifecycle, top-right placement, 20-second timeout, actions and modal focus
+- `npm run test:rich` / `npm run test:browser:rich` — Rich content, media lifecycle, reviewed sends and responsive fixture journeys; see [Rich notification contract and verification](docs/rich-notifications.md)
 
 ## Structure
 

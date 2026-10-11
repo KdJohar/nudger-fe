@@ -54,6 +54,17 @@ means accepted for processing, not delivered. A transactional recipient supplies
 their own six-digit Nudge ID and must be subscribed to the platform. Keep API
 validation and permission decisions consistent with the existing backend contract.
 
+Rich notification UI is implemented locally on its review branch; see
+[Rich notification contract and verification](rich-notifications.md). Compose,
+the mobile composer sheet and API playground share Basic/Rich fields and media
+state. The backend owns the title/avatar and allowed capabilities. Basic omits
+all Rich request fields; Rich requires destination plus Watch now/Learn more and
+may have a finalized image. History preserves the same content. Existing colours,
+shell and navigation stay unchanged; Compose/API access headings are accessible
+but visually hidden on mobile. No pricing tiers or native push behaviour are
+implemented here. Later pricing may restrict Basic vs Basic+Rich through backend
+capabilities, never client-side invented plan names or payment gates.
+
 ## Runtime and boundaries
 
 API base URLs come from the selected environment file, never a hardcoded localhost

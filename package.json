@@ -4,6 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "test:rich": "node --test tests/RichNotifications.test.mjs",
+    "test:browser:rich": "node tests/browser/richNotifications.mjs",
     "dev": "vite",
     "build": "npm run test:styles && npm run test:pwa && vue-tsc -b && vite build",
     "preview": "vite preview",

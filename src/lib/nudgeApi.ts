@@ -1,6 +1,8 @@
 import { requestApiResponse } from './api'
 import { resolveApiUrl } from './apiUrl'
 import type { ApiNudgeDraft, ApiNudgeRequest, ApiNudgeResult, NudgeExampleLanguage } from '../types/nudgeApi'
+import { buildNotificationRequest } from './notificationContent'
+import type { NotificationDraft } from '../types/notification'
 
 export const NUDGE_SEND_PATH = '/v1/app-nudger/nudge/send'
 export const API_MESSAGE_LIMIT = 4096
@@ -15,18 +17,18 @@ export const NUDGE_EXAMPLE_LANGUAGES: { value: NudgeExampleLanguage; label: stri
 export function validateApiNudge(draft: ApiNudgeDraft): { message?: string; recipientId?: string } {
   const errors: { message?: string; recipientId?: string } = {}
   if (!draft.message.trim()) errors.message = 'Write a message to send.'
-  else if (Array.from(draft.message).length > API_MESSAGE_LIMIT) errors.message = 'Use 4,096 characters or fewer.'
+  else if (Array.from(draft.message.trim()).length > API_MESSAGE_LIMIT) errors.message = 'Use 4,096 characters or fewer.'
   if (draft.nudgeType === 'transactional' && !/^[1-9]\d{5}$/.test(draft.recipientId.trim())) {
     errors.recipientId = 'Enter a six-digit Nudge ID (100000–999999).'
   }
   return errors
 }
 
-export function buildApiNudgeRequest(draft: ApiNudgeDraft): ApiNudgeRequest {
-  const message = draft.message.trim()
+export function buildApiNudgeRequest(draft: ApiNudgeDraft, content: NotificationDraft = { notificationFormat: 'basic', destinationUrl: '', ctaLabel: 'watch_now', mediaUrl: null }): ApiNudgeRequest {
+  const payload = buildNotificationRequest(draft.message, content)
   return draft.nudgeType === 'broadcast'
-    ? { message, nudge_type: 'broadcast' }
-    : { message, nudge_type: 'transactional', nudge_user_id: Number(draft.recipientId.trim()) }
+    ? { ...payload, nudge_type: 'broadcast' }
+    : { ...payload, nudge_type: 'transactional', nudge_user_id: Number(draft.recipientId.trim()) }
 }
 
 // Shell single-quote escaping keeps user-written messages literal in copied cURL examples.

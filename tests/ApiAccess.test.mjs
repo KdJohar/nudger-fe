@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { createSourceLoader, vue, renderer, node, findAll, registerVuetifyStubs } from './helpers/vueHarness.mjs'
+import { notificationCapabilities } from './helpers/notificationFixtures.mjs'
 
 const api = createSourceLoader({ '../config': { getNudgerConfig: () => ({ apiBaseUrl: 'http://example.test' }) } })('src/lib/nudgeApi.ts')
 const fixtureToken = 'nudge_live_fixture-current-key'
@@ -14,8 +15,8 @@ test('API validation matches message and recipient limits, including emoji code 
   assert.ok(api.validateApiNudge({ ...draft, message: ' \n ' }).message)
   assert.ok(api.validateApiNudge({ ...draft, message: 'x'.repeat(4097) }).message)
   assert.equal(api.validateApiNudge({ ...draft, message: '😼'.repeat(4096) }).message, undefined)
-  assert.deepEqual(api.buildApiNudgeRequest({ ...draft, message: ' hello ', nudgeType: 'broadcast', recipientId: '482193' }), { message: 'hello', nudge_type: 'broadcast' })
-  assert.deepEqual(api.buildApiNudgeRequest({ ...draft, recipientId: '482193' }), { message: 'hello', nudge_type: 'transactional', nudge_user_id: 482193 })
+  assert.deepEqual(api.buildApiNudgeRequest({ ...draft, message: ' hello ', nudgeType: 'broadcast', recipientId: '482193' }), { message: 'hello', notification_format: 'basic', nudge_type: 'broadcast' })
+  assert.deepEqual(api.buildApiNudgeRequest({ ...draft, recipientId: '482193' }), { message: 'hello', notification_format: 'basic', nudge_type: 'transactional', nudge_user_id: 482193 })
 })
 
 test('copied cURL and Node.js examples define the current token and keep payloads literal', async () => {
@@ -75,10 +76,12 @@ function playgroundHarness() {
   const requests = [], token = vue.ref('fixture-key'), busy = vue.ref(false), isRevealed = vue.ref(false)
   const scope = vue.effectScope()
   const load = createSourceLoader({
+    vue: { ...vue, onMounted() {} },
     '../lib/apiUrl': { resolveApiUrl: path => `http://example.test${path}` },
     '../lib/nudgeApi': { ...api, sendApiNudge: (...args) => new Promise((resolve, reject) => requests.push({ args, resolve, reject })) },
   })
   const model = scope.run(() => load('src/composables/useNudgeApiPlayground.ts').useNudgeApiPlayground(token, busy, isRevealed))
+  model.notification.capabilities.value = structuredClone(notificationCapabilities)
   return { model, requests, token, busy, isRevealed, dispose: () => scope.stop() }
 }
 

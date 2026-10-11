@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import MediaPreview from './MediaPreview.vue'
+import { ctaText, hasRichAction } from '../../lib/notificationContent'
+import type { NotificationContent } from '../../types/notification'
 
 const props = withDefaults(defineProps<{
   title: string
@@ -7,6 +10,7 @@ const props = withDefaults(defineProps<{
   imageUrl?: string | null
   isActive?: boolean
   variant?: 'default' | 'adaptive'
+  content?: NotificationContent
 }>(), { isActive: true })
 
 const hasImageError = ref(false)
@@ -53,7 +57,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="device-preview" :class="{ 'device-preview--adaptive': variant === 'adaptive' }" aria-label="Mobile lock screen notification preview">
+  <div class="device-preview" :class="{ 'device-preview--adaptive': variant === 'adaptive', 'has-media': content?.notification_format === 'rich' && Boolean(content.media_url) }" aria-label="Mobile lock screen notification preview">
     <div class="device-preview__frame">
       <div class="device-preview__top" aria-hidden="true">
         <span>{{ previewTime }}</span>
@@ -80,6 +84,10 @@ onBeforeUnmount(() => {
             <span class="device-preview__time">now</span>
           </div>
           <p class="device-preview__message">{{ previewMessage }}</p>
+          <template v-if="content?.notification_format === 'rich'">
+            <MediaPreview :src="content.media_url" compact />
+            <span v-if="hasRichAction(content)" class="device-preview__action">{{ ctaText(content.cta_label) }}</span>
+          </template>
         </div>
       </div>
       <div class="device-preview__bottom" aria-hidden="true">

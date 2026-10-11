@@ -1,3 +1,5 @@
+import type { NotificationContent } from './notification'
+
 export type NudgeType = 'transactional' | 'broadcast'
 export type NudgeSender = 'creator' | 'platform' | 'merchant'
 export type NudgeStatus = 'created' | 'processing' | 'completed'
@@ -10,7 +12,7 @@ export interface NudgeDeliveryStats {
   failed_deliveries: number
 }
 
-export interface NudgeHistoryItem {
+export interface NudgeHistoryItem extends NotificationContent {
   id: string
   title: string
   message: string

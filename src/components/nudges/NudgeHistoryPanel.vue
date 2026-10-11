@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import SnackbarFeedback from '../ui/SnackbarFeedback.vue'
+import ContentSummary from '../ui/ContentSummary.vue'
 import type { NudgeHistoryItem, NudgeStatus } from '../../types/nudges'
 
 interface NudgeHistoryPanelProps {
@@ -108,6 +109,7 @@ function completionDuration(item: NudgeHistoryItem): string | null {
             </div>
 
             <p class="nudge-card__message">{{ item.message }}</p>
+            <ContentSummary :content="item" />
 
             <div class="nudge-card__stats" aria-label="Audience delivery stats" role="list">
               <div class="nudge-card__stat nudge-card__stat--audience" role="listitem">
