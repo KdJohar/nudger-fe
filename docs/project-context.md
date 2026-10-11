@@ -23,8 +23,10 @@ configuration. Report discrepancies rather than silently changing scope.
 `nudgee-fe`. The Nudgee local directory's GitHub remote is
 `KdJohar/nudge-app`; the different remote name does not change its role.
 The iOS checkout now has remote `git@github.com:KdJohar/nudge-ios.git` and consolidated
-main `550e115`. A Git push is not an App Store release. Android has a local feature
-branch and no configured remote; do not invent a published Play release.
+main `550e115`. The Android checkout has remote
+`git@github.com:KdJohar/nudge-android.git` and its implementation is consolidated
+on `main`. A Git push is not an App Store or Play release; Play distribution remains
+separate and is not implied by the repository state.
 
 The iOS app is currently a **Capacitor application**, not a completed pure SwiftUI
 rewrite: its build consumes the sibling Nudgee Vue source and packages local assets

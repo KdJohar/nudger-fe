@@ -19,7 +19,7 @@ and an implementation disagree.
 | `nudger-fe` | Production web frontend | This repository is the only frontend deployed to `plugandnudge.com`. |
 | `nudgee-fe` | Reference frontend for mobile-app work | Never deploy this repository to the production web domain. |
 | `nudge-ios` | Native iOS app | Uses the production API directly; it is not the web frontend deployment source. |
-| `nudge-android` | Planned native Android app | Documentation only; not a website source. |
+| `nudge-android` | Native Android receiver app | Uses the shared production API; not a website source. |
 
 The frontend is a static Vue SPA served by Nginx in one Cloud Run service:
 
