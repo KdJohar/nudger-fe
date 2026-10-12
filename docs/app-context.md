@@ -41,7 +41,7 @@ There is no Tailwind or separate official Material Web component layer.
 - `/nudges`: desktop delivery table and single-column mobile cards, default
   Broadcast; platforms additionally get Transactional filtering. Preserve loaded
   entries and scroll during refresh. Rich media opens on demand in a dialog/Sheet.
-  Click totals/CTR use the backend's saved nightly snapshot only: Basic,
+  Click totals/CTR use the backend's saved nightly snapshot only (CTR is one-decimal): Basic,
   uncalculated Rich, and no-success-delivery CTR render `—` rather than an
   invented value.
 - `/compose`: broadcast editor, shared live notification-card preview, confirmation,

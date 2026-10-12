@@ -85,7 +85,6 @@ function handleLoadMore(): void {
                 <th class="ui-record-table__number" scope="col">Total clicks</th>
                 <th class="ui-record-table__number ui-record-table__rate" scope="col"><abbr title="Click-through rate">CTR</abbr></th>
                 <th class="ui-record-table__status" scope="col">Status</th>
-                <th class="ui-record-table__completion" scope="col">Completion</th>
                 <th class="ui-record-table__action" scope="col">CTA</th>
                 <th class="ui-record-table__media" scope="col">Media</th>
               </tr>
@@ -103,10 +102,9 @@ function handleLoadMore(): void {
                 <td class="ui-record-table__number" :aria-describedby="engagementNoteId"><span :aria-label="row.totalClicksLabel">{{ row.totalClicks }}</span></td>
                 <td class="ui-record-table__number" :aria-describedby="engagementNoteId"><span :aria-label="row.ctrLabel">{{ row.ctr }}</span></td>
                 <td>
-                  <v-chip :color="row.statusDetails.color" size="small" variant="tonal"><v-icon start :icon="row.statusDetails.icon" />{{ row.statusDetails.label }}</v-chip>
+                  <v-chip :color="row.statusDetails.color" size="small" variant="tonal"><v-icon start :icon="row.statusDetails.icon" />{{ row.cardStatusLabel }}</v-chip>
                   <span v-if="row.failed" class="ui-record-list__failure">{{ row.failed }}</span>
                 </td>
-                <td><span class="ui-record-list__meta">{{ row.completionLabel }}</span></td>
                 <td><a v-if="row.actionUrl" class="ui-text-action" :href="row.actionUrl" target="_blank" rel="noopener noreferrer" :aria-label="`${row.actionLabel} (opens in a new tab)`">{{ row.actionLabel }}<v-icon icon="mdi-open-in-new" size="14" aria-hidden="true" /></a><span v-else>—</span></td>
                 <td><button v-if="row.mediaUrl" :data-media-id="row.id" class="ui-text-action" type="button" aria-haspopup="dialog" @click="handleViewImage(row)">View image</button><span v-else>—</span></td>
               </tr>

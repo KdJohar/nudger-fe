@@ -36,7 +36,7 @@ remain broadcast-only; the redundant creator notice is removed.
 
 History exposes audience/device/delivered/muted/failed-delivery counts, content,
 status, timestamps and the backend's saved nightly engagement snapshot:
-`stats.total_clicks`, percentage `stats.ctr` (0–100) and top-level
+`stats.total_clicks`, one-decimal percentage `stats.ctr` (0–100) and top-level
 `engagement_as_of`. The frontend never derives engagement from delivery counts.
 Basic and uncalculated Rich records render `—`; a calculated Rich notification
 with no successful deliveries renders `0` clicks and `—` CTR. Failed is a supported

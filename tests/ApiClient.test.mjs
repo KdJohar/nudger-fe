@@ -173,11 +173,11 @@ test('history accepts saved engagement snapshots and rejects impossible analytic
   const { getNudgeHistory } = api.load('src/lib/nudges.ts')
   const rich = {
     id: 'nudge-1', notification_format: 'rich', destination_url: 'https://example.com/watch', cta_label: 'watch_now',
-    engagement_as_of: '2026-10-07T00:00:00Z', stats: { total_clicks: 1, ctr: 33.333 },
+    engagement_as_of: '2026-10-07T00:00:00Z', stats: { total_clicks: 1, ctr: 33.3 },
   }
   const page = await getNudgeHistory(async () => ({ data: { items: [rich], next: null } }))
   assert.equal(page.items[0].stats.total_clicks, 1)
-  assert.equal(page.items[0].stats.ctr, 33.333)
+  assert.equal(page.items[0].stats.ctr, 33.3)
 
   for (const invalid of [
     { ...rich, stats: { total_clicks: -1, ctr: 0 } },

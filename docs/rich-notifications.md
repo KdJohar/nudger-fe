@@ -163,7 +163,9 @@ Approved frontend-only change: `/nudges` shows a desktop table from 960px and
 the existing mobile card pattern below that breakpoint. Keep the existing
 filters, header/shell, pagination, queued/send journey and theme tokens. Columns:
 message, Basic/Rich type, audience, delivered, muted, total clicks, CTR, status,
-completion duration, CTA and media. Mobile cards expose the same information.
+CTA and media. A completed desktop status reads, for example, `Completed in 6s`;
+there is deliberately no separate completion column. Mobile cards expose the same
+information through the existing status chip.
 
 `useNudgeHistory` still owns fetching/pagination. `nudgeHistoryPresentation` maps
 existing response data once for both views; `NudgeHistoryPanel` owns expanded
@@ -176,7 +178,7 @@ expiry from a hardcoded seven-day cutoff: storage cleanup and retention are back
 policy, and a null URL is different from a previously present URL returning 404.
 
 Current source contract: the history API returns saved nightly Rich engagement as
-unique-recipient `stats.total_clicks`, percentage `stats.ctr`, and top-level
+unique-recipient `stats.total_clicks`, one-decimal percentage `stats.ctr`, and top-level
 `engagement_as_of`. Both presentations consume those saved values directly and
 never derive a rate in the browser. Basic and incomplete/uncalculated Rich remain
 **—**; a zero-successful-delivery snapshot is `0` clicks and **—** CTR. Basic also
@@ -253,7 +255,7 @@ deployment was changed.
 
 The backend history contract now provides saved—not live—engagement for Rich
 nudges: `stats.total_clicks` is a unique-recipient integer, `stats.ctr` is a
-percentage from 0 to 100, and `engagement_as_of` is the UTC snapshot cutoff.
+one-decimal percentage from 0 to 100, and `engagement_as_of` is the UTC snapshot cutoff.
 The Nudger client consumes these fields in its one shared history presentation
 mapping for both the desktop table and mobile cards. It never divides delivered
 counts in the browser.

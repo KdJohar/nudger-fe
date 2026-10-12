@@ -72,6 +72,7 @@ try {
     if (width >= 960) {
       assert.equal(await entries.nth(0).locator('td').nth(5).innerText(), '—', 'Basic total clicks remain unavailable')
       assert.equal(await entries.nth(0).locator('td').nth(6).innerText(), '—', 'Basic CTR remains unavailable')
+      assert.equal(await entries.nth(0).locator('.v-chip').innerText(), 'Completed in 5s', 'Status owns completion duration on desktop')
     } else {
       const basicEngagement = entries.nth(0).locator('.ui-record-card__metrics dd')
       assert.equal(await basicEngagement.nth(3).innerText(), '—', 'Basic total clicks remain unavailable')
@@ -105,7 +106,7 @@ try {
     assert.equal(await entries.nth(4).getByText('Queued', { exact: true }).count(), 1)
     assert.equal(await entries.nth(1).getByRole('link').getAttribute('href'), rich.destination_url)
     assert.equal(await entries.nth(1).getByRole('link').getAttribute('rel'), 'noopener noreferrer')
-    if (width >= 960) assert.deepEqual(await page.locator('thead th').allTextContents(), ['Message', 'Type', 'Audience', 'Delivered', 'Muted', 'Total clicks', 'CTR', 'Status', 'Completion', 'CTA', 'Media'])
+    if (width >= 960) assert.deepEqual(await page.locator('thead th').allTextContents(), ['Message', 'Type', 'Audience', 'Delivered', 'Muted', 'Total clicks', 'CTR', 'Status', 'CTA', 'Media'])
     else assert.equal(await page.locator('.header__content').evaluate(el => el.getBoundingClientRect().height), 1)
     const axe = await new AxeBuilder({ page }).include('.ui-record-list').analyze()
     assert.deepEqual(axe.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => n.target) })), [], `${width}/${theme} history accessibility`)

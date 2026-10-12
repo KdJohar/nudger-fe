@@ -2,7 +2,7 @@ import { ctaText, hasRichAction, safeNotificationUrl } from './notificationConte
 import type { NudgeHistoryItem, NudgeStatus } from '../types/nudges'
 
 const numberFormat = new Intl.NumberFormat('en')
-const percentageFormat = new Intl.NumberFormat('en', { maximumFractionDigits: 3 })
+const percentageFormat = new Intl.NumberFormat('en', { maximumFractionDigits: 1 })
 const dateFormat = new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
 const statusDetails = {
   created: { label: 'Queued', color: undefined, icon: 'mdi-clock-outline' },

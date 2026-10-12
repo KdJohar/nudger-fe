@@ -131,7 +131,7 @@ test('table and mobile cards share values and retain expanded messages on resize
     await vue.nextTick()
     assert.equal(byClass(harness.root, 'ui-record-card').length, 0)
     assert.equal(findAll(harness.root, element => element.type === 'table').length, 1)
-    assert.equal(findAll(harness.root, element => element.type === 'th').length, 11)
+    assert.equal(findAll(harness.root, element => element.type === 'th').length, 10)
     assert.equal(findAll(harness.root, element => element.type === 'td')[5].children[0].text, '7')
     assert.equal(findAll(harness.root, element => element.type === 'td')[6].children[0].text, '70%')
     assert.equal(byClass(harness.root, 'ui-expandable-text__copy')[0].text, message)
@@ -162,11 +162,11 @@ test('failure and missing engagement are represented honestly, including zero au
 
 test('saved Rich engagement uses backend percentages without client-side calculation', () => {
   const saved = presentNudgeHistory({ ...item(), notification_format: 'rich', engagement_as_of: '2026-10-07T00:00:00Z',
-    stats: { ...item().stats, total_clicks: 1, ctr: 33.333 } })
+    stats: { ...item().stats, total_clicks: 1, ctr: 33.3 } })
   assert.equal(saved.totalClicks, '1')
-  assert.equal(saved.ctr, '33.333%')
+  assert.equal(saved.ctr, '33.3%')
   assert.match(saved.totalClicksLabel, /Engagement updated Oct 7/)
-  assert.match(saved.ctrLabel, /33.333%/)
+  assert.match(saved.ctrLabel, /33.3%/)
 
   const zeroDeliverySnapshot = presentNudgeHistory({ ...item(), notification_format: 'rich', engagement_as_of: '2026-10-07T00:00:00Z',
     stats: { ...item().stats, total_clicks: 0, ctr: null } })
