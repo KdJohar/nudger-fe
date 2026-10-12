@@ -20,7 +20,7 @@ const fixtures = [item('A basic update'), item('Watch our new tutorial', { ...ri
 async function setup(width, theme) {
   const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: theme, reducedMotion: 'reduce', hasTouch: width < 960 })
   const mediaCalls = [], historyCalls = []
-  const controls = { mode: 'normal', hold: null }
+  const controls = { mode: 'normal', hold: null, items: fixtures }
   await context.addInitScript(() => localStorage.setItem('nudger.refresh_token', 'fixture-refresh'))
   await context.route('**/runtime-config.js', route => route.fulfill({ contentType: 'application/javascript', body: 'window.__NUDGER_CONFIG__={apiBaseUrl:"/",profileImageSourceMaxBytes:10485760,profileImageFinalMaxBytes:1000000,profileImageMaxDimension:1280,profileImageWebpQuality:0.86}' }))
   await context.route('https://assets.example.com/**', route => {
@@ -38,7 +38,7 @@ async function setup(width, theme) {
     if (path.endsWith('/nudges')) {
       historyCalls.push(route.request().url())
       if (controls.hold) await controls.hold
-      return controls.mode === 'error' ? respond(null, 503) : respond({ items: controls.mode === 'empty' ? [] : fixtures, next: null, page_size: 20 })
+      return controls.mode === 'error' ? respond(null, 503) : respond({ items: controls.mode === 'empty' ? [] : controls.items, next: null, page_size: 20 })
     }
     errors.push(`Unexpected API request ${path}`)
     return respond(null, 404)
@@ -46,6 +46,86 @@ async function setup(width, theme) {
   const page = await context.newPage()
   page.on('pageerror', error => errors.push(error.message))
   return { context, page, controls, mediaCalls, historyCalls }
+}
+
+const sizingFixtures = [
+  item('Short message', { message: 'Hi' }),
+  item('Decimal percentage', { ...rich, engagement_as_of: '2026-10-07T00:00:00Z', stats: { ...fixtures[1].stats, total_clicks: 1608, ctr: 13.4 } }),
+  item('Full percentage', { ...rich, engagement_as_of: '2026-10-07T00:00:00Z', stats: { ...fixtures[1].stats, total_clicks: 12000, ctr: 100 } }),
+  item('Long paragraph', { message: longMessage }),
+  item('Unbroken URL', { message: 'https://example.com/' + 'a'.repeat(4060) }),
+  item('Long completion', { completed_at: '2026-10-01T08:14:37Z', stats: { ...fixtures[0].stats, failed_deliveries: 142 } }),
+  item('Completion without time', { completed_at: null }),
+  item('Processing message', { status: 'processing', completed_at: null }),
+  item('Queued message', { status: 'created', completed_at: null }),
+  item('Failed message', { status: 'failed', completed_at: null }),
+]
+
+async function assertDesktopSizing(page) {
+  const geometry = await page.locator('.ui-record-table').evaluate(table => {
+    const headers = [...table.querySelectorAll('th')].map(cell => cell.getBoundingClientRect().width)
+    const rows = [...table.querySelectorAll('tbody tr')].map(row => {
+      const cells = [...row.cells]
+      const chip = row.querySelector('.v-chip')
+      const status = cells[7].getBoundingClientRect()
+      const statusStyle = getComputedStyle(cells[7])
+      const copy = row.querySelector('.ui-expandable-text__copy')
+      const metrics = cells.slice(2, 7).map(cell => {
+        const range = document.createRange()
+        range.selectNodeContents(cell)
+        const rects = [...range.getClientRects()].filter(rect => rect.width > 0)
+        const bounds = cell.getBoundingClientRect()
+        const style = getComputedStyle(cell)
+        return { lines: new Set(rects.map(rect => Math.round(rect.top))).size,
+          fits: rects.every(rect => rect.left >= bounds.left + parseFloat(style.paddingLeft) - 1 && rect.right <= bounds.right - parseFloat(style.paddingRight) + 1) }
+      })
+      return { metrics, widths: cells.map(cell => cell.getBoundingClientRect().width),
+        chipFits: chip.scrollWidth <= chip.clientWidth + 1 && chip.getBoundingClientRect().right <= status.right - parseFloat(statusStyle.paddingRight) + 1,
+        copyFits: copy.scrollWidth <= copy.clientWidth + 1 }
+    })
+    return { headers, rows, scrollWidth: table.parentElement.scrollWidth, visibleWidth: table.parentElement.clientWidth,
+      pageFits: document.documentElement.scrollWidth <= innerWidth }
+  })
+  assert.ok(geometry.pageFits, 'Only the desktop table region may scroll horizontally')
+  for (const row of geometry.rows) {
+    assert.ok(row.chipFits, 'Status chips retain their complete label within the column')
+    assert.ok(row.copyFits, 'Long words and URLs stay inside the message column')
+    assert.ok(row.metrics.every(metric => metric.lines === 1 && metric.fits), 'Whole counts and CTR percentages fit on one line')
+    row.widths.forEach((value, index) => assert.ok(Math.abs(value - geometry.headers[index]) < 1, 'Short and long messages use the same column alignment'))
+  }
+  return geometry
+}
+
+async function verifyDesktopMessages(page, controls, width, theme) {
+  await page.setViewportSize({ width, height: 900 })
+  controls.items = sizingFixtures
+  await page.reload()
+  const entries = page.getByTestId('history-item')
+  await entries.nth(sizingFixtures.length - 1).waitFor()
+  const collapsed = await assertDesktopSizing(page)
+  assert.ok(collapsed.headers[0] < 460, 'Message no longer consumes excessive space beside Type')
+  assert.equal(await entries.nth(1).locator('td').nth(6).innerText(), '13.4%')
+  assert.equal(await entries.nth(2).locator('td').nth(6).innerText(), '100%')
+  assert.equal(await entries.nth(5).locator('.v-chip').innerText(), 'Completed in 14m 37s')
+  assert.equal(await entries.nth(6).locator('.v-chip').innerText(), 'Completed')
+  await page.screenshot({ path: `${output}/desktop-sizing-${width}-${theme}.png` })
+  for (const index of [3, 4]) {
+    await entries.nth(index).getByRole('button', { name: 'Read full message' }).click()
+    assert.equal(await entries.nth(index).locator('.ui-expandable-text__copy').textContent(), sizingFixtures[index].message)
+    const expanded = await assertDesktopSizing(page)
+    expanded.headers.forEach((value, column) => assert.ok(Math.abs(value - collapsed.headers[column]) < 1, 'Expanding a message does not shift column widths'))
+    await entries.nth(index).getByRole('button', { name: 'Show less' }).click()
+  }
+  controls.items = [item('Only short text', { message: 'Hi' }), item('Another short text', { message: 'OK' })]
+  await page.reload()
+  await entries.nth(1).waitFor()
+  const short = await assertDesktopSizing(page)
+  assert.ok(short.headers[0] < 460, 'A list of only short messages also stays balanced')
+  controls.items = [item('Large counts', { ...rich, engagement_as_of: '2026-10-07T00:00:00Z', stats: { total_audience: 1234567890123, total_devices: 1234567890123, delivered_users: 1234567890123, muted_users: 0, failed_deliveries: 0, total_clicks: 1234567890123, ctr: 100 } })]
+  await page.reload()
+  await entries.nth(0).waitFor()
+  await assertDesktopSizing(page)
+  console.log(`PASS desktop sizing ${width}/${theme}: short/long/URL messages, stable expansion, one-line metrics, complete status, large-count scrolling`)
 }
 
 try {
@@ -175,6 +255,7 @@ try {
       await page.getByRole('tab', { name: 'Broadcast' }).click()
       await entries.nth(5).waitFor()
     }
+    if (width >= 960) await verifyDesktopMessages(page, controls, width, theme)
     console.log(`PASS ${width}/${theme}: table/cards, counts/status/duration, no invented engagement, deferred/deleted media, modal/Sheet focus, expansion and resize`)
     await context.close()
   }

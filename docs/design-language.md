@@ -115,6 +115,11 @@ row on mobile. The table alone may scroll horizontally to retain readable column
 never make the page overflow. Keep message emphasis, aligned numeric columns,
 semantic status chips and restrained delivered-count emphasis. CTA/media are
 48px text actions, and images load only in the dialog/Sheet after selection.
+Desktop history reserves space for whole numbers, percentages and completion
+chips. Message takes a bounded share of the table, wraps long words and retains
+the existing full-message disclosure; expanding it must not move other columns.
+If content needs more width, scroll the table region rather than clip status or
+split digits. These rules are scoped to the table, never the mobile card styles.
 Mobile history cards omit the repeated merchant name. Align Basic/Rich and status
 chips at the top; completed status includes the duration once. Keep the sent date,
 then message, a two-row/three-column metrics group (including failed deliveries),

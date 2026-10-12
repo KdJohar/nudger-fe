@@ -275,6 +275,25 @@ accessible snapshot labels, resize, image-viewer focus, and no horizontal overfl
 The wider Chromium mobile-shell fixture also passed at 320/375/390/412/440/768px.
 No live history data, send, upload, deployment, merge, or backend change occurred.
 
+### Desktop history sizing — 12 October 2026
+
+The desktop table bounds Message to a 30% share with a 240–420px text area,
+reserves room for whole metrics/CTR and the existing completion chip, and lets
+content-sized columns grow for unusually large counts. Only the table region
+scrolls when those columns need more room. Long paragraphs, emoji and unbroken
+URLs use the existing full-message disclosure without shifting column alignment.
+The mobile branch and shared message/presentation logic are unchanged.
+
+Verified with mocked browser data in Chrome and WebKit at
+1024/1280/1440/1728px, both themes: short-only lists, long paragraphs, expanded
+messages near the 4096-character limit, unbroken URLs, `13.4%`/`100%`, large counts, and
+completed/missing-time/processing/queued/failed statuses. Geometry assertions
+check whole metrics, unclipped chips, contained message text and stable columns
+after expansion. Existing list/viewer accessibility, focus, resize and recovery
+checks pass. Chrome also passed at 320/375/768px; the 375/768px mobile card
+screenshots were byte-identical before and after the edit in both themes.
+Required UI/audience tests, style/PWA guards, TypeScript and the build passed.
+
 ### Reproduce safely
 
 Run `node --test tests/*.test.mjs`, `npm run build`, then start local Vite with

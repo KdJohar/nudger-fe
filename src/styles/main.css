@@ -552,16 +552,19 @@ button, input, textarea, select { font: inherit; }
 .ui-record-list :focus-visible { outline: 3px solid var(--ui-record-accent); outline-offset: 3px; }
 .ui-record-table__scroll { max-width: 100%; overflow-x: auto; border: 1px solid var(--app-border); border-radius: var(--app-radius); }
 .ui-record-table__scroll:focus-visible { outline-offset: -3px; }
-.ui-record-table { width: 100%; min-width: 984px; border-collapse: separate; border-spacing: 0; table-layout: fixed; color: rgb(var(--v-theme-on-surface)); font-size: 13px; }
-.ui-record-table th, .ui-record-table td { padding: 16px 10px; text-align: start; vertical-align: top; overflow-wrap: anywhere; }
+.ui-record-table { width: 100%; min-width: 1200px; border-collapse: separate; border-spacing: 0; table-layout: auto; color: rgb(var(--v-theme-on-surface)); font-size: 13px; }
+.ui-record-table th, .ui-record-table td { padding: 16px 10px; text-align: start; vertical-align: top; overflow-wrap: normal; }
 .ui-record-table th { background: rgb(var(--v-theme-surface-variant)); color: rgb(var(--v-theme-on-surface-variant)); font-size: 12px; font-weight: 650; overflow-wrap: normal; }
 .ui-record-table td { border-top: 1px solid var(--app-border); }
-.ui-record-table .ui-record-table__message { padding-inline-start: 16px; }
-.ui-record-table .ui-record-table__format { width: 72px; }
+.ui-record-table .ui-record-table__message { width: 30%; padding-inline-start: 16px; }
+.ui-record-table__message .ui-expandable-text { min-width: 240px; max-width: 420px; }
+.ui-record-table .ui-record-table__format { width: 72px; white-space: nowrap; }
 .ui-record-table__message > .ui-record-list__meta { margin-top: 8px; }
-.ui-record-table .ui-record-table__number { width: 80px; text-align: end; font-variant-numeric: tabular-nums; }
-.ui-record-table .ui-record-table__rate { width: 56px; }
-.ui-record-table .ui-record-table__status { width: 124px; }
+.ui-record-table .ui-record-table__number { width: 96px; text-align: end; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ui-record-table .ui-record-table__rate { width: 80px; }
+.ui-record-table .ui-record-table__status { width: 208px; }
+.ui-record-table .v-chip { max-width: none; white-space: nowrap; }
+.ui-record-table .ui-record-list__failure { white-space: nowrap; }
 .ui-record-table .ui-record-table__action { width: 112px; }
 .ui-record-table .ui-record-table__media { width: 96px; }
 .ui-record-table .ui-text-action { margin-top: -12px; margin-bottom: -4px; white-space: nowrap; }

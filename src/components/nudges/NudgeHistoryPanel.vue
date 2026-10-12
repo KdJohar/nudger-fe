@@ -95,13 +95,13 @@ function handleLoadMore(): void {
                   <ExpandableText :text="row.message" :is-expanded="expandedIds.has(row.id)" @update:is-expanded="handleExpand(row.id, $event)" />
                   <span class="ui-record-list__meta">{{ row.sentLabel }}</span>
                 </td>
-                <td><span class="ui-status-tag">{{ row.formatLabel }}</span></td>
+                <td class="ui-record-table__format"><span class="ui-status-tag">{{ row.formatLabel }}</span></td>
                 <td class="ui-record-table__number">{{ row.audience }}</td>
                 <td class="ui-record-table__number ui-record-list__delivered">{{ row.delivered }}</td>
                 <td class="ui-record-table__number">{{ row.muted }}</td>
                 <td class="ui-record-table__number" :aria-describedby="engagementNoteId"><span :aria-label="row.totalClicksLabel">{{ row.totalClicks }}</span></td>
-                <td class="ui-record-table__number" :aria-describedby="engagementNoteId"><span :aria-label="row.ctrLabel">{{ row.ctr }}</span></td>
-                <td>
+                <td class="ui-record-table__number ui-record-table__rate" :aria-describedby="engagementNoteId"><span :aria-label="row.ctrLabel">{{ row.ctr }}</span></td>
+                <td class="ui-record-table__status">
                   <v-chip :color="row.statusDetails.color" size="small" variant="tonal"><v-icon start :icon="row.statusDetails.icon" />{{ row.cardStatusLabel }}</v-chip>
                   <span v-if="row.failed" class="ui-record-list__failure">{{ row.failed }}</span>
                 </td>
