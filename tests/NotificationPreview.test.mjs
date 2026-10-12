@@ -70,9 +70,12 @@ test('empty drafts have hints; long Unicode/multiline text is preserved and revi
     h.props.title = 'A longer merchant name '.repeat(5).trim()
     h.props.message = ('Hello 👋\nA useful update. '.repeat(100)).trim()
     h.props.isLive = false
+    h.props.isExpanded = true
     await vue.nextTick()
     assert.equal(first(h.root, 'ui-notification-preview__title').props.title, h.props.title)
     assert.equal(first(h.root, 'ui-notification-preview__message').text, h.props.message)
     assert.equal(byClass(h.root, 'ui-notification-preview__live').length, 0)
+    assert.equal(byClass(h.root, 'is-expanded').length, 1)
+    assert.equal(first(h.root, 'ui-notification-preview__note').text, 'Appearance varies by device. Review the full message before sending.')
   } finally { h.dispose() }
 })

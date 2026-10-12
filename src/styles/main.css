@@ -361,7 +361,6 @@ button, input, textarea, select { font: inherit; }
 .ui-composer__footer-note + .v-btn { width: 100%; }
 .ui-composer__review { gap: 16px; }
 .ui-message-summary { min-width: 0; padding: 16px; border: 1px solid var(--app-border); border-radius: 16px; background: rgba(var(--v-theme-on-surface), 0.025); }
-.ui-message-summary__title { margin: 0 0 8px; font-size: 14px; line-height: 1.5; }
 .ui-message-summary__text { margin: 0; font-size: 16px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 .ui-composer__success { display: grid; justify-items: center; gap: 16px; padding: 36px 16px 48px; text-align: center; }
 .ui-composer__success-icon { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: rgba(var(--v-theme-success), 0.12); color: rgb(var(--v-theme-success)); }
@@ -494,6 +493,8 @@ button, input, textarea, select { font: inherit; }
 .ui-notification-preview__time { flex: 0 0 auto; color: rgb(var(--v-theme-on-surface-variant)); font-size: 12px; }
 .ui-notification-preview__body { display: flex; align-items: flex-start; gap: 12px; margin-top: 4px; }
 .ui-notification-preview__message { display: -webkit-box; flex: 1; min-width: 0; margin: 0; overflow: hidden; overflow-wrap: anywhere; font-size: 15px; line-height: 1.45; white-space: pre-wrap; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; }
+.ui-notification-preview.is-expanded .ui-notification-preview__card { align-items: start; }
+.ui-notification-preview.is-expanded .ui-notification-preview__message { display: block; overflow: visible; -webkit-line-clamp: unset; line-clamp: unset; }
 .ui-notification-preview__body > .ui-media { flex: 0 0 56px; width: 56px; height: 56px; border-radius: 10px; }
 .ui-notification-preview__body > .ui-media > img { height: 100%; object-fit: cover; }
 .ui-notification-preview__body .ui-media__fallback { height: 100%; flex-direction: column; justify-content: center; gap: 2px; padding: 4px; font-size: 10px; }

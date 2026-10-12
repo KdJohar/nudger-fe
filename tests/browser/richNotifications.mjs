@@ -81,7 +81,7 @@ async function checkFrame(page, width) {
     assert.equal(await page.locator('.v-toolbar__content').count(), 0)
   }
 }
-async function checkPreview(root, hasMedia) {
+async function checkPreview(root, hasMedia, isExpanded = false) {
   const preview = root.locator('.ui-notification-preview').first()
   const geometry = await preview.evaluate(el => {
     const box = selector => {
@@ -91,11 +91,19 @@ async function checkPreview(root, hasMedia) {
     const text = el.querySelector('.ui-notification-preview__message'), style = getComputedStyle(text)
     return { card: box('.ui-notification-preview__card'), sender: box('.ui-notification-preview__sender'), badge: box('.ui-notification-preview__badge'), message: box('.ui-notification-preview__message'),
       media: el.querySelector('.ui-media') ? box('.ui-media') : null,
-      fontSize: parseFloat(style.fontSize), lineHeight: parseFloat(style.lineHeight), clamp: style.webkitLineClamp }
+      fontSize: parseFloat(style.fontSize), lineHeight: parseFloat(style.lineHeight), clamp: style.webkitLineClamp,
+      isExpanded: el.classList.contains('is-expanded'), display: style.display, messageClipped: text.scrollHeight > text.clientHeight + 1 }
   })
   assert.ok(geometry.fontSize >= 14, 'Readable preview type at every width')
-  assert.equal(geometry.clamp, '4')
-  assert.ok(geometry.message.height <= geometry.lineHeight * 4 + 1)
+  assert.equal(geometry.isExpanded, isExpanded)
+  if (isExpanded) {
+    assert.equal(geometry.display, 'block')
+    assert.equal(geometry.messageClipped, false, 'The only review message is fully readable')
+    assert.notEqual(geometry.clamp, '4')
+  } else {
+    assert.equal(geometry.clamp, '4')
+    assert.ok(geometry.message.height <= geometry.lineHeight * 4 + 1)
+  }
   assert.ok(geometry.sender.width >= 40, 'Sender has a prominent avatar')
   assert.ok(geometry.badge.x > geometry.sender.x && geometry.badge.x < geometry.sender.right, 'Small Nudge badge overlaps sender bottom-right')
   assert.ok(geometry.badge.y > geometry.sender.y && geometry.badge.y < geometry.sender.bottom)
@@ -123,7 +131,7 @@ async function checkConfirmation(dialog) {
   const geometry = await dialog.evaluate(el => {
     const frame = el.querySelector('.ui-dialog')
     const bounds = frame.getBoundingClientRect()
-    const body = frame.querySelector('.ui-dialog__body'), message = frame.querySelector('.ui-message-summary')
+    const body = frame.querySelector('.ui-dialog__body'), message = frame.querySelector('.ui-notification-preview__message, .ui-message-summary__text')
     const buttons = [...frame.querySelectorAll('.ui-dialog__footer button')].map(button => button.getBoundingClientRect())
     return { bottom: bounds.bottom, viewport: innerHeight, bodyHeight: body.clientHeight, overflow: frame.scrollHeight > frame.clientHeight + 1,
       messageClipped: message.scrollHeight > message.clientHeight + 1, horizontalOverflow: body.scrollWidth > body.clientWidth + 1,
@@ -136,10 +144,16 @@ async function checkConfirmation(dialog) {
   assert.equal(geometry.overflow, false, 'Frame itself does not scroll or clip controls')
   assert.equal(geometry.messageClipped, false, 'Full message cannot shrink or have its own scrollbar')
   assert.equal(geometry.horizontalOverflow, false, 'Long messages and destinations wrap inside the body')
+  assert.equal(await dialog.getByText('Rich', { exact: true }).count(), 0, 'Review omits the format badge')
+  assert.equal(await dialog.getByText('Full message', { exact: true }).count(), 0, 'Review omits the redundant message heading')
+  if (await dialog.locator('.ui-notification-preview').count()) {
+    assert.equal(await dialog.locator('.ui-message-summary').count(), 0, 'Composer review shows its message only in the notification card')
+    assert.equal(await dialog.locator('.ui-notification-preview__note').innerText(), 'Appearance varies by device. Review the full message before sending.')
+  }
 }
 async function checkSheetReview(sheet) {
   const geometry = await sheet.evaluate(el => {
-    const body = el.querySelector('.ui-sheet__body'), footer = el.querySelector('.ui-sheet__footer').getBoundingClientRect(), message = el.querySelector('.ui-message-summary')
+    const body = el.querySelector('.ui-sheet__body'), footer = el.querySelector('.ui-sheet__footer').getBoundingClientRect(), message = el.querySelector('.ui-notification-preview__message')
     return { footerBottom: footer.bottom, viewport: innerHeight, bodyBottom: body.getBoundingClientRect().bottom,
       footerTop: footer.top, messageClipped: message.scrollHeight > message.clientHeight + 1,
       horizontalOverflow: body.scrollWidth > body.clientWidth + 1 }
@@ -149,6 +163,9 @@ async function checkSheetReview(sheet) {
   assert.equal(geometry.messageClipped, false, 'Sheet full message has no nested scroll or clamp')
   assert.equal(geometry.horizontalOverflow, false)
   assert.equal(await sheet.locator('.ui-content-summary .ui-media').count(), 0, 'Sheet does not repeat the preview thumbnail')
+  assert.equal(await sheet.locator('.ui-message-summary').count(), 0)
+  assert.equal(await sheet.getByText('Rich', { exact: true }).count(), 0)
+  assert.equal(await sheet.locator('.ui-notification-preview__note').innerText(), 'Appearance varies by device. Review the full message before sending.')
 }
 try {
   for (const width of widths) for (const theme of ['light', 'dark']) {
@@ -185,7 +202,7 @@ try {
     await page.getByRole('button', { name: 'Review & send', exact: true }).click()
     const dialog = page.getByRole('dialog')
     await dialog.waitFor()
-    await checkPreview(dialog, true)
+    await checkPreview(dialog, true, true)
     await checkConfirmation(dialog)
     assert.equal(await dialog.locator('.ui-notification-preview__live').count(), 0)
     assert.ok(await dialog.getByText('Learn more', { exact: true }).count())
@@ -267,7 +284,8 @@ try {
       await sheet.getByRole('textbox', { name: 'Your message', exact: true }).fill(sheetMessage)
       await sheet.getByRole('button', { name: 'Review & send', exact: true }).click()
       await sheet.getByRole('heading', { name: 'Ready to send?' }).waitFor()
-      assert.equal(await sheet.locator('.ui-message-summary__text').textContent(), sheetMessage)
+      assert.equal(await sheet.locator('.ui-notification-preview__message').textContent(), sheetMessage)
+      await checkPreview(sheet, true, true)
       await checkSheetReview(sheet)
       const footerBefore = await sheet.locator('.ui-sheet__footer').boundingBox()
       await sheet.locator('.ui-content-summary__destination').scrollIntoViewIfNeeded()
@@ -289,7 +307,7 @@ try {
       await sheet.getByRole('textbox', { name: 'Your message', exact: true }).fill('Image-less Rich still works')
       await checkPreview(sheet, false)
       await sheet.getByRole('button', { name: 'Review & send', exact: true }).click()
-      await checkPreview(sheet, false)
+      await checkPreview(sheet, false, true)
       await checkSheetReview(sheet)
       await sheet.getByRole('button', { name: 'Send nudge', exact: true }).click()
       await sheet.getByText('Your update is on its way.').waitFor()
@@ -314,7 +332,8 @@ try {
     assert.equal(await preview.locator('.ui-notification-preview__message').textContent(), longMessage)
     await page.getByRole('button', { name: 'Review & send' }).click()
     const dialog = page.getByRole('dialog')
-    assert.equal(await dialog.locator('.ui-message-summary__text').textContent(), longMessage, 'Full text is not truncated in review')
+    assert.equal(await dialog.locator('.ui-notification-preview__message').textContent(), longMessage, 'Full text is not truncated in review')
+    await checkPreview(dialog, true, true)
     await checkConfirmation(dialog)
     await dialog.getByRole('button', { name: 'Keep editing' }).click()
     await select(page, 'Basic')
@@ -337,6 +356,7 @@ try {
     await reviewButton.click()
     const dialog = page.getByRole('dialog'), body = dialog.getByRole('region', { name: 'Broadcast review details' })
     await checkConfirmation(dialog)
+    await checkPreview(dialog, true, true)
     assert.equal(await dialog.locator('.ui-media').count(), 1, 'Review must not repeat a large image below the thumbnail')
     await page.waitForFunction(() => document.activeElement?.matches('.ui-dialog__header h2'))
     const axe = await new AxeBuilder({ page }).include('.ui-dialog').analyze()
@@ -358,7 +378,8 @@ try {
     await reviewButton.click()
     await page.waitForFunction(() => document.activeElement?.matches('.ui-dialog__header h2'))
     await checkConfirmation(dialog)
-    assert.equal(await dialog.locator('.ui-message-summary__text').textContent(), longMessage)
+    assert.equal(await dialog.locator('.ui-notification-preview__message').textContent(), longMessage)
+    await checkPreview(dialog, false, true)
     assert.equal(await dialog.locator('.ui-content-summary__destination > span').textContent(), longDestination)
     const footerBefore = await dialog.locator('.ui-dialog__footer').boundingBox()
     await body.focus()

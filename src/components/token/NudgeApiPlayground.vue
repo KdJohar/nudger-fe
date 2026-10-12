@@ -136,7 +136,7 @@ function handleSubmit(): void {
           <p :id="`${fieldId}-confirmation-description`" class="ui-guide__description">{{ confirmedPayload?.nudge_type === 'transactional' ? `Recipient Nudge ID: ${confirmedPayload.nudge_user_id}` : 'This broadcast will be queued for all eligible subscribers.' }} This is a live API request.</p>
         </template>
         <MessageSummary :message="confirmedPayload?.message || ''" />
-        <ContentSummary v-if="confirmedPayload" :content="confirmedPayload" />
+        <ContentSummary v-if="confirmedPayload" :content="confirmedPayload" :is-format-visible="false" />
         <p class="ui-guide__hint">{{ endpoint }}</p>
         <template #footer>
           <v-btn variant="text" rounded="pill" :disabled="isSending" @click="isConfirmationOpen = false">Cancel</v-btn>

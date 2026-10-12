@@ -6,7 +6,6 @@ import NotificationPreview from '../ui/NotificationPreview.vue'
 import NotificationFields from './NotificationFields.vue'
 import ContentSummary from '../ui/ContentSummary.vue'
 import DialogFrame from '../ui/DialogFrame.vue'
-import MessageSummary from '../ui/MessageSummary.vue'
 import { useAuth } from '../../composables/useAuth'
 import { useBroadcastComposer } from '../../composables/useBroadcastComposer'
 
@@ -103,9 +102,8 @@ function handleDialogClosed(): void {
           <h2 :id="dialogTitleId" ref="confirmationTitle" class="ui-panel__title" tabindex="-1">Send to your subscribers?</h2>
           <p :id="dialogDescriptionId" class="ui-editor-panel__hint">This queues a broadcast now. Check your message before sending.</p>
         </template>
-        <NotificationPreview :title="title" :message="confirmedMessage" :image-url="profile?.profile_image_url" :content="confirmedPayload || undefined" :is-live="false" />
-        <MessageSummary :message="confirmedMessage" />
-        <ContentSummary v-if="confirmedPayload" :content="confirmedPayload" :is-media-visible="false" />
+        <NotificationPreview :title="title" :message="confirmedMessage" :image-url="profile?.profile_image_url" :content="confirmedPayload || undefined" :is-live="false" is-expanded />
+        <ContentSummary v-if="confirmedPayload" :content="confirmedPayload" :is-media-visible="false" :is-format-visible="false" />
         <template #footer>
           <v-btn variant="text" rounded="pill" :disabled="isSending" @click="handleEdit">Keep editing</v-btn>
           <v-btn color="secondary" variant="flat" rounded="pill" prepend-icon="mdi-send-outline" :loading="isSending" :disabled="!isProfileReady || isSending" @click="handleSend">Send nudge</v-btn>

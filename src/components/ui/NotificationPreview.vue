@@ -11,8 +11,9 @@ const props = withDefaults(defineProps<{
   message: string
   imageUrl?: string | null
   isLive?: boolean
+  isExpanded?: boolean
   content?: NotificationContent
-}>(), { isLive: true })
+}>(), { isLive: true, isExpanded: false })
 
 const previewTitle = computed(() => props.title.trim() || 'Your profile name')
 const previewMessage = computed(() => props.message.trim() || 'Your message will appear here as you write it.')
@@ -21,7 +22,7 @@ const mediaUrl = computed(() => props.content?.notification_format === 'rich'
 </script>
 
 <template>
-  <figure class="ui-notification-preview" aria-label="Notification preview">
+  <figure class="ui-notification-preview" :class="{ 'is-expanded': isExpanded }" aria-label="Notification preview">
     <figcaption class="ui-notification-preview__caption">
       <span>Notification preview</span>
       <span v-if="isLive" class="ui-notification-preview__live"><span aria-hidden="true" /> Live</span>

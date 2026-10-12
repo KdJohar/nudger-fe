@@ -44,20 +44,23 @@ test('shared message summary retains full multiline Unicode text and escapes mar
     const text = byClass(root, 'ui-message-summary__text')[0]
     assert.equal(text.text, message)
     assert.equal(text.children.length, 0, 'Message is plain text, never HTML')
-    assert.equal(byClass(root, 'ui-message-summary__title')[0].type, 'h3')
+    assert.equal(byClass(root, 'ui-message-summary__title').length, 0)
   } finally { app.unmount() }
 })
 
 test('review suppresses duplicate media while preserving CTA; history media remains on by default', async () => {
-  const props = vue.reactive({ content: { ...rich }, isMediaVisible: undefined })
+  const props = vue.reactive({ content: { ...rich }, isMediaVisible: undefined, isFormatVisible: undefined })
   const root = node('root'), app = renderer.createApp({ setup: () => () => vue.h(ContentSummary, props) })
   app.component('VIcon', attrs => vue.h('i', attrs))
   app.mount(root)
   try {
     assert.equal(byClass(root, 'ui-media').length, 1)
+    assert.equal(byClass(root, 'ui-status-tag').length, 1, 'History retains format metadata by default')
     props.isMediaVisible = false
+    props.isFormatVisible = false
     await vue.nextTick()
     assert.equal(byClass(root, 'ui-media').length, 0)
+    assert.equal(byClass(root, 'ui-status-tag').length, 0)
     assert.equal(byClass(root, 'ui-content-summary__destination')[0].children[0].text, 'Watch now')
     assert.equal(byClass(root, 'ui-content-summary__destination')[0].children[1].text, rich.destination_url)
     props.content.notification_format = 'basic'

@@ -81,9 +81,10 @@ Review & send → immutable review → edit the preserved draft or send once. Th
 existing workflow, API payloads, preview and queued/error states stay unchanged.
 `DialogFrame` owns a non-shrinking header and action footer around one keyboard-
 scrollable body for desktop Compose and API playground. Outer Vuetify dialogs
-retain focus trapping, dismissal and busy-state ownership. `MessageSummary`
-renders full text without clamping or a second scrollbar in both dialogs and the
-existing mobile Sheet. `ContentSummary` can hide its media when the shared
+retain focus trapping, dismissal and busy-state ownership. Composer dialog and
+mobile Sheet display the full message once in expanded `NotificationPreview`;
+playground displays it once in a heading-free `MessageSummary`. `ContentSummary`
+hides its format badge in review and can hide its media when the shared
 notification preview already shows it; CTA and destination remain visible.
 
 Verify actual mounted dialogs, not just preview-card dimensions: footer inside
@@ -129,6 +130,32 @@ Verification for the correction:
 
 Physical iPhone/Android PWA/keyboard testing and screen-reader testing were not
 performed. Browser engine and viewport simulations do not replace device checks.
+
+### Review content refinement — 12 October 2026
+
+Approved: remove the duplicate Full message section and Rich badge from review.
+Desktop Compose and mobile Sheet retain one notification card, optional image,
+Watch now/Learn more and destination, plus the exact note: “Appearance varies by
+device. Review the full message before sending.” The shared preview's `isExpanded`
+state removes the message clamp only during review, so all text remains readable
+in the single scrolling body and actions remain pinned. Live editing retains the
+four-line illustrative preview. Playground retains one plain-text message/media
+summary without the redundant heading or format badge. History format metadata
+and queued-result presentation retain their existing defaults.
+
+Existing review checks now assert no repeated message/format label, the retained
+note, natural-height message inside the expanded card, wrapped URLs and fixed
+actions. Tests use fixture sends/uploads only.
+
+Verified for this refinement: **142 source/component tests passed**, plus the
+local Docker build/type/style/PWA checks. Chrome passed at 320/375/414/768/1440px;
+WebKit passed at 320/375/768/1440px, both themes, against the rebuilt container.
+Both engines passed the six short-screen/landscape confirmation sizes above,
+long-message Sheet review and playground review, image failures, busy/rejected
+sends, keyboard/focus restoration and Axe checks. Screenshots were reviewed in
+`/tmp/nudger-review-clean-chrome` and `/tmp/nudger-review-clean-webkit`. The existing
+local tunnel returned HTTP 200. Physical-device checks were not repeated for this
+content-only refinement; no real sends/uploads or production deployment occurred.
 
 ### Reproduce safely
 
