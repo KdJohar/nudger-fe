@@ -2,6 +2,8 @@
 import { computed, ref, toRef, useId, watch } from 'vue'
 import NotificationFields from '../nudges/NotificationFields.vue'
 import ContentSummary from '../ui/ContentSummary.vue'
+import DialogFrame from '../ui/DialogFrame.vue'
+import MessageSummary from '../ui/MessageSummary.vue'
 import ChoiceCards from '../ui/ChoiceCards.vue'
 import CodeBlock from '../ui/CodeBlock.vue'
 import SnackbarFeedback from '../ui/SnackbarFeedback.vue'
@@ -17,6 +19,7 @@ const notificationFields = ref<InstanceType<typeof NotificationFields> | null>(n
 const messageInput = ref<{ focus: () => void } | null>(null)
 const recipientInput = ref<{ focus: () => void } | null>(null)
 const sendButton = ref<{ $el: HTMLElement } | null>(null)
+const confirmationTitle = ref<HTMLElement | null>(null)
 const fieldId = useId()
 const nudgeTypes: ChoiceCardItem<ApiNudgeType>[] = [
   { value: 'broadcast', title: 'Broadcast', icon: 'mdi-bullhorn-outline', description: 'An update for your audience.', detail: 'All eligible subscribers' },
@@ -126,15 +129,20 @@ function handleSubmit(): void {
         <v-btn to="/nudges" variant="text" append-icon="mdi-arrow-right">View nudge history</v-btn>
       </template>
     </div>
-    <v-dialog v-model="isConfirmationOpen" max-width="480" :persistent="isSending" aria-labelledby="send-confirmation-heading" @after-leave="sendButton?.$el.focus({ preventScroll: true })">
-      <v-card class="ui-confirmation">
-        <h2 id="send-confirmation-heading" class="ui-panel__title">{{ confirmedPayload?.nudge_type === 'broadcast' ? 'Send to your audience?' : 'Send to this subscriber?' }}</h2>
-        <p class="ui-guide__description">{{ confirmedPayload?.nudge_type === 'transactional' ? `Recipient Nudge ID: ${confirmedPayload.nudge_user_id}` : 'This broadcast will be queued for all eligible subscribers.' }} This is a live API request.</p>
-        <blockquote class="ui-confirmation__message">{{ confirmedPayload?.message }}</blockquote>
+    <v-dialog v-model="isConfirmationOpen" max-width="480" :persistent="isSending" :aria-labelledby="`${fieldId}-confirmation`" :aria-describedby="`${fieldId}-confirmation-description`" @after-enter="confirmationTitle?.focus({ preventScroll: true })" @after-leave="sendButton?.$el.focus({ preventScroll: true })">
+      <DialogFrame body-label="API request review details" :is-busy="isSending">
+        <template #header>
+          <h2 :id="`${fieldId}-confirmation`" ref="confirmationTitle" class="ui-panel__title" tabindex="-1">{{ confirmedPayload?.nudge_type === 'broadcast' ? 'Send to your audience?' : 'Send to this subscriber?' }}</h2>
+          <p :id="`${fieldId}-confirmation-description`" class="ui-guide__description">{{ confirmedPayload?.nudge_type === 'transactional' ? `Recipient Nudge ID: ${confirmedPayload.nudge_user_id}` : 'This broadcast will be queued for all eligible subscribers.' }} This is a live API request.</p>
+        </template>
+        <MessageSummary :message="confirmedPayload?.message || ''" />
         <ContentSummary v-if="confirmedPayload" :content="confirmedPayload" />
         <p class="ui-guide__hint">{{ endpoint }}</p>
-        <div class="ui-confirmation__actions"><v-btn variant="text" :disabled="isSending" @click="isConfirmationOpen = false">Cancel</v-btn><v-btn color="secondary" :loading="isSending" @click="handleSend">Confirm &amp; send</v-btn></div>
-      </v-card>
+        <template #footer>
+          <v-btn variant="text" rounded="pill" :disabled="isSending" @click="isConfirmationOpen = false">Cancel</v-btn>
+          <v-btn color="secondary" variant="flat" rounded="pill" :loading="isSending" :disabled="isSending" @click="handleSend">Confirm &amp; send</v-btn>
+        </template>
+      </DialogFrame>
     </v-dialog>
   </section>
 </template>

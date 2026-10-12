@@ -21,8 +21,8 @@ async function select(page, name) {
   assert.ok(await radio.isChecked())
 }
 async function setup(width, theme, options = {}) {
-  const context = await browser.newContext({ viewport: { width, height: 844 }, colorScheme: theme, reducedMotion: 'reduce', hasTouch: width < 960 })
-  const calls = [], controls = { failImport: false, failCapabilities: false, failSend: false, uploadCount: 0, uploadMime: 'image/webp' }
+  const context = await browser.newContext({ viewport: { width, height: options.height || Number(process.env.RICH_HEIGHT) || 844 }, colorScheme: theme, reducedMotion: 'reduce', hasTouch: width < 960 })
+  const calls = [], controls = { failImport: false, failCapabilities: false, failSend: false, sendGate: null, uploadCount: 0, uploadMime: 'image/webp' }
   await context.addInitScript(() => localStorage.setItem('nudger.refresh_token', 'fixture-refresh'))
   await context.addInitScript(() => {
     const send = XMLHttpRequest.prototype.send
@@ -49,7 +49,7 @@ async function setup(width, theme, options = {}) {
     controls.uploadCount++
     return route.fulfill({ status: 200, headers: { 'Access-Control-Allow-Origin': '*' }, body: '' })
   })
-  await context.route('**/v1/**', route => {
+  await context.route('**/v1/**', async route => {
     const request = route.request(), path = new URL(request.url()).pathname, payload = request.postData() ? request.postDataJSON() : null
     calls.push({ path, method: request.method(), payload })
     const respond = (data, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify({ message: status >= 400 ? `Request failed with status ${status}` : 'Fixture', data, errors: {} }) })
@@ -59,7 +59,10 @@ async function setup(width, theme, options = {}) {
     if (path.endsWith('/capabilities')) return respond(controls.failCapabilities ? null : { ...notificationCapabilities, delivery_types: options.creator ? ['broadcast'] : ['broadcast', 'transactional'] })
     if (path.endsWith('/media/presign')) { controls.uploadMime = payload.content_type; return respond({ asset_id: 'asset', method: 'PUT', upload_url: 'https://storage.example.com/asset?signature=fixture', headers: { 'Content-Type': controls.uploadMime }, expires_in: 300 }) }
     if (path.endsWith('/media/finalize') || path.endsWith('/media/youtube')) return respond(controls.failImport ? null : { asset_id: 'asset', media_url: 'https://assets.example.com/ready.webp', content_type: 'image/webp', size_bytes: 8000, width: 192, height: 192 }, controls.failImport ? 503 : 200)
-    if (path.endsWith('/nudge/broadcast') || path.endsWith('/nudge/send')) return respond(controls.failSend ? null : { status: 'queued', message_id: 'fixture-message', merchant_profile_id: merchant.id, nudge_type: payload?.nudge_type }, controls.failSend ? 503 : 202)
+    if (path.endsWith('/nudge/broadcast') || path.endsWith('/nudge/send')) {
+      if (controls.sendGate) await controls.sendGate
+      return respond(controls.failSend ? null : { status: 'queued', message_id: 'fixture-message', merchant_profile_id: merchant.id, nudge_type: payload?.nudge_type }, controls.failSend ? 503 : 202)
+    }
     if (path.endsWith('/nudges')) return respond({ items: [richHistory], next: null, page_size: 20 })
     if (path.endsWith('/token')) return respond({ has_token: true, token: 'nudge_live_fixture', token_prefix: 'fixture', created_at: new Date().toISOString(), rotated_at: null })
     errors.push(`Unexpected fixture request: ${request.method()} ${path}`)
@@ -116,6 +119,37 @@ async function checkFieldOrder(root) {
   assert.ok(layout.labelGap >= 11, 'Format label has deliberate spacing before its controls')
   assert.ok(layout.targets.every(height => height >= 48), 'Choices retain touch targets')
 }
+async function checkConfirmation(dialog) {
+  const geometry = await dialog.evaluate(el => {
+    const frame = el.querySelector('.ui-dialog')
+    const bounds = frame.getBoundingClientRect()
+    const body = frame.querySelector('.ui-dialog__body'), message = frame.querySelector('.ui-message-summary')
+    const buttons = [...frame.querySelectorAll('.ui-dialog__footer button')].map(button => button.getBoundingClientRect())
+    return { bottom: bounds.bottom, viewport: innerHeight, bodyHeight: body.clientHeight, overflow: frame.scrollHeight > frame.clientHeight + 1,
+      messageClipped: message.scrollHeight > message.clientHeight + 1, horizontalOverflow: body.scrollWidth > body.clientWidth + 1,
+      buttons: buttons.map(box => ({ top: box.top, bottom: box.bottom, height: box.height })) }
+  })
+  assert.equal(geometry.buttons.length, 2)
+  assert.ok(geometry.buttons.every(box => box.top >= 0 && box.bottom <= Math.min(geometry.bottom, geometry.viewport) + 1), 'Confirmation actions must remain inside the visible modal, without scrolling')
+  assert.ok(geometry.buttons.every(box => box.height >= 48), 'Confirmation actions retain 48px targets')
+  assert.ok(geometry.bodyHeight >= 32, 'There is usable space for the scrollable review')
+  assert.equal(geometry.overflow, false, 'Frame itself does not scroll or clip controls')
+  assert.equal(geometry.messageClipped, false, 'Full message cannot shrink or have its own scrollbar')
+  assert.equal(geometry.horizontalOverflow, false, 'Long messages and destinations wrap inside the body')
+}
+async function checkSheetReview(sheet) {
+  const geometry = await sheet.evaluate(el => {
+    const body = el.querySelector('.ui-sheet__body'), footer = el.querySelector('.ui-sheet__footer').getBoundingClientRect(), message = el.querySelector('.ui-message-summary')
+    return { footerBottom: footer.bottom, viewport: innerHeight, bodyBottom: body.getBoundingClientRect().bottom,
+      footerTop: footer.top, messageClipped: message.scrollHeight > message.clientHeight + 1,
+      horizontalOverflow: body.scrollWidth > body.clientWidth + 1 }
+  })
+  assert.ok(geometry.footerBottom <= geometry.viewport + 1)
+  assert.ok(geometry.bodyBottom <= geometry.footerTop + 1, 'Sheet content stays above pinned actions')
+  assert.equal(geometry.messageClipped, false, 'Sheet full message has no nested scroll or clamp')
+  assert.equal(geometry.horizontalOverflow, false)
+  assert.equal(await sheet.locator('.ui-content-summary .ui-media').count(), 0, 'Sheet does not repeat the preview thumbnail')
+}
 try {
   for (const width of widths) for (const theme of ['light', 'dark']) {
     const { context, page, calls } = await setup(width, theme)
@@ -152,6 +186,7 @@ try {
     const dialog = page.getByRole('dialog')
     await dialog.waitFor()
     await checkPreview(dialog, true)
+    await checkConfirmation(dialog)
     assert.equal(await dialog.locator('.ui-notification-preview__live').count(), 0)
     assert.ok(await dialog.getByText('Learn more', { exact: true }).count())
     await dialog.getByRole('button', { name: 'Send nudge', exact: true }).click()
@@ -165,6 +200,7 @@ try {
     await checkPreview(page, false)
     await page.getByRole('textbox', { name: 'Your message', exact: true }).fill('Basic update')
     await page.getByRole('button', { name: 'Review & send', exact: true }).click()
+    await checkConfirmation(page.getByRole('dialog'))
     await page.getByRole('dialog').getByRole('button', { name: 'Send nudge', exact: true }).click()
     await page.getByRole('heading', { name: 'Your nudge is queued.' }).waitFor()
     assert.deepEqual(calls.filter(item => item.path.endsWith('/nudge/broadcast'))[1].payload, { message: 'Basic update', notification_format: 'basic' })
@@ -207,6 +243,7 @@ try {
     assert.ok((await code.innerText()).includes('notification_format'))
     assert.ok(!(await code.innerText()).includes('nudge_live_fixture'))
     await page.getByRole('button', { name: 'Send test nudge' }).click()
+    await checkConfirmation(page.getByRole('dialog'))
     await page.getByRole('dialog').getByRole('button', { name: 'Confirm & send' }).click()
     await page.locator('.v-snackbar__content').getByText('Nudge queued. Check nudge history for delivery progress.').waitFor()
     const sent = calls.filter(item => item.path.endsWith('/nudge/send'))
@@ -226,6 +263,25 @@ try {
       await checkFieldOrder(sheet)
       await sheet.locator('.ui-notification-preview').scrollIntoViewIfNeeded()
       await page.screenshot({ path: `${output}/mobile-sheet-rich.png` })
+      const sheetMessage = 'A useful update 👋\n'.repeat(90) + 'The final line.'
+      await sheet.getByRole('textbox', { name: 'Your message', exact: true }).fill(sheetMessage)
+      await sheet.getByRole('button', { name: 'Review & send', exact: true }).click()
+      await sheet.getByRole('heading', { name: 'Ready to send?' }).waitFor()
+      assert.equal(await sheet.locator('.ui-message-summary__text').textContent(), sheetMessage)
+      await checkSheetReview(sheet)
+      const footerBefore = await sheet.locator('.ui-sheet__footer').boundingBox()
+      await sheet.locator('.ui-content-summary__destination').scrollIntoViewIfNeeded()
+      await checkSheetReview(sheet)
+      assert.ok(Math.abs((await sheet.locator('.ui-sheet__footer').boundingBox()).y - footerBefore.y) < 1)
+      await page.setViewportSize({ width, height: 500 })
+      // The existing sheet follows visualViewport asynchronously after a resize.
+      await page.waitForFunction(() => Math.abs(document.querySelector('.ui-sheet__footer').getBoundingClientRect().bottom - innerHeight) <= 1)
+      await checkSheetReview(sheet)
+      await page.screenshot({ path: `${output}/mobile-sheet-review-short.png` })
+      await page.setViewportSize({ width, height: 844 })
+      await page.waitForFunction(() => Math.abs(document.querySelector('.ui-sheet__footer').getBoundingClientRect().bottom - innerHeight) <= 1)
+      await sheet.getByRole('button', { name: 'Edit message', exact: true }).click()
+      assert.equal(await sheet.getByRole('textbox', { name: 'Your message', exact: true }).inputValue(), sheetMessage)
       await sheet.getByRole('button', { name: 'Remove image', exact: true }).click()
       controls.failImport = true
       await sheet.getByRole('button', { name: 'Use YouTube thumbnail' }).click()
@@ -234,6 +290,7 @@ try {
       await checkPreview(sheet, false)
       await sheet.getByRole('button', { name: 'Review & send', exact: true }).click()
       await checkPreview(sheet, false)
+      await checkSheetReview(sheet)
       await sheet.getByRole('button', { name: 'Send nudge', exact: true }).click()
       await sheet.getByText('Your update is on its way.').waitFor()
       await page.screenshot({ path: `${output}/mobile-sheet-result.png` })
@@ -257,13 +314,108 @@ try {
     assert.equal(await preview.locator('.ui-notification-preview__message').textContent(), longMessage)
     await page.getByRole('button', { name: 'Review & send' }).click()
     const dialog = page.getByRole('dialog')
-    assert.equal(await dialog.locator('.ui-editor-confirmation__message p').textContent(), longMessage, 'Full text is not truncated in review')
+    assert.equal(await dialog.locator('.ui-message-summary__text').textContent(), longMessage, 'Full text is not truncated in review')
+    await checkConfirmation(dialog)
     await dialog.getByRole('button', { name: 'Keep editing' }).click()
     await select(page, 'Basic')
     await checkPreview(page, false)
     assert.equal(await page.getByRole('textbox', { name: 'Your message' }).inputValue(), longMessage)
     assert.equal(calls.filter(item => item.path.endsWith('/nudge/broadcast')).length, 0, 'Preview and editing never send')
     await context.close(); console.log(`PASS long text, image failures, full review and Basic reset ${width}px`)
+  }
+  // Real Vuetify geometry: a textContent assertion alone missed the clipped footer.
+  for (const [width, height] of [[1728, 761], [1440, 600], [768, 600], [375, 500], [320, 568], [844, 390]]) for (const theme of ['light', 'dark']) {
+    const { context, page, calls, controls } = await setup(width, theme, { height })
+    await page.goto(`${base}/compose`)
+    await select(page, 'Rich')
+    const messageInput = page.getByRole('textbox', { name: 'Your message', exact: true })
+    await messageInput.fill('I am going live in the next 15 minutes. 👋')
+    await page.getByRole('textbox', { name: 'Destination URL' }).fill(richHistory.destination_url)
+    await page.getByRole('button', { name: 'Use YouTube thumbnail' }).click()
+    await page.getByText('Image ready.', { exact: true }).waitFor()
+    const reviewButton = page.getByRole('button', { name: 'Review & send', exact: true })
+    await reviewButton.click()
+    const dialog = page.getByRole('dialog'), body = dialog.getByRole('region', { name: 'Broadcast review details' })
+    await checkConfirmation(dialog)
+    assert.equal(await dialog.locator('.ui-media').count(), 1, 'Review must not repeat a large image below the thumbnail')
+    await page.waitForFunction(() => document.activeElement?.matches('.ui-dialog__header h2'))
+    const axe = await new AxeBuilder({ page }).include('.ui-dialog').analyze()
+    assert.deepEqual(axe.violations.map(item => ({ id: item.id, impact: item.impact })), [], `Confirmation accessibility ${width}x${height}/${theme}`)
+    await page.screenshot({ path: `${output}/confirmation-${width}x${height}-${theme}.png` })
+    // Keyboard focus stays within the dialog, including backwards navigation.
+    for (const key of ['Tab', 'Tab', 'Tab', 'Tab', 'Shift+Tab', 'Shift+Tab', 'Shift+Tab', 'Shift+Tab']) {
+      // macOS WebKit's default keyboard mode uses Option-Tab for all controls.
+      await page.keyboard.press(process.env.BROWSER_ENGINE === 'webkit' ? `Alt+${key}` : key)
+      await page.waitForFunction(() => document.querySelector('.v-dialog.v-overlay--active')?.contains(document.activeElement), null, { timeout: 3000 })
+    }
+    await page.keyboard.press('Escape')
+    await dialog.waitFor({ state: 'hidden' })
+    await page.waitForFunction(() => document.activeElement?.textContent?.includes('Review & send'))
+    const longMessage = 'A detailed update 👋\n'.repeat(100) + 'x'.repeat(300) + '\nEnd of full message.'
+    const longDestination = 'https://example.com/' + 'destination-'.repeat(60)
+    await messageInput.fill(longMessage)
+    await page.getByRole('textbox', { name: 'Destination URL' }).fill(longDestination)
+    await reviewButton.click()
+    await page.waitForFunction(() => document.activeElement?.matches('.ui-dialog__header h2'))
+    await checkConfirmation(dialog)
+    assert.equal(await dialog.locator('.ui-message-summary__text').textContent(), longMessage)
+    assert.equal(await dialog.locator('.ui-content-summary__destination > span').textContent(), longDestination)
+    const footerBefore = await dialog.locator('.ui-dialog__footer').boundingBox()
+    await body.focus()
+    await page.keyboard.press('End')
+    await page.waitForFunction(() => { const el = document.querySelector('.ui-dialog__body'); return el.scrollTop > 0 })
+    await dialog.locator('.ui-content-summary__destination').scrollIntoViewIfNeeded()
+    await checkConfirmation(dialog)
+    const footerAfter = await dialog.locator('.ui-dialog__footer').boundingBox()
+    assert.ok(Math.abs(footerAfter.y - footerBefore.y) < 1, 'Actions do not move when the content scrolls')
+    await page.screenshot({ path: `${output}/confirmation-long-${width}x${height}-${theme}.png` })
+    if (width === 1728 && theme === 'light') {
+      let releaseSend
+      controls.sendGate = new Promise(resolve => { releaseSend = resolve })
+      controls.failSend = true
+      await dialog.getByRole('button', { name: 'Send nudge', exact: true }).click()
+      assert.ok(await dialog.getByRole('button', { name: 'Keep editing' }).isDisabled())
+      assert.ok(await dialog.getByRole('button', { name: 'Send nudge', exact: true }).isDisabled())
+      await page.keyboard.press('Escape')
+      assert.ok(await dialog.isVisible(), 'Busy confirmation cannot be dismissed')
+      await checkConfirmation(dialog)
+      releaseSend()
+      await page.locator('.v-snackbar__content').getByText('Request failed with status 503').waitFor()
+      await dialog.getByRole('button', { name: 'Keep editing' }).click()
+      assert.equal(await messageInput.inputValue(), longMessage, 'A failed send retains the full draft')
+      assert.equal(calls.filter(item => item.path.endsWith('/nudge/broadcast')).length, 1)
+    } else {
+      await dialog.getByRole('button', { name: 'Keep editing' }).click()
+      assert.equal(calls.filter(item => item.path.endsWith('/nudge/broadcast')).length, 0)
+    }
+    await context.close(); console.log(`PASS confirmation geometry, full text, keyboard and actions ${width}x${height} ${theme}`)
+  }
+  for (const width of [375, 1440]) for (const theme of ['light', 'dark']) {
+    const { context, page, calls } = await setup(width, theme, { height: 500 })
+    await page.goto(`${base}/token`)
+    await select(page, 'Rich')
+    const longMessage = 'A detailed API update 👋\n'.repeat(80)
+    await page.getByRole('textbox', { name: 'Message', exact: true }).fill(longMessage)
+    await page.getByRole('textbox', { name: 'Destination URL' }).fill(richHistory.destination_url)
+    await page.getByRole('button', { name: 'Use YouTube thumbnail' }).click()
+    await page.getByText('Image ready.', { exact: true }).waitFor()
+    const trigger = page.getByRole('button', { name: 'Send test nudge' })
+    await trigger.click()
+    const dialog = page.getByRole('dialog')
+    await page.waitForFunction(() => document.activeElement?.matches('.ui-dialog__header h2'))
+    await checkConfirmation(dialog)
+    assert.equal(await dialog.locator('.ui-media').count(), 1, 'Playground retains its only media preview')
+    assert.equal(await dialog.locator('.ui-message-summary__text').textContent(), longMessage.trim())
+    const footerBefore = await dialog.locator('.ui-dialog__footer').boundingBox()
+    await dialog.locator('.ui-content-summary__destination').scrollIntoViewIfNeeded()
+    await checkConfirmation(dialog)
+    assert.ok(Math.abs((await dialog.locator('.ui-dialog__footer').boundingBox()).y - footerBefore.y) < 1)
+    await page.screenshot({ path: `${output}/playground-review-${width}-${theme}.png` })
+    await dialog.getByRole('button', { name: 'Cancel', exact: true }).click()
+    await page.waitForFunction(() => document.activeElement?.textContent?.includes('Send test nudge'))
+    assert.equal(calls.filter(item => item.path.endsWith('/nudge/send')).length, 0)
+    assert.equal(await page.getByRole('textbox', { name: 'Message', exact: true }).inputValue(), longMessage)
+    await context.close(); console.log(`PASS playground short-screen full review ${width}px ${theme}`)
   }
   assert.deepEqual(errors, [])
 } finally { await browser.close() }

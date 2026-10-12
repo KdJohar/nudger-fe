@@ -6,6 +6,7 @@ import SnackbarFeedback from '../ui/SnackbarFeedback.vue'
 import NotificationPreview from '../ui/NotificationPreview.vue'
 import NotificationFields from './NotificationFields.vue'
 import ContentSummary from '../ui/ContentSummary.vue'
+import MessageSummary from '../ui/MessageSummary.vue'
 import { useAuth } from '../../composables/useAuth'
 import { useBroadcastComposer } from '../../composables/useBroadcastComposer'
 
@@ -87,8 +88,8 @@ watch(isOpen, (opened) => {
 
       <div v-if="isReviewing" class="ui-composer__review">
         <span class="ui-composer__audience"><v-icon icon="mdi-account-group-outline" size="18" /> Broadcast to your subscribers</span>
-        <div class="ui-composer__review-message"><strong>Full message</strong><p>{{ confirmedMessage }}</p></div>
-        <ContentSummary v-if="confirmedPayload" :content="confirmedPayload" />
+        <MessageSummary :message="confirmedMessage" />
+        <ContentSummary v-if="confirmedPayload" :content="confirmedPayload" :is-media-visible="false" />
         <p class="ui-composer__copy">Subscribers receive this based on their notification preferences.</p>
       </div>
 

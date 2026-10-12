@@ -233,6 +233,17 @@ The Nudges FAB uses the same Vuetify `smAndDown` breakpoint as AppShell: mobile 
 
 `BroadcastComposer` and `NudgeComposerSheet` share `useBroadcastComposer` for validation, the reviewed message snapshot, duplicate-send protection and queued/error state. Both use `MessageField` for labels, counting, validation hints and input focus. No draft is persisted. The existing session-authenticated broadcast endpoint and permissions remain unchanged. A queued response is not delivery confirmation; link to history and retain the draft after a failed send. Do not automatically resend. Verify confirmation, focus restoration, failure recovery, long messages, both themes and mobile/desktop with mocked requests only.
 
+Compose and playground send dialogs use `DialogFrame` inside their existing
+`VDialog`: header and footer are outside one labelled, keyboard-scrollable body.
+The frame uses a semantic surface rather than a direct `VCard`, avoiding Vuetify's
+direct-card flex defaults shrinking message sections. `MessageSummary` renders
+the complete message at natural height in both dialogs and the mobile Sheet.
+`ContentSummary.isMediaVisible=false` avoids duplicating the thumbnail already in
+`NotificationPreview`; the CTA/destination always remain in review. History and
+playground retain their media summary by default. Feature composables still own
+review snapshots, permissions, dismissal while busy and sends; these primitives
+do not fetch, mutate drafts or deliver notifications.
+
 ### API access body
 
 `TokenView` composes `TokenCredentials`, `NudgeApiPlayground`, and `NudgeApiReference` inside the existing page window. The platform-only route guard and navigation filter remain in the router and AppShell. `useApiToken` owns token loading/create/rotate/copy state; secrets stay in memory, start masked, and reset to masked after replacement. `useNudgeApiPlayground` owns the draft, validation, reviewed payload snapshot, one-shot send, and response. `CodeBlock` is the shared selectable/copyable code primitive. All styling stays in main.css.

@@ -138,6 +138,8 @@ rebuilding their markup. Feature containers own fetching, permissions and workfl
 | `NotificationPreview.vue` | One notification card shared by compose, mobile sheet and review; merchant avatar with Nudge badge, title/message, optional right thumbnail; no phone frame or live clock |
 | `PhonePreview.vue` | Public landing-page demo; distinct from the live sender preview |
 | `Sheet.vue` | Labelled bottom sheet, header/body/footer slots, drag/tap close, focus handling and keyboard viewport adaptation |
+| `DialogFrame.vue` | Shared send-review surface inside VDialog; header/footer slots never shrink, only the labelled body scrolls; VDialog/feature retains focus and send-state ownership |
+| `MessageSummary.vue` | Full plain-text review in composer dialog, mobile sheet and API playground; natural height, no clamp or nested scrollbar |
 | `CodeBlock.vue` | Selectable code and explicit copying; secret display and copied code have separate contracts |
 | `SnackbarHost.vue` | Single App-owned feedback surface, queue rendering and accessible announcements |
 | `SnackbarFeedback.vue` | Bridge feature success/error state to shared feedback; lifecycle-aware cleanup |

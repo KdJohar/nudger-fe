@@ -75,13 +75,68 @@ Verified for this refinement:
 - Existing mobile-native regression passed in Chrome at **320/375/390/440/412/768px** plus **844×390 landscape**, both themes. Simulated iPhone 14/16 Pro Max and Android inset/no-inset dock checks passed after scrolling/navigation/viewport changes. This is not a physical-device keyboard/PWA test.
 - Screenshots reviewed under `/tmp/nudger-card-container` and `/tmp/nudger-card-webkit`; the local Nudger container was rebuilt and its existing tunnel returned HTTP 200. No production deployment, backend/Nudgee/mobile app change, real upload or real send was performed.
 
+### Confirmation layout contract — 12 October 2026
+
+Review & send → immutable review → edit the preserved draft or send once. The
+existing workflow, API payloads, preview and queued/error states stay unchanged.
+`DialogFrame` owns a non-shrinking header and action footer around one keyboard-
+scrollable body for desktop Compose and API playground. Outer Vuetify dialogs
+retain focus trapping, dismissal and busy-state ownership. `MessageSummary`
+renders full text without clamping or a second scrollbar in both dialogs and the
+existing mobile Sheet. `ContentSummary` can hide its media when the shared
+notification preview already shows it; CTA and destination remain visible.
+
+Verify actual mounted dialogs, not just preview-card dimensions: footer inside
+the viewport before/after body scrolling, full message natural height, wrapped
+URLs, one thumbnail, focus/escape/restore, Basic and Rich with/without media,
+failed images, rejected/busy sends, narrow/short screens, Chrome/WebKit and both
+themes. Use fixtures only; never send the user's open draft.
+
+Root cause: Vuetify's direct `VCard` flex layout overrode the intended grid. The
+overflowing full-message block could shrink to its label while a second large
+image pushed the actions outside the visible card. Earlier checks asserted full
+text in the DOM and preview geometry, but not visible modal/footer geometry. The
+new footer assertion failed against the old code at 1728×761 before the fix.
+
+Verification for the correction:
+
+- **142 source/component tests passed**, including three new shared review-layout
+  tests, UI/audience tests, style ownership and PWA checks. Type check, production
+  build and local Docker build passed; no dependency changes. Existing large-chunk
+  warning and two moderate dependency audit findings remain outside this fix.
+- Chrome Rich fixture suite passed against the rebuilt localhost:5174 container
+  at **320/375/414/768/1440px**, both themes. WebKit passed against local Vite at
+  **320/375/414/1440px**, both themes. Both engines passed the complete confirmation
+  matrix and short-screen playground/Sheet checks. The
+  confirmation matrix also covers **1728×761, 1440×600, 768×600, 375×500, 320×568
+  and 844×390**, both themes. Keyboard checks use macOS WebKit's Option-Tab mode
+  to include all controls; Chrome uses Tab. Assertions wait for the documented
+  dialog focus transition and Sheet visual-viewport resize handler to settle.
+- Geometry checks cover fixed actions before/after body scrolling, natural-height
+  full text, long destination wrapping, one preview thumbnail, Basic, image-less
+  Rich, broken images, Escape/focus restoration, busy-state dismissal blocking and
+  rejected-send draft preservation. Short-screen playground and long-message
+  mobile Sheet reviews include their media/CTA and pinned-footer checks.
+- Axe reported no violations within the changed form/preview and confirmation
+  frame in the exercised themes/viewports. The existing Chrome mobile-native
+  suite passed at **320/375/390/440/412/768px and 844×390**, both themes, including
+  simulated iPhone/Android insets and route/viewport changes.
+- Screenshots reviewed under `/tmp/nudger-dialog-chrome`,
+  `/tmp/nudger-dialog-container` and `/tmp/nudger-dialog-webkit`. Only the local Nudger container was rebuilt; the
+  existing local route and tunnel both returned HTTP 200. The user's open draft
+  was not reloaded or submitted. No real send/upload, production deployment,
+  backend/Nudgee/native code change, merge or push belongs to this correction.
+
+Physical iPhone/Android PWA/keyboard testing and screen-reader testing were not
+performed. Browser engine and viewport simulations do not replace device checks.
+
 ### Reproduce safely
 
 Run `node --test tests/*.test.mjs`, `npm run build`, then start local Vite with
 the existing selected env. `npm run test:browser:rich` defaults to localhost:5174.
 If Playwright/Axe are only installed in the sibling receiver checkout, provide
 `PLAYWRIGHT_MODULE` and `AXE_MODULE` as their absolute entry paths. Optional
-`UI_BASE_URL`, `RICH_SCREENSHOT_DIR`, `RICH_VIEWPORTS` and `BROWSER_ENGINE` select
+`UI_BASE_URL`, `RICH_SCREENSHOT_DIR`, `RICH_VIEWPORTS`, `RICH_HEIGHT` and `BROWSER_ENGINE` select
 only the fixture test harness; they do not change app configuration. All API,
 storage PUT, thumbnail and destination requests are intercepted.
 
