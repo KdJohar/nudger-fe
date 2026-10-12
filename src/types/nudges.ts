@@ -2,7 +2,7 @@ import type { NotificationContent } from './notification'
 
 export type NudgeType = 'transactional' | 'broadcast'
 export type NudgeSender = 'creator' | 'platform' | 'merchant'
-export type NudgeStatus = 'created' | 'processing' | 'completed'
+export type NudgeStatus = 'created' | 'processing' | 'completed' | 'failed'
 
 export interface NudgeDeliveryStats {
   total_audience: number

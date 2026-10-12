@@ -6,7 +6,8 @@ const props = withDefaults(defineProps<{
   title: string
   description?: string
   isBusy?: boolean
-}>(), { description: '', isBusy: false })
+  closeLabel?: string
+}>(), { description: '', isBusy: false, closeLabel: 'Close composer' })
 const isOpen = defineModel<boolean>({ default: false })
 const titleId = useId()
 const descriptionId = useId()
@@ -80,7 +81,7 @@ watch(isOpen, async (opened) => {
     stopViewportTracking()
     restoreBackground()
   }
-})
+}, { immediate: true })
 
 function handleAfterLeave(): void {
   resetDrag()
@@ -122,7 +123,7 @@ defineExpose({ focusTitle })
         <button
           class="ui-sheet__handle"
           type="button"
-          aria-label="Close composer"
+          :aria-label="closeLabel"
           title="Drag down or tap to close"
           :disabled="isBusy"
           @click="handleHandleClick"
@@ -137,7 +138,7 @@ defineExpose({ focusTitle })
           <v-btn
             class="ui-sheet__close"
             data-sheet-close
-            aria-label="Close composer"
+            :aria-label="closeLabel"
             icon="mdi-close"
             variant="text"
             rounded="circle"

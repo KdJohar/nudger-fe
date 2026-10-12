@@ -124,7 +124,11 @@ then replace the route with login even when server logout fails.
 
 The page frame owns width and margins. Content windows are transparent and borderless. Individual body cards may have their own borders; do not style the window as another card.
 
-Use one responsive DOM tree and existing theme tokens. Never hard-code separate Audience/Nudges header spacing or duplicate mobile page layouts to solve a CSS difference.
+Use one responsive DOM tree and existing theme tokens for layout changes. History
+is an approved structural exception: a desktop table and mobile cards share one
+presentation mapping, request state, expansion state and image-viewer intent. Only
+the active branch is mounted at the existing 960px breakpoint. Never hard-code
+separate Audience/Nudges header spacing or duplicate mobile page layouts.
 
 ## Boundaries
 

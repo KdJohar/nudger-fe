@@ -110,7 +110,11 @@ keeps document scrolling and sticky filters. Mobile pins shared controls and
 filters, and scrolls only the content window. Audience and Nudges visually hide
 the heading/description row, retaining a single accessible h1. Other workspace
 headings remain visible. Windows are transparent and borderless;
-cards own their borders. History uses one card per row on mobile and desktop.
+cards own their borders. History uses a compact table on desktop and one card per
+row on mobile. The table alone may scroll horizontally to retain readable columns;
+never make the page overflow. Keep message emphasis, aligned numeric columns,
+semantic status chips and restrained delivered-count emphasis. CTA/media are
+48px text actions, and images load only in the dialog/Sheet after selection.
 Do not rebuild the page frame when filters change or requests fail.
 See [mobile design context](mobile-design-context.md) for viewport and gesture rules.
 

@@ -44,14 +44,14 @@ async function setup(width, theme, height = 812, touch = false) {
 async function open(page, path) {
   await page.goto(`${baseUrl}${path}`)
   await page.locator('.page-layout .header__title').waitFor({ state: 'attached' })
-  if (path === '/nudges') await page.locator('.nudge-card').first().waitFor()
+  if (path === '/nudges') await page.locator('[data-testid=history-item]').first().waitFor()
   if (path === '/audience') await page.locator('.ui-stat').first().waitFor()
   await page.evaluate(() => document.fonts.ready)
 }
 
 async function desktopLayout(page) {
   return page.evaluate(() => {
-    const selectors = ['.app-drawer', '.app-main__container', '.header__content', '.header__title', '.header__filters', '.ui-pill-tabs', '.page-layout__window', '.ui-stat', '.ui-panel', '.nudge-card', '.ui-detail-card', '.ui-editor-panel', '.nudges-view__fab']
+    const selectors = ['.app-drawer', '.app-main__container', '.header__content', '.header__title', '.header__filters', '.ui-pill-tabs', '.page-layout__window', '.ui-stat', '.ui-panel', '[data-testid=history-item]', '.ui-detail-card', '.ui-editor-panel', '.nudges-view__fab']
     return Object.fromEntries(selectors.map(selector => [selector, [...document.querySelectorAll(selector)].map(el => {
       const rect = el.getBoundingClientRect(), style = getComputedStyle(el)
       return { x: rect.x, y: rect.y, width: rect.width, height: rect.height, font: style.font, padding: style.padding, gap: style.gap, background: style.backgroundColor, border: style.border, overflow: style.overflow }
@@ -143,16 +143,16 @@ try {
         return el.getBoundingClientRect().height - parseFloat(style.top) - parseFloat(style.bottom)
       })
       assert.equal(track, 32, 'Nudgee-style visual track retains larger interactive targets')
-      assert.ok(await page.locator('.nudge-card .v-chip').first().evaluate(el => el.getBoundingClientRect().height <= 24))
+      assert.ok(await page.locator('[data-testid=history-item] .v-chip').first().evaluate(el => el.getBoundingClientRect().height <= 24))
       await tabs.first().focus()
       await page.keyboard.press('End')
       await page.keyboard.press('Enter')
       assert.equal(await tabs.last().getAttribute('aria-selected'), 'true')
-      await page.waitForFunction(() => document.querySelector('.nudge-list')?.getAttribute('aria-busy') === 'false')
+      await page.waitForFunction(() => document.querySelector('.ui-record-list__content')?.getAttribute('aria-busy') === 'false')
       assert.equal(await panel.evaluate(el => el.scrollTop), 400, 'Filter refresh retains the actual scroll owner offset')
       await page.waitForFunction(() => !document.querySelector('.app-bottom-nav').classList.contains('app-bottom-nav--compact'))
       await panel.evaluate(el => { el.scrollTop = el.scrollHeight })
-      const last = await page.locator('.nudge-card').last().boundingBox(), nav = await page.locator('.app-bottom-nav').boundingBox()
+      const last = await page.locator('[data-testid=history-item]').last().boundingBox(), nav = await page.locator('.app-bottom-nav').boundingBox()
       assert.ok(last.y + last.height <= nav.y, 'Final card clears the floating navigation')
       const fab = await page.locator('.nudges-view__fab').boundingBox()
       assert.ok(last.y + last.height <= fab.y, 'Final card also clears the floating send action')

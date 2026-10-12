@@ -38,8 +38,10 @@ There is no Tailwind or separate official Material Web component layer.
 - `/login`, `/auth/callback`: Google sign-in handoff; use the existing auth flow.
 - `/onboarding`, `/pending`: shared profile setup/image handling and functional logout. Pending review is only for a submitted, non-active profile (including a suspended profile when the backend represents it as `is_active: false`); direct navigation or refresh with an active profile redirects to `/audience`, and an account without a submitted profile returns to `/onboarding`.
 - `/audience`: audience trend, reach and subscriber metrics; 7/30/90-day filtering.
-- `/nudges`: single-column history cards, default Broadcast; platforms additionally
-  get Transactional filtering. Preserve loaded cards and scroll during refresh.
+- `/nudges`: desktop delivery table and single-column mobile cards, default
+  Broadcast; platforms additionally get Transactional filtering. Preserve loaded
+  entries and scroll during refresh. Rich media opens on demand in a dialog/Sheet;
+  missing click metrics show — until the history API exposes them.
 - `/compose`: broadcast editor, shared live notification-card preview, confirmation,
   and queued result. The Nudges FAB opens this route on desktop and a sheet on mobile.
 - `/profile`: read-only display name/handle/type; editable About, website/social links,

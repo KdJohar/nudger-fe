@@ -6,6 +6,7 @@
   "scripts": {
     "test:rich": "node --test tests/RichNotifications.test.mjs",
     "test:browser:rich": "node tests/browser/richNotifications.mjs",
+    "test:browser:history": "node tests/browser/nudgeHistory.mjs",
     "dev": "vite",
     "build": "npm run test:styles && npm run test:pwa && vue-tsc -b && vite build",
     "preview": "vite preview",

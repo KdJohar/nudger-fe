@@ -29,10 +29,17 @@ successful payload. HTTP error status, API error codes, retryability and field
 errors remain available. A 204/205 is explicitly an empty response; consumers that
 require data must validate it. No response body or token is written to logs.
 
-Nudge history retains cards on errors, retries the failed page, blocks duplicate
+Nudge history retains entries on errors, retries the failed page, blocks duplicate
 page loads, deduplicates overlapping pages, and aborts obsolete requests on filter
 change/unmount. Filter refreshes replace data only after success. Creator accounts
 remain broadcast-only; the redundant creator notice is removed.
+
+History exposes audience/device/delivered/muted/failed-delivery counts, content,
+status and timestamps. It does not yet expose total clicks or CTR. The frontend
+renders those as unavailable (—), without inventing response fields or deriving
+engagement from delivery counts. Failed is a supported status. A valid media URL
+may later return 404 after cleanup; this is an image-viewer fallback, not a history
+request failure.
 
 Verification: `npm run test:api`, existing UI/audience/profile/compose/API access
 tests, `npm run build`, and `npm run test:browser:api` against the local Docker

@@ -157,6 +157,65 @@ sends, keyboard/focus restoration and Axe checks. Screenshots were reviewed in
 local tunnel returned HTTP 200. Physical-device checks were not repeated for this
 content-only refinement; no real sends/uploads or production deployment occurred.
 
+### History table and mobile cards — 12 October 2026
+
+Approved frontend-only change: `/nudges` shows a desktop table from 960px and
+the existing mobile card pattern below that breakpoint. Keep the existing
+filters, header/shell, pagination, queued/send journey and theme tokens. Columns:
+message, Basic/Rich type, audience, delivered, muted, total clicks, CTR, status,
+completion duration, CTA and media. Mobile cards expose the same information.
+
+`useNudgeHistory` still owns fetching/pagination. `nudgeHistoryPresentation` maps
+existing response data once for both views; `NudgeHistoryPanel` owns expanded
+message IDs and the selected image. `ExpandableText` reveals long messages in
+place. `ImageViewer` reuses `MediaPreview`, `DialogFrame` and `Sheet`; image loading
+starts only on demand. The active overlay survives rotation, and the next open
+chooses the current viewport. Failure/deletion shows the existing image-unavailable
+fallback while message, CTA and delivery details remain readable. Do not infer
+expiry from a hardcoded seven-day cutoff: storage cleanup and retention are backend
+policy, and a null URL is different from a previously present URL returning 404.
+
+Verified source contract: the existing history API has no click totals or CTR.
+Both display **—**, never fake zero or an invented API field; Basic also has no CTA
+or media. A short note explains unavailable engagement. A future backend contract
+must expose defined unique-recipient click totals and CTR before real metrics can
+be shown. No backend, schema, API endpoint or native-app changes belong here.
+
+Failed status is distinct from queued/processing/completed. Completion duration is
+shown only for completed sends with valid ordered timestamps. Preserve zero
+counts, failed-delivery details, loaded entries during refresh/error, and explicit
+retry. Verification covers theme/viewport table-card changes, message expansion,
+safe CTA links, absent/deleted media, dialog/Sheet focus, loading/empty/error,
+pagination and lifecycle consistency using fixtures only.
+
+Verification for this frontend-only change:
+
+- 146 source/component tests passed, including status/duration/zero-count rules,
+  Basic/Rich actions, retained refresh state and expansion across table/card views.
+  Required UI/audience checks, CSS ownership, PWA guards, type checks and local
+  Docker build passed.
+- `test:browser:history` passed in Chrome and WebKit at 320/375/768/1024/1440px,
+  both themes, against localhost:5174. Covered initial loading, empty/error/retry,
+  all four statuses, absent engagement, deferred media requests, missing/deleted
+  images, safe CTA links, full messages, keyboard focus/Escape, background inertness,
+  one open viewer through rotation, restored focus and no extra history fetch on
+  resize. Axe found no violations in the changed list/viewer surfaces.
+- Existing API pagination suite passed at 320/375/768/1440px, both themes, including
+  retry/deduplication, creator restrictions, cursor safety and retained scrolling.
+  Its obsolete public-footer docs-link assertion now reflects the already-approved
+  removal; its fixtures also supply the existing notification capabilities response.
+- Existing Chrome composer/playground/confirmation tests passed at 375/1440px,
+  both themes, plus long text and the six short/landscape confirmation sizes. The
+  shared Sheet now supports an image-specific close label and initializes focus/
+  background handling even when mounted already open.
+- Mobile shell suite passed at 320/375/390/440/412/768px and 844×390 landscape,
+  both themes, plus simulated iPhone/Android safe areas. Screenshot review includes
+  `/tmp/nudger-history-final-chrome` and `/tmp/nudger-history-final-webkit`.
+  Physical-device/PWA and screen-reader testing were not performed.
+- Only the local Nudger container was rebuilt. No backend change, production
+  deployment, real send/upload, merge or push was performed. Click/CTR analytics
+  remain unavailable until separately added to the backend history response.
+
 ### Reproduce safely
 
 Run `node --test tests/*.test.mjs`, `npm run build`, then start local Vite with
