@@ -5,7 +5,7 @@ import { vue, createSourceLoader, renderer, node, findAll, byClass, registerVuet
 const isMobile = vue.ref(true)
 const loadSource = createSourceLoader({
   vuetify: { useDisplay: () => ({ smAndDown: isMobile }) },
-  '../ui/ImageViewer.vue': { default: { props: ['modelValue', 'src', 'alt'], setup: () => () => null } },
+  './NudgeHistoryDetails.vue': { default: { props: ['modelValue', 'item'], setup: props => () => vue.h('div', { 'data-component': 'NudgeHistoryDetails', modelValue: props.modelValue, item: props.item }) } },
 })
 const NudgeHistoryPanel = loadSource('src/components/nudges/NudgeHistoryPanel.vue').default
 const item = (id = 'broadcast-1', type = 'broadcast') => ({
@@ -131,14 +131,17 @@ test('table and mobile cards share values and retain expanded messages on resize
     await vue.nextTick()
     assert.equal(byClass(harness.root, 'ui-record-card').length, 0)
     assert.equal(findAll(harness.root, element => element.type === 'table').length, 1)
-    assert.equal(findAll(harness.root, element => element.type === 'th').length, 10)
+    assert.equal(findAll(harness.root, element => element.type === 'th').length, 9)
     assert.equal(findAll(harness.root, element => element.type === 'td')[5].children[0].text, '7')
     assert.equal(findAll(harness.root, element => element.type === 'td')[6].children[0].text, '70%')
     assert.equal(byClass(harness.root, 'ui-expandable-text__copy')[0].text, message)
     assert.equal(findAll(harness.root, element => element.type === 'img').length, 0, 'No history image is fetched before opening')
-    const action = findAll(harness.root, element => element.type === 'a')[0]
-    assert.equal(action.props.href, 'https://example.com/watch')
-    assert.equal(action.props.rel, 'noopener noreferrer')
+    assert.equal(findAll(harness.root, element => element.type === 'a').length, 0, 'Secondary content is available in More stats')
+    findAll(harness.root, element => element.props['data-stats-id'])[0].props.onClick()
+    await vue.nextTick()
+    const details = findAll(harness.root, element => element.props['data-component'] === 'NudgeHistoryDetails')[0]
+    assert.equal(details.props.modelValue, true)
+    assert.equal(details.props.item.destination_url, 'https://example.com/watch')
     assert.equal(harness.events.length, 0, 'Presentation changes never fetch again')
   } finally { harness.dispose(); isMobile.value = true }
 })
@@ -165,14 +168,18 @@ test('saved Rich engagement uses backend percentages without client-side calcula
     stats: { ...item().stats, total_clicks: 1, ctr: 33.3 } })
   assert.equal(saved.totalClicks, '1')
   assert.equal(saved.ctr, '33.3%')
-  assert.match(saved.totalClicksLabel, /Engagement updated Oct 7/)
+  assert.match(saved.totalClicksLabel, /Snapshot through Oct 7/)
   assert.match(saved.ctrLabel, /33.3%/)
 
   const zeroDeliverySnapshot = presentNudgeHistory({ ...item(), notification_format: 'rich', engagement_as_of: '2026-10-07T00:00:00Z',
-    stats: { ...item().stats, total_clicks: 0, ctr: null } })
+    stats: { ...item().stats, total_audience: 0, total_clicks: 0, ctr: null } })
   assert.equal(zeroDeliverySnapshot.totalClicks, '0')
   assert.equal(zeroDeliverySnapshot.ctr, '—')
-  assert.match(zeroDeliverySnapshot.ctrLabel, /no successful deliveries/)
+  assert.match(zeroDeliverySnapshot.ctrLabel, /no inbox audience/)
+  const inboxOnly = presentNudgeHistory({ ...item(), notification_format: 'rich', engagement_as_of: '2026-10-07T00:00:00Z',
+    stats: { ...item().stats, push_delivered: 0, total_clicks: 0, ctr: 0 } })
+  assert.equal(inboxOnly.delivered, '0')
+  assert.equal(inboxOnly.ctr, '0%')
 })
 
 test('completion requires a completed status and ordered valid timestamps', () => {
@@ -204,4 +211,44 @@ test('Basic never exposes rich actions and absent or invalid media does not brea
     assert.equal(row.actionLabel, 'Watch now')
     assert.equal(row.message, rich.message)
   }
+})
+
+test('canonical push counts win over aliases, including zero, and devices do not redefine audience', () => {
+  const row = presentNudgeHistory({ ...item(), stats: { ...item().stats, total_audience: 1, total_devices: 2, push_delivered: 2, push_suppressed: 0 } })
+  assert.equal(row.audience, '1')
+  assert.equal(row.delivered, '2')
+  assert.equal(row.muted, '0')
+  assert.equal(row.totalDevices, '2')
+  assert.equal(row.metrics.length, 7)
+  assert.equal(row.cardMetrics.length, 6)
+  assert.deepEqual(row.cardMetrics.map(metric => metric.label), ['Inbox audience', 'Push delivered', 'Push silenced', 'Total clicks', 'CTR', 'Failed pushes'])
+  const legacy = presentNudgeHistory(item())
+  assert.equal(legacy.delivered, '10')
+  assert.equal(legacy.muted, '1')
+  const canonicalOnly = presentNudgeHistory({ ...item(), stats: { total_audience: 1, total_devices: 0, push_delivered: 0, push_suppressed: 0, failed_deliveries: 0 } })
+  assert.equal(canonicalOnly.delivered, '0')
+  assert.equal(canonicalOnly.muted, '0')
+})
+
+test('large mobile numbers are compact while full counts remain accessible and in the details', () => {
+  const row = presentNudgeHistory({ ...item(), stats: { ...item().stats, total_audience: 1234567890123 } })
+  assert.equal(row.metrics[0].value, '1,234,567,890,123')
+  assert.equal(row.cardMetrics[0].compactValue, '1.2T')
+  assert.match(row.cardMetrics[0].accessibleLabel, /1,234,567,890,123/)
+})
+
+test('open stats follow fresh history data and close if filtering removes their record', async () => {
+  const harness = mount({ items: [item()] })
+  try {
+    findAll(harness.root, element => element.props['data-stats-id'])[0].props.onClick()
+    await vue.nextTick()
+    const details = () => findAll(harness.root, element => element.props['data-component'] === 'NudgeHistoryDetails')[0]
+    assert.equal(details().props.modelValue, true)
+    harness.props.items = [{ ...item(), stats: { ...item().stats, push_delivered: 12 } }]
+    await vue.nextTick()
+    assert.equal(details().props.item.stats.push_delivered, 12)
+    harness.props.items = []
+    await vue.nextTick()
+    assert.equal(details().props.modelValue, false)
+  } finally { harness.dispose() }
 })

@@ -13,7 +13,7 @@ mkdirSync(output, { recursive: true })
 const errors = []
 const longMessage = 'A useful update 👋\n' + 'Long text stays readable. '.repeat(155)
 const profile = { id: 'fixture-merchant', user_id: 'fixture-user', display_name: 'Studio Notes', nudger_id: 'studio-notes', profile_type: 'platform', is_active: true, profile_image_url: '/nudge.png' }
-const item = (id, content = {}) => ({ id, title: 'Studio Notes', message: id, sender: 'platform', nudge_type: 'broadcast', notification_format: 'basic', status: 'completed', created_at: '2026-10-01T08:00:00Z', completed_at: '2026-10-01T08:00:05Z', engagement_as_of: null, stats: { total_audience: 12450, total_devices: 17000, delivered_users: 12000, muted_users: 450, failed_deliveries: 0, total_clicks: null, ctr: null }, ...content })
+const item = (id, content = {}) => ({ id, title: 'Studio Notes', message: id, sender: 'platform', nudge_type: 'broadcast', notification_format: 'basic', status: 'completed', created_at: '2026-10-01T08:00:00Z', completed_at: '2026-10-01T08:00:05Z', engagement_as_of: null, stats: { total_audience: 12450, total_devices: 17000, push_delivered: 12000, push_suppressed: 450, delivered_users: 10, muted_users: 1, failed_deliveries: 0, total_clicks: null, ctr: null }, ...content })
 const rich = { notification_format: 'rich', destination_url: 'https://example.com/watch', cta_label: 'watch_now', media_url: 'https://assets.example.com/ready.webp' }
 const fixtures = [item('A basic update'), item('Watch our new tutorial', { ...rich, engagement_as_of: '2026-10-07T00:00:00Z', stats: { total_audience: 12450, total_devices: 17000, delivered_users: 12000, muted_users: 450, failed_deliveries: 0, total_clicks: 3000, ctr: 25 } }), item('An expired image', { ...rich, status: 'failed', cta_label: 'learn_more', media_url: 'https://assets.example.com/deleted.webp', engagement_as_of: '2026-10-07T00:00:00Z', stats: { total_audience: 1, total_devices: 1, delivered_users: 0, muted_users: 0, failed_deliveries: 1, total_clicks: 0, ctr: null } }), item('Still processing', { ...rich, status: 'processing', completed_at: null, media_url: null }), item('Queued for later', { status: 'created', completed_at: null }), item('Long message', { ...rich, message: longMessage, media_url: null })]
 
@@ -128,6 +128,61 @@ async function verifyDesktopMessages(page, controls, width, theme) {
   console.log(`PASS desktop sizing ${width}/${theme}: short/long/URL messages, stable expansion, one-line metrics, complete status, large-count scrolling`)
 }
 
+async function verifyMetricSemantics(page, controls, width, theme) {
+  await page.setViewportSize({ width, height: 900 })
+  const snapshot = { ...rich, media_url: null, engagement_as_of: '2026-10-07T00:00:00Z' }
+  const stats = (total_audience, total_devices, push_delivered, push_suppressed, failed_deliveries, total_clicks, ctr) =>
+    ({ total_audience, total_devices, push_delivered, push_suppressed, failed_deliveries, total_clicks, ctr })
+  controls.items = [
+    item('Inbox without devices', { ...snapshot, stats: stats(3, 0, 0, 0, 0, 1, 33.3) }),
+    item('Two phones for one person', { ...snapshot, stats: stats(1, 2, 2, 0, 0, 1, 100) }),
+    item('Silenced preferences', { ...rich, engagement_as_of: null, stats: stats(2, 1, 1, 1, 0, null, null) }),
+    item('Zero audience', { ...snapshot, stats: stats(0, 0, 0, 0, 0, 0, null) }),
+    item('Failed pushes with an inbox', { ...snapshot, stats: stats(10, 5, 0, 0, 5, 0, 0) }),
+    item('Huge counts', { ...snapshot, stats: stats(1234567890123, 1234567890123, 1234567890123, 0, 0, 1234567890123, 100) }),
+  ]
+  await page.reload()
+  const entries = page.getByTestId('history-item')
+  await entries.nth(5).waitFor()
+  if (width < 960) {
+    assert.deepEqual(await entries.nth(0).locator('.ui-record-card__metrics dd').allTextContents(), ['3', '0', '0', '1', '33.3%', '0'])
+    assert.deepEqual(await entries.nth(1).locator('.ui-record-card__metrics dd').allTextContents(), ['1', '2', '0', '1', '100%', '0'])
+    assert.equal(await entries.nth(2).locator('.ui-record-card__metrics dd').nth(4).innerText(), '—')
+    assert.equal(await entries.nth(3).locator('.ui-record-card__metrics dd').nth(4).innerText(), '—')
+    assert.equal(await entries.nth(4).locator('.ui-record-card__metrics dd').nth(4).innerText(), '0%')
+    assert.equal(await entries.nth(5).locator('.ui-record-card__metrics dd').first().innerText(), '1.2T')
+    assert.match(await entries.nth(5).locator('.ui-record-card__metrics dd').first().getAttribute('aria-label'), /1,234,567,890,123/)
+    const fits = await page.locator('.ui-record-card').evaluateAll(cards => cards.every(card => card.scrollWidth <= card.clientWidth + 1 && [...card.querySelectorAll('dd')].every(value => value.scrollWidth <= value.clientWidth + 1)))
+    assert.ok(fits, 'Large counts and percentages remain inside mobile cards')
+  } else {
+    await assertDesktopSizing(page)
+    assert.equal(await entries.nth(0).locator('td').nth(6).innerText(), '33.3%')
+    assert.equal(await entries.nth(1).locator('td').nth(3).innerText(), '2')
+    assert.equal(await entries.nth(3).locator('td').nth(6).innerText(), '—')
+    assert.equal(await entries.nth(4).locator('td').nth(6).innerText(), '0%')
+  }
+  await entries.nth(3).getByRole('button', { name: 'More stats' }).click()
+  let dialog = page.getByRole('dialog', { name: 'Nudge stats', exact: true })
+  await dialog.waitFor()
+  assert.match(await dialog.locator('.ui-stat-list dd').nth(4).getAttribute('aria-label'), /no inbox audience/)
+  await page.waitForFunction(() => document.querySelector('[role="dialog"]')?.contains(document.activeElement))
+  await page.keyboard.press('Escape')
+  await dialog.waitFor({ state: 'hidden' })
+  await entries.nth(5).getByRole('button', { name: 'More stats' }).click()
+  dialog = page.getByRole('dialog', { name: 'Nudge stats', exact: true })
+  await dialog.waitFor()
+  assert.equal(await dialog.locator('.ui-stat-list dd').first().innerText(), '1,234,567,890,123')
+  assert.ok(await dialog.locator('.ui-stat-list dd').evaluateAll(values => values.every(value => value.scrollWidth <= value.clientWidth + 1 && getComputedStyle(value).whiteSpace === 'nowrap')), 'Full values never split or clip in the stats details')
+  assert.ok(await dialog.evaluate(el => el.scrollWidth <= el.clientWidth + 1), 'Full stats fit the overlay')
+  const axe = await new AxeBuilder({ page }).include('[role=dialog]').analyze()
+  assert.deepEqual(axe.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => n.target) })), [])
+  await page.screenshot({ path: `${output}/stats-${width}-${theme}.png` })
+  await page.waitForFunction(() => document.querySelector('[role="dialog"]')?.contains(document.activeElement))
+  await page.keyboard.press('Escape')
+  await dialog.waitFor({ state: 'hidden' })
+  console.log(`PASS stats ${width}/${theme}: canonical-only, no-device clicks, multiple devices, silencing, zero/null rates, failures, huge numbers and details`)
+}
+
 try {
   for (const width of widths) for (const theme of ['light', 'dark']) {
     const { context, page, controls, mediaCalls, historyCalls } = await setup(width, theme)
@@ -141,7 +196,13 @@ try {
     await entries.nth(5).waitFor()
     assert.equal(await entries.count(), 6)
     assert.equal(mediaCalls.length, 0, 'History does not prefetch media, including older images')
-    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+    const pageFits = await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)
+    if (!pageFits) {
+      await page.screenshot({ path: `${output}/overflow-${width}-${theme}.png`, fullPage: true })
+      console.log(await page.evaluate(() => ({ viewport: innerWidth, document: document.documentElement.scrollWidth,
+        elements: [...document.querySelectorAll('main, .v-container, .page-layout, .v-window, .v-window__container, .v-window-item, .ui-record-list, .ui-record-list__content, .ui-record-table__scroll')].map(el => ({ class: el.className, width: el.getBoundingClientRect().width, right: el.getBoundingClientRect().right, scroll: el.scrollWidth, overflow: getComputedStyle(el).overflowX })) })))
+    }
+    assert.ok(pageFits, 'The table must not widen the page')
     assert.equal(await page.locator('table.ui-record-table').count(), width >= 960 ? 1 : 0)
     assert.equal(await page.locator('.ui-record-card').count(), width < 960 ? 6 : 0)
     assert.equal(await entries.nth(0).getByText('Basic', { exact: true }).count(), 1)
@@ -161,13 +222,13 @@ try {
     assert.equal(await entries.nth(1).getByText('3,000', { exact: true }).count(), 1)
     assert.equal(await entries.nth(1).getByText('25%', { exact: true }).count(), 1)
     assert.equal(await entries.nth(2).getByText('Failed', { exact: true }).count(), 1)
-    if (width >= 960) assert.equal(await entries.nth(2).getByText('1 failed delivery', { exact: true }).count(), 1)
+    if (width >= 960) assert.equal(await entries.nth(2).getByText('1 failed push', { exact: true }).count(), 1)
     else {
       const card = entries.nth(0)
       assert.equal(await card.getByText(profile.display_name, { exact: true }).count(), 0, 'Card omits the repeated merchant title')
       assert.equal(await card.locator('.ui-record-card__footer').count(), 0, 'Completion is shown once, in the status chip')
       assert.equal(await card.locator('.v-chip').innerText(), 'Completed in 5s')
-      assert.deepEqual(await card.locator('.ui-record-card__metrics dt').allTextContents(), ['Audience', 'Delivered', 'Muted', 'Total clicks', 'CTR', 'Failed deliveries'])
+      assert.deepEqual(await card.locator('.ui-record-card__metrics dt').allTextContents(), ['Inbox audience', 'Push delivered', 'Push silenced', 'Total clicks', 'CTR', 'Failed pushes'])
       assert.equal(await card.locator('.ui-record-card__metrics dd').last().innerText(), '0')
       assert.deepEqual(await entries.nth(1).locator('.ui-record-card__metrics dd').allTextContents(), ['12,450', '12,000', '450', '3,000', '25%', '0'])
       assert.equal(await entries.nth(2).locator('.ui-record-card__metrics dd').last().innerText(), '1')
@@ -184,22 +245,26 @@ try {
     }
     assert.equal(await entries.nth(3).getByText('Processing', { exact: true }).count(), 1)
     assert.equal(await entries.nth(4).getByText('Queued', { exact: true }).count(), 1)
-    assert.equal(await entries.nth(1).getByRole('link').getAttribute('href'), rich.destination_url)
-    assert.equal(await entries.nth(1).getByRole('link').getAttribute('rel'), 'noopener noreferrer')
-    if (width >= 960) assert.deepEqual(await page.locator('thead th').allTextContents(), ['Message', 'Type', 'Audience', 'Delivered', 'Muted', 'Total clicks', 'CTR', 'Status', 'CTA', 'Media'])
+    assert.equal(await entries.nth(1).getByRole('link').count(), 0, 'Secondary actions do not crowd the main view')
+    if (width >= 960) assert.deepEqual(await page.locator('thead th').allTextContents(), ['Message', 'Type', 'Inbox audience', 'Push delivered', 'Push silenced', 'Total clicks', 'CTR', 'Status', 'Details'])
     else assert.equal(await page.locator('.header__content').evaluate(el => el.getBoundingClientRect().height), 1)
     const axe = await new AxeBuilder({ page }).include('.ui-record-list').analyze()
     assert.deepEqual(axe.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => n.target) })), [], `${width}/${theme} history accessibility`)
     await page.screenshot({ path: `${output}/history-${width}-${theme}.png`, fullPage: width >= 960 })
 
-    const expired = entries.nth(2).getByRole('button', { name: 'View image' })
+    const expired = entries.nth(2).getByRole('button', { name: 'More stats' })
     await expired.click()
-    let dialog = page.getByRole('dialog', { name: 'Notification image', exact: true })
+    let dialog = page.getByRole('dialog', { name: 'Nudge stats', exact: true })
     try { await dialog.waitFor({ timeout: 5000 }) } catch (error) {
       await page.screenshot({ path: `${output}/viewer-failure.png` })
       console.log(await page.locator('[role=dialog], v-dialog').evaluateAll(elements => elements.map(el => el.outerHTML)))
       throw error
     }
+    assert.equal(await dialog.locator('.ui-stat-list dd').count(), 7, 'All saved stats are available in the details')
+    assert.equal(mediaCalls.length, 0, 'Opening stats does not prefetch the image')
+    assert.equal(await dialog.getByRole('link').getAttribute('href'), rich.destination_url)
+    assert.equal(await dialog.getByRole('link').getAttribute('rel'), 'noopener noreferrer')
+    await dialog.getByRole('button', { name: 'View image', exact: true }).click()
     await dialog.getByText('Image unavailable. The message and link are still available.', { exact: true }).waitFor()
     assert.equal(await dialog.locator('.ui-sheet__surface').count(), width < 960 ? 1 : 0)
     if (width < 960) assert.ok(await page.locator('#app').evaluate(el => el.inert), 'Sheet makes its background inert, including first open')
@@ -208,11 +273,14 @@ try {
     assert.deepEqual(viewerAxe.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => n.target) })), [], 'Image fallback accessibility')
     await page.keyboard.press('Escape')
     await dialog.waitFor({ state: 'hidden' })
-    await page.waitForFunction(() => document.activeElement?.textContent?.trim() === 'View image')
+    await page.waitForFunction(() => document.activeElement?.dataset.statsId === 'An expired image')
     assert.equal(await page.locator('#app').getAttribute('inert'), null)
 
-    await entries.nth(1).getByRole('button', { name: 'View image' }).click()
-    dialog = page.getByRole('dialog', { name: 'Notification image', exact: true })
+    await entries.nth(1).getByRole('button', { name: 'More stats' }).click()
+    dialog = page.getByRole('dialog', { name: 'Nudge stats', exact: true })
+    await dialog.waitFor()
+    assert.deepEqual(await dialog.locator('.ui-stat-list dd').allTextContents(), ['12,450', '12,000', '450', '3,000', '25%', '0', '17,000'])
+    await dialog.getByRole('button', { name: 'View image', exact: true }).click()
     await dialog.getByRole('img').waitFor()
     await page.waitForFunction(() => document.querySelector('[role=dialog] img')?.naturalWidth > 0)
     assert.equal(mediaCalls.length, 2)
@@ -224,16 +292,25 @@ try {
     await page.waitForFunction(expected => Boolean(document.querySelector('table.ui-record-table')) === expected, width < 960)
     assert.equal(await page.getByRole('dialog').count(), 1, 'Rotation keeps one viewer open')
     assert.equal(await dialog.locator('.ui-sheet__surface').count(), width < 960 ? 1 : 0)
-    const close = dialog.getByRole('button', { name: 'Close image', exact: true }).last()
+    const close = dialog.getByRole('button', { name: 'Close stats', exact: true }).last()
     await close.focus()
     await page.keyboard.press(isWebKit ? 'Alt+Tab' : 'Tab')
     assert.ok(await dialog.evaluate(el => el.contains(document.activeElement)), 'Focus remains in the viewer')
     await close.click()
     await dialog.waitFor({ state: 'hidden' })
     await page.waitForFunction(() => !document.getElementById('app').inert)
-    await page.waitForFunction(() => document.activeElement?.dataset.mediaId === 'Watch our new tutorial')
+    await page.waitForFunction(() => document.activeElement?.dataset.statsId === 'Watch our new tutorial')
     await page.setViewportSize({ width, height: 900 })
     await page.waitForFunction(expected => Boolean(document.querySelector('table.ui-record-table')) === expected, width >= 960)
+    await entries.nth(0).getByRole('button', { name: 'More stats' }).click()
+    dialog = page.getByRole('dialog', { name: 'Nudge stats', exact: true })
+    await dialog.waitFor()
+    assert.equal(await dialog.locator('.ui-details__actions').count(), 0, 'Basic has no media or CTA actions')
+    assert.deepEqual(await dialog.locator('.ui-stat-list dd').allTextContents(), ['12,450', '12,000', '450', '—', '—', '0', '17,000'])
+    assert.equal(await dialog.getByText('Not applicable to Basic notifications', { exact: true }).count(), 1)
+    await dialog.getByRole('button', { name: 'Close stats', exact: true }).last().focus()
+    await page.keyboard.press('Escape')
+    await dialog.waitFor({ state: 'hidden' })
 
     await entries.nth(5).getByRole('button', { name: 'Read full message' }).click()
     assert.equal(await entries.nth(5).locator('.ui-expandable-text__copy').textContent(), longMessage)
@@ -256,6 +333,7 @@ try {
       await entries.nth(5).waitFor()
     }
     if (width >= 960) await verifyDesktopMessages(page, controls, width, theme)
+    await verifyMetricSemantics(page, controls, width, theme)
     console.log(`PASS ${width}/${theme}: table/cards, counts/status/duration, no invented engagement, deferred/deleted media, modal/Sheet focus, expansion and resize`)
     await context.close()
   }

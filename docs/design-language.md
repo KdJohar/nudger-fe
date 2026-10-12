@@ -113,8 +113,11 @@ headings remain visible. Windows are transparent and borderless;
 cards own their borders. History uses a compact table on desktop and one card per
 row on mobile. The table alone may scroll horizontally to retain readable columns;
 never make the page overflow. Keep message emphasis, aligned numeric columns,
-semantic status chips and restrained delivered-count emphasis. CTA/media are
-48px text actions, and images load only in the dialog/Sheet after selection.
+semantic status chips and restrained push-delivered-count emphasis. Keep inbox
+audience, push delivered, push silenced, total clicks, CTR and status in the table;
+the 48px More stats action opens the shared detail body in a dialog/Sheet.
+CTA/media and additional device/failure counts live in these details. Images load
+only after View image is selected inside that surface.
 Desktop history reserves space for whole numbers, percentages and completion
 chips. Message takes a bounded share of the table, wraps long words and retains
 the existing full-message disclosure; expanding it must not move other columns.
@@ -123,7 +126,11 @@ split digits. These rules are scoped to the table, never the mobile card styles.
 Mobile history cards omit the repeated merchant name. Align Basic/Rich and status
 chips at the top; completed status includes the duration once. Keep the sent date,
 then message, a two-row/three-column metrics group (including failed deliveries),
-and CTA/media actions. Avoid a second timing/failure footer.
+and a More stats action. Its six metrics are Inbox audience, Push delivered,
+Push silenced, Total clicks, CTR and Failed pushes. Large mobile counts use
+compact notation while accessible labels and details retain the exact value.
+Avoid a second timing/failure footer. Details preserve the open overlay and focus
+during rotation; refresh uses the current item, and removing it closes the overlay.
 Do not rebuild the page frame when filters change or requests fail.
 See [mobile design context](mobile-design-context.md) for viewport and gesture rules.
 

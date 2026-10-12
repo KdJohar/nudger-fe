@@ -7,8 +7,13 @@ export type NudgeStatus = 'created' | 'processing' | 'completed' | 'failed'
 export interface NudgeDeliveryStats {
   total_audience: number
   total_devices: number
-  delivered_users: number
-  muted_users: number
+  /** Successful native device push results, not unique users or phone displays. */
+  push_delivered?: number
+  /** Unique inbox users whose preferences silenced push. */
+  push_suppressed?: number
+  /** Older response aliases; prefer the canonical push fields when present. */
+  delivered_users?: number
+  muted_users?: number
   failed_deliveries: number
   /** A saved nightly unique-recipient click total, not a live counter. */
   total_clicks?: number | null

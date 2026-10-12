@@ -2,6 +2,7 @@ import { ctaText, hasRichAction, safeNotificationUrl } from './notificationConte
 import type { NudgeHistoryItem, NudgeStatus } from '../types/nudges'
 
 const numberFormat = new Intl.NumberFormat('en')
+const compactNumberFormat = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 })
 const percentageFormat = new Intl.NumberFormat('en', { maximumFractionDigits: 1 })
 const dateFormat = new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
 const statusDetails = {
@@ -25,8 +26,8 @@ export function completionDuration(item: NudgeHistoryItem): string | null {
   return `${Math.floor(hours / 24)}d ${hours % 24}h`
 }
 
-function formatCount(value: number): string {
-  return Number.isSafeInteger(value) && value >= 0 ? numberFormat.format(value) : '—'
+function formatCount(value: number | undefined): string {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? numberFormat.format(value) : '—'
 }
 
 function formatPercentage(value: number): string {
@@ -52,15 +53,33 @@ export function presentNudgeHistory(item: NudgeHistoryItem) {
     ? 'Not applicable to Basic notifications'
     : !hasEngagementSnapshot
       ? 'Not available yet. Engagement updates nightly.'
-      : `Engagement updated ${engagementAsOf}.`
+      : `Snapshot through ${engagementAsOf}. Engagement updates nightly.`
   const totalClicksLabel = totalClicks === '—'
     ? `Total clicks: ${engagementLabel}`
     : `Total clicks: ${totalClicks}. ${engagementLabel}`
   const ctrLabel = ctr === '—'
-    ? item.stats.total_clicks === 0 && hasEngagementSnapshot
-      ? `Click-through rate: not available because this snapshot has no successful deliveries. ${engagementLabel}`
+    ? item.stats.total_audience === 0 && hasEngagementSnapshot
+      ? `Click-through rate: not applicable because this snapshot has no inbox audience. ${engagementLabel}`
       : `Click-through rate: ${engagementLabel}`
     : `Click-through rate: ${ctr}. ${engagementLabel}`
+  const pushDelivered = item.stats.push_delivered ?? item.stats.delivered_users
+  const pushSilenced = item.stats.push_suppressed ?? item.stats.muted_users
+  const metric = (key: string, label: string, count: number | undefined, description: string, tone?: string) => ({
+    key, label, value: formatCount(count),
+    compactValue: typeof count === 'number' && Number.isSafeInteger(count) && count >= 100000 ? compactNumberFormat.format(count) : formatCount(count),
+    accessibleLabel: `${label}: ${formatCount(count)}. ${description}`, description, tone,
+  })
+  const metrics = [
+    metric('audience', 'Inbox audience', item.stats.total_audience, 'Unique people with this message in their inbox.'),
+    metric('delivered', 'Push delivered', pushDelivered, 'Successful device sends accepted by the push provider.', 'success'),
+    metric('silenced', 'Push silenced', pushSilenced, 'People whose mute or notification preferences prevented push.'),
+    { key: 'clicks', label: 'Total clicks', value: totalClicks, compactValue: hasEngagementSnapshot && (item.stats.total_clicks ?? 0) >= 100000 ? compactNumberFormat.format(item.stats.total_clicks!) : totalClicks,
+      accessibleLabel: totalClicksLabel, description: 'Unique people who opened the notification’s action.', tone: undefined },
+    { key: 'ctr', label: 'CTR', value: ctr, compactValue: ctr, accessibleLabel: ctrLabel,
+      description: 'Unique clicks divided by inbox audience. Saved nightly.', tone: undefined },
+    metric('failed', 'Failed pushes', item.stats.failed_deliveries, 'Device attempts that returned a failed push result.', item.stats.failed_deliveries > 0 ? 'error' : undefined),
+    metric('devices', 'Push devices', item.stats.total_devices, 'Device attempts. One person may have several devices.'),
+  ]
   return {
     ...item,
     formatLabel: isRich ? 'Rich' : 'Basic',
@@ -69,10 +88,13 @@ export function presentNudgeHistory(item: NudgeHistoryItem) {
     completionLabel: duration ? `Completed in ${duration}` : '—',
     cardStatusLabel: duration ? `Completed in ${duration}` : statusDetails[item.status]?.label ?? 'Unknown',
     audience: formatCount(item.stats.total_audience),
-    delivered: formatCount(item.stats.delivered_users),
-    muted: formatCount(item.stats.muted_users),
+    delivered: formatCount(pushDelivered),
+    muted: formatCount(pushSilenced),
+    totalDevices: formatCount(item.stats.total_devices),
+    metrics,
+    cardMetrics: metrics.slice(0, 6),
     failedDeliveries: formatCount(item.stats.failed_deliveries),
-    failed: item.stats.failed_deliveries > 0 ? `${formatCount(item.stats.failed_deliveries)} failed ${item.stats.failed_deliveries === 1 ? 'delivery' : 'deliveries'}` : null,
+    failed: item.stats.failed_deliveries > 0 ? `${formatCount(item.stats.failed_deliveries)} failed ${item.stats.failed_deliveries === 1 ? 'push' : 'pushes'}` : null,
     totalClicks,
     ctr,
     engagementLabel,

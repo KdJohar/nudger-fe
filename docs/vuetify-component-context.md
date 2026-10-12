@@ -169,7 +169,7 @@ classes such as `v-slide-group__container`.
 | Navigation breakpoint | Share Vuetify `smAndDown` in shell and FAB; mobile navigation below 960px, sidebar from 960px |
 | Main frame | Outer container maximum 1600px; shared page maximum 1360px; mobile uses a bounded 100dvh shell with one content scroll owner and safe-area/nav clearance |
 | Cards | 20px base radius, thin neutral border; compact 16–20px padding and 24px where space permits |
-| History | Desktop table from 960px; mobile cards below 960px. One presentation model, delivery/engagement details, safe external CTA and on-demand media |
+| History | Desktop table from 960px; mobile cards below 960px. One inbox/push/engagement presentation model and More stats modal/Sheet; safe CTA and on-demand image inside shared details |
 | Audience metrics | Two columns on narrow screens; four at the existing 1200px layout breakpoint |
 | Send action | 48px round FAB; desktop navigates to `/compose`, mobile opens the shared sheet |
 

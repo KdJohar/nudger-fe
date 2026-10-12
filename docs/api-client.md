@@ -34,12 +34,18 @@ page loads, deduplicates overlapping pages, and aborts obsolete requests on filt
 change/unmount. Filter refreshes replace data only after success. Creator accounts
 remain broadcast-only; the redundant creator notice is removed.
 
-History exposes audience/device/delivered/muted/failed-delivery counts, content,
+History exposes inbox audience, device attempts, push-delivered/push-silenced and failed-push counts, content,
 status, timestamps and the backend's saved nightly engagement snapshot:
 `stats.total_clicks`, one-decimal percentage `stats.ctr` (0–100) and top-level
 `engagement_as_of`. The frontend never derives engagement from delivery counts.
 Basic and uncalculated Rich records render `—`; a calculated Rich notification
-with no successful deliveries renders `0` clicks and `—` CTR. Failed is a supported
+with zero inbox audience renders `0` clicks and `—` CTR. A nonempty inbox audience
+can have clicks and CTR even with no registered devices or successful pushes.
+Prefer `stats.push_delivered`/`stats.push_suppressed`, including zero, and fall back
+to the existing `delivered_users`/`muted_users` response aliases only when absent.
+Push silencing includes mute and relevant notification-type opt-outs; missing
+devices alone do not imply silencing. Multiple devices can make push totals exceed
+audience; never subtract these unlike units to invent another count. Failed is a supported
 status. A valid media URL may later return 404 after cleanup; this is an
 image-viewer fallback, not a history request failure.
 

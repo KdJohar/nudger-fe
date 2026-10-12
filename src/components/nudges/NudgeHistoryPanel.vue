@@ -3,7 +3,7 @@ import { computed, nextTick, ref, useId, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 import SnackbarFeedback from '../ui/SnackbarFeedback.vue'
 import ExpandableText from '../ui/ExpandableText.vue'
-import ImageViewer from '../ui/ImageViewer.vue'
+import NudgeHistoryDetails from './NudgeHistoryDetails.vue'
 import { presentNudgeHistory } from '../../lib/nudgeHistoryPresentation'
 import type { NudgeHistoryItem } from '../../types/nudges'
 
@@ -18,9 +18,10 @@ const emit = defineEmits<{ retry: []; loadMore: [] }>()
 const { smAndDown } = useDisplay()
 const rows = computed(() => props.items.map(presentNudgeHistory))
 const expandedIds = ref(new Set<string>())
-const selectedMedia = ref<{ id: string; src: string; alt: string }>()
+const selectedId = ref<string>()
+const selectedItem = computed(() => props.items.find(item => item.id === selectedId.value))
 const listElement = ref<HTMLElement | null>(null)
-const isImageOpen = ref(false)
+const isStatsOpen = ref(false)
 const engagementNoteId = useId()
 const paginationDisabled = computed(() => props.isLoading || props.isLoadingMore || Boolean(props.errorMessage))
 const statusMessage = computed(() => {
@@ -33,21 +34,21 @@ const statusMessage = computed(() => {
 watch(() => props.items, items => {
   const visibleIds = new Set(items.map(item => item.id))
   expandedIds.value = new Set([...expandedIds.value].filter(id => visibleIds.has(id)))
+  if (isStatsOpen.value && !visibleIds.has(selectedId.value ?? '')) isStatsOpen.value = false
 })
 function handleExpand(id: string, isExpanded: boolean): void {
   if (isExpanded) expandedIds.value.add(id)
   else expandedIds.value.delete(id)
 }
-function handleViewImage(row: ReturnType<typeof presentNudgeHistory>): void {
-  if (!row.mediaUrl) return
-  selectedMedia.value = { id: row.id, src: row.mediaUrl, alt: `Notification image from ${row.title}` }
-  isImageOpen.value = true
+function handleViewStats(id: string): void {
+  selectedId.value = id
+  isStatsOpen.value = true
 }
-async function handleImageClosed(): Promise<void> {
+async function handleStatsClosed(): Promise<void> {
   await nextTick()
   // A breakpoint change can replace the original trigger while the viewer is open.
-  const triggers = listElement.value?.querySelectorAll<HTMLButtonElement>('[data-media-id]') ?? []
-  Array.from(triggers).find(trigger => trigger.dataset.mediaId === selectedMedia.value?.id)?.focus({ preventScroll: true })
+  const triggers = listElement.value?.querySelectorAll<HTMLButtonElement>('[data-stats-id]') ?? []
+  Array.from(triggers).find(trigger => trigger.dataset.statsId === selectedId.value)?.focus({ preventScroll: true })
 }
 function handleLoadMore(): void {
   if (!paginationDisabled.value) emit('loadMore')
@@ -79,14 +80,13 @@ function handleLoadMore(): void {
               <tr>
                 <th class="ui-record-table__message" scope="col">Message</th>
                 <th class="ui-record-table__format" scope="col">Type</th>
-                <th class="ui-record-table__number" scope="col">Audience</th>
-                <th class="ui-record-table__number" scope="col">Delivered</th>
-                <th class="ui-record-table__number" scope="col">Muted</th>
+                <th class="ui-record-table__number" scope="col">Inbox audience</th>
+                <th class="ui-record-table__number" scope="col">Push delivered</th>
+                <th class="ui-record-table__number" scope="col">Push silenced</th>
                 <th class="ui-record-table__number" scope="col">Total clicks</th>
                 <th class="ui-record-table__number ui-record-table__rate" scope="col"><abbr title="Click-through rate">CTR</abbr></th>
                 <th class="ui-record-table__status" scope="col">Status</th>
-                <th class="ui-record-table__action" scope="col">CTA</th>
-                <th class="ui-record-table__media" scope="col">Media</th>
+                <th class="ui-record-table__action" scope="col">Details</th>
               </tr>
             </thead>
             <tbody>
@@ -105,8 +105,7 @@ function handleLoadMore(): void {
                   <v-chip :color="row.statusDetails.color" size="small" variant="tonal"><v-icon start :icon="row.statusDetails.icon" />{{ row.cardStatusLabel }}</v-chip>
                   <span v-if="row.failed" class="ui-record-list__failure">{{ row.failed }}</span>
                 </td>
-                <td><a v-if="row.actionUrl" class="ui-text-action" :href="row.actionUrl" target="_blank" rel="noopener noreferrer" :aria-label="`${row.actionLabel} (opens in a new tab)`">{{ row.actionLabel }}<v-icon icon="mdi-open-in-new" size="14" aria-hidden="true" /></a><span v-else>—</span></td>
-                <td><button v-if="row.mediaUrl" :data-media-id="row.id" class="ui-text-action" type="button" aria-haspopup="dialog" @click="handleViewImage(row)">View image</button><span v-else>—</span></td>
+                <td><button :data-stats-id="row.id" class="ui-text-action" type="button" aria-haspopup="dialog" @click="handleViewStats(row.id)">More stats<v-icon icon="mdi-chevron-right" size="16" aria-hidden="true" /></button></td>
               </tr>
             </tbody>
           </table>
@@ -122,18 +121,12 @@ function handleLoadMore(): void {
             <div class="ui-record-card__message">
               <ExpandableText :text="row.message" :is-expanded="expandedIds.has(row.id)" @update:is-expanded="handleExpand(row.id, $event)" />
             </div>
-            <dl class="ui-record-card__metrics" aria-label="Audience delivery stats">
-              <div><dt>Audience</dt><dd>{{ row.audience }}</dd></div>
-              <div class="ui-record-list__delivered"><dt>Delivered</dt><dd>{{ row.delivered }}</dd></div>
-              <div><dt>Muted</dt><dd>{{ row.muted }}</dd></div>
-              <div><dt>Total clicks</dt><dd :aria-label="row.totalClicksLabel" :aria-describedby="engagementNoteId">{{ row.totalClicks }}</dd></div>
-              <div><dt><abbr title="Click-through rate">CTR</abbr></dt><dd :aria-label="row.ctrLabel" :aria-describedby="engagementNoteId">{{ row.ctr }}</dd></div>
-              <div :class="{ 'is-error': row.stats.failed_deliveries > 0 }"><dt>Failed deliveries</dt><dd>{{ row.failedDeliveries }}</dd></div>
+            <dl class="ui-record-card__metrics" aria-label="Inbox and push stats">
+              <div v-for="metric in row.cardMetrics" :key="metric.key" :class="{ 'ui-record-list__delivered': metric.tone === 'success', 'is-error': metric.tone === 'error' }">
+                <dt>{{ metric.label }}</dt><dd :aria-label="metric.accessibleLabel" :aria-describedby="['clicks', 'ctr'].includes(metric.key) ? engagementNoteId : undefined">{{ metric.compactValue }}</dd>
+              </div>
             </dl>
-            <dl class="ui-record-card__actions">
-              <div><dt>CTA</dt><dd><a v-if="row.actionUrl" class="ui-text-action" :href="row.actionUrl" target="_blank" rel="noopener noreferrer" :aria-label="`${row.actionLabel} (opens in a new tab)`">{{ row.actionLabel }}<v-icon icon="mdi-open-in-new" size="14" aria-hidden="true" /></a><span v-else>—</span></dd></div>
-              <div><dt>Media</dt><dd><button v-if="row.mediaUrl" :data-media-id="row.id" class="ui-text-action" type="button" aria-haspopup="dialog" @click="handleViewImage(row)">View image</button><span v-else>—</span></dd></div>
-            </dl>
+            <button :data-stats-id="row.id" class="ui-text-action" type="button" aria-haspopup="dialog" @click="handleViewStats(row.id)">More stats<v-icon icon="mdi-chevron-right" size="16" aria-hidden="true" /></button>
           </article>
         </div>
         <div v-if="props.nextLink && !props.errorMessage" class="ui-record-list__footer">
@@ -144,6 +137,6 @@ function handleLoadMore(): void {
         <v-btn :disabled="props.isLoading || props.isLoadingMore" variant="tonal" @click="emit('retry')">Reload nudges</v-btn>
       </div>
     </div>
-    <ImageViewer v-model="isImageOpen" :src="selectedMedia?.src" :alt="selectedMedia?.alt" @closed="handleImageClosed" />
+    <NudgeHistoryDetails v-model="isStatsOpen" :item="selectedItem" @closed="handleStatsClosed" />
   </div>
 </template>

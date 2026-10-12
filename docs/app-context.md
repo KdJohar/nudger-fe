@@ -42,8 +42,11 @@ There is no Tailwind or separate official Material Web component layer.
   Broadcast; platforms additionally get Transactional filtering. Preserve loaded
   entries and scroll during refresh. Rich media opens on demand in a dialog/Sheet.
   Click totals/CTR use the backend's saved nightly snapshot only (CTR is one-decimal): Basic,
-  uncalculated Rich, and no-success-delivery CTR render `—` rather than an
+  uncalculated Rich, and zero-inbox-audience CTR render `—` rather than an
   invented value.
+  Inbox audience counts unique receipts; Push delivered counts successful device
+  results, and Push silenced counts receipt preference snapshots. More stats
+  opens one shared details body in a mobile Sheet or desktop modal.
 - `/compose`: broadcast editor, shared live notification-card preview, confirmation,
   and queued result. The Nudges FAB opens this route on desktop and a sheet on mobile.
 - `/profile`: read-only display name/handle/type; editable About, website/social links,

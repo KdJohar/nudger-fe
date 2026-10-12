@@ -542,7 +542,8 @@ button, input, textarea, select { font: inherit; }
 .ui-record-card__metrics > div, .ui-record-card__actions > div { min-width: 0; }
 .ui-record-card__metrics dt, .ui-record-card__actions dt { color: rgb(var(--v-theme-on-surface-variant)); font-size: 12px; line-height: 1.5; }
 .ui-record-card__metrics dd { margin: 4px 0 0; font-size: 16px; font-weight: 650; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-.ui-record-card__metrics > div:nth-child(n+4) dt { min-height: 36px; }
+.ui-record-card__metrics dt { min-height: 36px; }
+.ui-record-card__metrics dd { white-space: nowrap; }
 .ui-record-card__metrics .is-error { color: rgb(var(--v-theme-error)); }
 .ui-record-card__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .ui-record-card__actions dd { display: flex; align-items: center; min-height: 48px; margin: 0; font-size: 14px; }
@@ -552,7 +553,7 @@ button, input, textarea, select { font: inherit; }
 .ui-record-list :focus-visible { outline: 3px solid var(--ui-record-accent); outline-offset: 3px; }
 .ui-record-table__scroll { max-width: 100%; overflow-x: auto; border: 1px solid var(--app-border); border-radius: var(--app-radius); }
 .ui-record-table__scroll:focus-visible { outline-offset: -3px; }
-.ui-record-table { width: 100%; min-width: 1200px; border-collapse: separate; border-spacing: 0; table-layout: auto; color: rgb(var(--v-theme-on-surface)); font-size: 13px; }
+.ui-record-table { width: 100%; min-width: 1080px; border-collapse: separate; border-spacing: 0; table-layout: auto; color: rgb(var(--v-theme-on-surface)); font-size: 13px; }
 .ui-record-table th, .ui-record-table td { padding: 16px 10px; text-align: start; vertical-align: top; overflow-wrap: normal; }
 .ui-record-table th { background: rgb(var(--v-theme-surface-variant)); color: rgb(var(--v-theme-on-surface-variant)); font-size: 12px; font-weight: 650; overflow-wrap: normal; }
 .ui-record-table td { border-top: 1px solid var(--app-border); }
@@ -577,6 +578,29 @@ button, input, textarea, select { font: inherit; }
 .ui-image-viewer__note { margin: 12px 0 0; color: rgb(var(--v-theme-on-surface-variant)); font-size: 13px; line-height: 1.5; }
 .ui-image-viewer .ui-media > img { max-height: 55dvh; object-fit: contain; }
 .ui-image-viewer .ui-media__fallback { min-height: 160px; }
+/* One stats body inside the existing mobile Sheet or desktop DialogFrame. */
+.ui-details { --ui-record-accent: var(--app-secondary); }
+.v-theme--dark .ui-details, .ui-details.v-theme--dark { --ui-record-accent: #b5aeff; }
+.ui-details__title { margin: 0; font-size: 22px; font-weight: 650; }
+.ui-details__content { display: grid; gap: 16px; min-width: 0; }
+.ui-details__metadata { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
+.ui-details__metadata .v-chip { height: 24px; font-size: 11px; }
+.ui-stat-list { margin: 0; min-width: 0; }
+.ui-stat-list > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 12px; padding-block: 12px; border-bottom: 1px solid var(--app-border); }
+.ui-stat-list dt { min-width: 0; font-size: 13px; font-weight: 650; line-height: 1.5; overflow-wrap: anywhere; }
+.ui-stat-list small { display: block; margin-top: 4px; color: rgb(var(--v-theme-on-surface-variant)); font-size: 12px; font-weight: 400; line-height: 1.5; }
+.ui-stat-list dd { margin: 0; font-size: 16px; font-weight: 650; font-variant-numeric: tabular-nums; text-align: end; white-space: nowrap; }
+@media (max-width: 599px) {
+  .ui-stat-list--stacked > div { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .ui-stat-list--stacked dd { text-align: start; }
+}
+.ui-stat-list .is-success dd { color: rgb(var(--v-theme-success)); }
+.ui-stat-list .is-error dd { color: rgb(var(--v-theme-error)); }
+.ui-details__note { margin: 0; color: rgb(var(--v-theme-on-surface-variant)); font-size: 12px; line-height: 1.5; }
+.ui-details__actions { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+.ui-details :focus-visible { outline: 3px solid var(--ui-record-accent); outline-offset: 3px; }
+.ui-details__media[hidden] { display: none; }
+.ui-details__media .ui-media > img { max-height: 50dvh; object-fit: contain; }
 @media (forced-colors: active) {
   .ui-record-list :focus-visible { outline-color: Highlight; }
 }

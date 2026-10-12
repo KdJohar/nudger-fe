@@ -181,7 +181,7 @@ Current source contract: the history API returns saved nightly Rich engagement a
 unique-recipient `stats.total_clicks`, one-decimal percentage `stats.ctr`, and top-level
 `engagement_as_of`. Both presentations consume those saved values directly and
 never derive a rate in the browser. Basic and incomplete/uncalculated Rich remain
-**—**; a zero-successful-delivery snapshot is `0` clicks and **—** CTR. Basic also
+**—**; a zero-inbox-audience snapshot is `0` clicks and **—** CTR. Basic also
 has no CTA or media. A short note explains the nightly cadence. No backend, schema,
 API endpoint or native-app changes belong in this frontend slice.
 
@@ -261,7 +261,7 @@ mapping for both the desktop table and mobile cards. It never divides delivered
 counts in the browser.
 
 Basic, uncalculated Rich, and an older API response with no snapshot remain `—`.
-A calculated Rich nudge with no successful deliveries shows `0` total clicks and
+A calculated Rich nudge with no inbox audience shows `0` total clicks and
 `—` CTR. The small history note explains the nightly cadence; accessible labels
 include the snapshot timestamp without adding another visual data row. Invalid
 negative, non-finite, out-of-range, partial, or Basic engagement snapshots are
@@ -270,7 +270,7 @@ rejected at the typed API boundary.
 Verification for this update: `make test`, the style/PWA/typecheck production build,
 and the focused Rich suite passed locally. The history browser fixture passed in
 Chrome and WebKit at 320/375/768/1024/1440px in both themes, with mocked response
-data proving Basic `—`, saved click/CTR rendering, zero-delivery CTR fallback,
+data proving Basic `—`, saved click/CTR rendering, zero-audience CTR fallback,
 accessible snapshot labels, resize, image-viewer focus, and no horizontal overflow.
 The wider Chromium mobile-shell fixture also passed at 320/375/390/412/440/768px.
 No live history data, send, upload, deployment, merge, or backend change occurred.
@@ -310,3 +310,44 @@ storage PUT, thumbnail and destination requests are intercepted.
 - Real Firebase/APNs/Android Rich notifications, native external-link opening, notification action taps, cold launch, attachment download timeouts and physical-device PWA keyboard/safe-area behaviour. These belong to the later native phase.
 - Production configuration, cloud infrastructure, migration, deployment, registry push, pricing/billing and hooks API changes.
 - No merge, deployment or real notification was performed in this phase. Browser tests' 202 responses are fixtures, not evidence of delivery.
+
+### Inbox and push snapshots with More stats — 12 October 2026
+
+This approved contract supersedes the earlier direct CTA/media columns and the
+old successful-push CTR denominator. Backend receipt/delivery rules are defined
+in `../plugnudge-be/docs/inbox-delivery.md`; this task changes frontend presentation only.
+
+- Desktop keeps Message, Type, Inbox audience, Push delivered, Push silenced,
+  Total clicks, CTR, Status and Details. Completed status includes its duration
+  once; any failed pushes are indicated without inventing a second status.
+- Mobile retains the existing cards, format/status header, sent date, expandable
+  message and six-metric grid: inbox audience, push delivered, push silenced,
+  clicks, CTR and failed pushes. More stats is a 48px action below the metrics.
+- `NudgeHistoryDetails` renders one shared body in the existing Sheet or
+  DialogFrame/VDialog, chosen at opening and preserved through rotation. It
+  shows all seven metrics including device attempts, definitions, the saved
+  engagement cutoff, CTA and optional image disclosure. Opening stats does not
+  fetch media; only View image does. Missing media never removes stats/actions.
+- Prefer `push_delivered`/`push_suppressed`, including zero, over older response
+  aliases. Audience/silenced/clicks count users; delivered/failed/devices count
+  device attempts. Missing installations alone do not imply silencing. Multiple
+  devices may make push totals exceed audience. No frontend aggregation is added.
+- Basic and pending Rich engagement show `—`; measured zero is `0`/`0%`, and a
+  zero inbox audience has no CTR. Provider success is not phone display proof.
+  Percentages use at most one decimal and never split across lines.
+- Large mobile counts use compact notation with exact accessible names; details
+  retain full counts and deliberately stack exceptionally long values on narrow
+  screens. Normal desktop tables fit 1440px; narrower/large-data tables scroll
+  within their own region. Messages and status chips retain their established design.
+- Stats follow the current history item on refresh and close if it disappears.
+  Keyboard dismissal covers the Sheet header as well as its body, including
+  immediate reopening. List focus is restored to the current responsive trigger.
+
+Verification: 57 UI, 14 API/pagination, 10 audience, 4 style and 6 PWA tests pass;
+TypeScript and production-style build pass. Chrome fixture checks cover
+320/375/768/1024/1440px, both themes; WebKit checks cover 375/1440px. Checks include
+canonical-only and alias responses, no-device clicks, multiple devices, silenced
+preferences, every status, zero/null snapshots, 13.4%/100%, short/long/unbroken
+messages, huge counts, expansion/rotation, image expiry, keyboard/focus and Axe.
+Screenshots live under `/tmp/nudger-stats-qa` and `/tmp/nudger-stats-webkit`.
+No backend/native changes, real sends, production deployment or PR merge.
