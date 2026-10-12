@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { notificationCapabilities } from '../helpers/notificationFixtures.mjs'
 
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright')
 const baseUrl = process.env.UI_BASE_URL || 'http://localhost:5174'
@@ -46,13 +47,14 @@ async function setup(width, theme, profileType, endpoint = null) {
         items: Array.from({ length: 20 }, (_, index) => fixture(index + 1, type)), page_size: 20,
         next: `http://internal-api:8000${historyPath}?page_size=20&nudge_type=${type}&cursor=abc%2B%2F%3D`,
       } }
-    } else if (path.endsWith('/token')) body = { data: { has_token: true, token: 'fixture-api-key', token_prefix: 'fixture', created_at: null, rotated_at: null } }
+    } else if (path.endsWith('/capabilities')) body = { data: notificationCapabilities }
+    else if (path.endsWith('/token')) body = { data: { has_token: true, token: 'fixture-api-key', token_prefix: 'fixture', created_at: null, rotated_at: null } }
     else if (path.endsWith('/profile')) body = { data: profile }
     else { failures.push(`Unexpected API path: ${path}`); await route.abort(); return }
     await route.fulfill({ contentType: 'application/json', body: JSON.stringify(body) })
   })
   await page.goto(`${baseUrl}/nudges`)
-  await page.waitForFunction(() => document.querySelectorAll('.nudge-card').length === 20)
+  await page.waitForFunction(() => document.querySelectorAll('[data-testid=history-item]').length === 20)
   return { page, context, calls, controls }
 }
 
@@ -64,10 +66,10 @@ try {
     if (width === 375) assert.equal(await page.getByRole('tab').count(), 0)
     await page.getByRole('button', { name: 'Load more nudges' }).click()
     await page.locator('.ui-snackbar').getByText('The API returned an unexpected response.', { exact: false }).waitFor()
-    assert.equal(await page.locator('.nudge-card').count(), 20)
+    assert.equal(await page.locator('[data-testid=history-item]').count(), 20)
     assert.equal(await page.getByText("Cannot read properties of null", { exact: false }).count(), 0)
     await page.getByRole('button', { name: 'Try again' }).click()
-    await page.waitForFunction(() => document.querySelectorAll('.nudge-card').length === 21)
+    await page.waitForFunction(() => document.querySelectorAll('[data-testid=history-item]').length === 21)
     assert.equal(calls.length, 3)
     assert.equal(calls[1].searchParams.get('cursor'), 'abc+/=')
     assert.equal(calls[2].href, calls[1].href)
@@ -82,7 +84,7 @@ try {
       const transactional = page.getByRole('tab', { name: 'Transactional' })
       await transactional.focus()
       await page.keyboard.press('Enter')
-      await page.waitForFunction(() => document.querySelectorAll('.nudge-card').length === 20)
+      await page.waitForFunction(() => document.querySelectorAll('[data-testid=history-item]').length === 20)
       assert.equal(calls.at(-1).searchParams.get('nudge_type'), 'transactional')
       assert.ok(await page.evaluate(() => document.querySelector('.app-shell--mobile')
         ? document.querySelector('.page-layout__window').scrollTop > 100 : scrollY > 100), 'filter changes retain the active scroll owner offset')
@@ -93,13 +95,14 @@ try {
   const { page, context, calls } = await setup(1440, 'light', 'platform', 'https://configured-api.example/gateway')
   await page.getByRole('button', { name: 'Load more nudges' }).click()
   await page.getByRole('button', { name: 'Try again' }).click()
-  await page.waitForFunction(() => document.querySelectorAll('.nudge-card').length === 21)
+  await page.waitForFunction(() => document.querySelectorAll('[data-testid=history-item]').length === 21)
   assert.equal(calls[1].origin, 'https://configured-api.example')
   await page.goto(`${baseUrl}/token`)
   await page.waitForFunction(() => document.querySelector('pre[aria-label="Request example"]')?.textContent.includes('https://configured-api.example/gateway/v1/app-nudger/nudge/send'))
   await page.goto(baseUrl)
-  assert.equal(await page.getByRole('link', { name: /Developer API Docs/ }).getAttribute('href'), 'https://configured-api.example/gateway/docs')
-  console.log('PASS absolute environment base and prefix: pagination, token examples, and documentation use the same endpoint')
+  // The approved public-footer contract removed this link; API examples remain in the workspace.
+  assert.equal(await page.getByRole('link', { name: /Developer API Docs/ }).count(), 0)
+  console.log('PASS absolute environment base and prefix: pagination and token examples use the same endpoint; public footer omits API docs')
   await context.close()
   assert.deepEqual(failures, [])
 } finally { await browser.close() }

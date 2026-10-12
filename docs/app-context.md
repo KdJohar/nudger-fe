@@ -38,9 +38,16 @@ There is no Tailwind or separate official Material Web component layer.
 - `/login`, `/auth/callback`: Google sign-in handoff; use the existing auth flow.
 - `/onboarding`, `/pending`: shared profile setup/image handling and functional logout. Pending review is only for a submitted, non-active profile (including a suspended profile when the backend represents it as `is_active: false`); direct navigation or refresh with an active profile redirects to `/audience`, and an account without a submitted profile returns to `/onboarding`.
 - `/audience`: audience trend, reach and subscriber metrics; 7/30/90-day filtering.
-- `/nudges`: single-column history cards, default Broadcast; platforms additionally
-  get Transactional filtering. Preserve loaded cards and scroll during refresh.
-- `/compose`: broadcast editor, live client-time lock-screen preview, confirmation,
+- `/nudges`: desktop delivery table and single-column mobile cards, default
+  Broadcast; platforms additionally get Transactional filtering. Preserve loaded
+  entries and scroll during refresh. Rich media opens on demand in a dialog/Sheet.
+  Click totals/CTR use the backend's saved nightly snapshot only (CTR is one-decimal): Basic,
+  uncalculated Rich, and zero-inbox-audience CTR render `—` rather than an
+  invented value.
+  Inbox audience counts unique receipts; Push delivered counts successful device
+  results, and Push silenced counts receipt preference snapshots. More stats
+  opens one shared details body in a mobile Sheet or desktop modal.
+- `/compose`: broadcast editor, shared live notification-card preview, confirmation,
   and queued result. The Nudges FAB opens this route on desktop and a sheet on mobile.
 - `/profile`: read-only display name/handle/type; editable About, website/social links,
   image, and local appearance preferences. Mobile logout follows Settings.
@@ -53,6 +60,17 @@ Broadcast previews use the merchant image/name and typed message. A queued respo
 means accepted for processing, not delivered. A transactional recipient supplies
 their own six-digit Nudge ID and must be subscribed to the platform. Keep API
 validation and permission decisions consistent with the existing backend contract.
+
+Rich notification UI is implemented locally on its review branch; see
+[Rich notification contract and verification](rich-notifications.md). Compose,
+the mobile composer sheet and API playground share Basic/Rich fields and media
+state. The backend owns the title/avatar and allowed capabilities. Basic omits
+all Rich request fields; Rich requires destination plus Watch now/Learn more and
+may have a finalized image. History preserves the same content. Existing colours,
+shell and navigation stay unchanged; Compose/API access headings are accessible
+but visually hidden on mobile. No pricing tiers or native push behaviour are
+implemented here. Later pricing may restrict Basic vs Basic+Rich through backend
+capabilities, never client-side invented plan names or payment gates.
 
 ## Runtime and boundaries
 

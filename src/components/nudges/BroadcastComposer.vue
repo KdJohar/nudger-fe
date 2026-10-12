@@ -3,17 +3,21 @@ import { computed, nextTick, ref, useId, watch } from 'vue'
 import MessageField from '../ui/MessageField.vue'
 import SnackbarFeedback from '../ui/SnackbarFeedback.vue'
 import NotificationPreview from '../ui/NotificationPreview.vue'
+import NotificationFields from './NotificationFields.vue'
+import ContentSummary from '../ui/ContentSummary.vue'
+import DialogFrame from '../ui/DialogFrame.vue'
 import { useAuth } from '../../composables/useAuth'
 import { useBroadcastComposer } from '../../composables/useBroadcastComposer'
-import { BROADCAST_MESSAGE_LIMIT } from '../../lib/broadcastNudge'
 
 const { state, authenticatedRequest } = useAuth()
 const profile = computed(() => state.merchantProfile)
 const {
   message, fieldError, sendError, confirmedMessage, isReviewing, isSending, isQueued,
   title, isProfileReady, handleReview, handleEdit, handleSend, handleReset,
+  notification, confirmedPayload, messageLimit,
 } = useBroadcastComposer(profile, authenticatedRequest)
 const messageField = ref<InstanceType<typeof MessageField> | null>(null)
+const notificationFields = ref<InstanceType<typeof NotificationFields> | null>(null)
 const reviewButton = ref<{ $el: HTMLElement } | null>(null)
 const confirmationTitle = ref<HTMLElement | null>(null)
 const successTitle = ref<HTMLElement | null>(null)
@@ -26,6 +30,7 @@ async function handleSubmit(): Promise<void> {
   if (!handleReview()) {
     await nextTick()
     if (fieldError.value) messageField.value?.focus()
+    else notificationFields.value?.focusError()
   }
 }
 async function handleWriteAnother(): Promise<void> {
@@ -50,6 +55,7 @@ function handleDialogClosed(): void {
       <h2 ref="successTitle" class="ui-panel__title" tabindex="-1">Your nudge is queued.</h2>
       <p class="ui-editor-panel__hint">Delivery runs in the background. Follow its progress in your history.</p>
       <blockquote class="ui-editor-result__message">{{ confirmedMessage }}</blockquote>
+      <ContentSummary v-if="confirmedPayload" :content="confirmedPayload" />
       <div class="ui-editor-result__actions">
         <v-btn variant="text" rounded="pill" @click="handleWriteAnother">Write another</v-btn>
         <v-btn color="secondary" variant="flat" rounded="pill" to="/nudges" append-icon="mdi-arrow-right">View history</v-btn>
@@ -71,13 +77,15 @@ function handleDialogClosed(): void {
 
       <div class="ui-editor-panel__body">
         <aside class="ui-editor-panel__preview" aria-label="Live notification preview">
-          <div class="ui-editor-panel__preview-label"><span><v-icon icon="mdi-cellphone" size="16" aria-hidden="true" /> Lock screen preview</span><span class="ui-editor-panel__live"><span aria-hidden="true" /> Live</span></div>
-          <NotificationPreview variant="adaptive" :title="title" :message="message" :image-url="profile?.profile_image_url" />
-          <p class="ui-editor-panel__preview-note">A preview, not a screenshot. Appearance varies by device.</p>
+          <NotificationPreview :title="title" :message="message" :image-url="profile?.profile_image_url" :content="{ notification_format: notification.draft.notificationFormat, media_url: notification.draft.mediaUrl, destination_url: notification.draft.destinationUrl, cta_label: notification.draft.ctaLabel }" />
         </aside>
 
         <form class="ui-editor-panel__form" novalidate @submit.prevent="handleSubmit">
-          <MessageField ref="messageField" v-model="message" :limit="BROADCAST_MESSAGE_LIMIT" :error="fieldError" :is-disabled="isSending" placeholder="I'm going live in 15 minutes. Come join me!" />
+          <NotificationFields ref="notificationFields" :model="notification" :is-disabled="isSending || isReviewing">
+            <template #message>
+              <MessageField ref="messageField" v-model="message" :limit="messageLimit" :error="fieldError" :is-disabled="isSending || isReviewing" placeholder="I'm going live in 15 minutes. Come join me!" />
+            </template>
+          </NotificationFields>
           <div class="ui-editor-panel__delivery"><v-icon icon="mdi-bell-outline" size="20" aria-hidden="true" /><p>One update. Your whole audience.<span>Delivered according to each subscriber’s notification preferences.</span></p></div>
           <div class="ui-editor-panel__actions">
             <p class="ui-editor-panel__hint"><v-icon icon="mdi-check-circle-outline" size="16" aria-hidden="true" /> You’ll confirm before sending.</p>
@@ -89,15 +97,18 @@ function handleDialogClosed(): void {
     <p class="ui-visually-hidden" role="status">{{ isSending ? 'Queuing your nudge…' : '' }}</p>
 
     <v-dialog v-model="isReviewing" :persistent="isSending" max-width="480" :aria-labelledby="dialogTitleId" :aria-describedby="dialogDescriptionId" @after-enter="confirmationTitle?.focus({ preventScroll: true })" @after-leave="handleDialogClosed">
-      <v-card class="ui-editor-confirmation">
-        <h2 :id="dialogTitleId" ref="confirmationTitle" class="ui-panel__title" tabindex="-1">Send to your subscribers?</h2>
-        <p :id="dialogDescriptionId" class="ui-editor-panel__hint">This queues a broadcast now. Check your message before sending.</p>
-        <div class="ui-editor-confirmation__message"><strong>{{ title }}</strong><p>{{ confirmedMessage }}</p></div>
-        <div class="ui-editor-confirmation__actions">
+      <DialogFrame body-label="Broadcast review details" :is-busy="isSending">
+        <template #header>
+          <h2 :id="dialogTitleId" ref="confirmationTitle" class="ui-panel__title" tabindex="-1">Send to your subscribers?</h2>
+          <p :id="dialogDescriptionId" class="ui-editor-panel__hint">This queues a broadcast now. Check your message before sending.</p>
+        </template>
+        <NotificationPreview :title="title" :message="confirmedMessage" :image-url="profile?.profile_image_url" :content="confirmedPayload || undefined" :is-live="false" is-expanded />
+        <ContentSummary v-if="confirmedPayload" :content="confirmedPayload" :is-media-visible="false" :is-format-visible="false" />
+        <template #footer>
           <v-btn variant="text" rounded="pill" :disabled="isSending" @click="handleEdit">Keep editing</v-btn>
           <v-btn color="secondary" variant="flat" rounded="pill" prepend-icon="mdi-send-outline" :loading="isSending" :disabled="!isProfileReady || isSending" @click="handleSend">Send nudge</v-btn>
-        </div>
-      </v-card>
+        </template>
+      </DialogFrame>
     </v-dialog>
   </div>
 </template>

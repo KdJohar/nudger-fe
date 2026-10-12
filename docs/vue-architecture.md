@@ -124,7 +124,11 @@ then replace the route with login even when server logout fails.
 
 The page frame owns width and margins. Content windows are transparent and borderless. Individual body cards may have their own borders; do not style the window as another card.
 
-Use one responsive DOM tree and existing theme tokens. Never hard-code separate Audience/Nudges header spacing or duplicate mobile page layouts to solve a CSS difference.
+Use one responsive DOM tree and existing theme tokens for layout changes. History
+is an approved structural exception: a desktop table and mobile cards share one
+presentation mapping, request state, expansion state and image-viewer intent. Only
+the active branch is mounted at the existing 960px breakpoint. Never hard-code
+separate Audience/Nudges header spacing or duplicate mobile page layouts.
 
 ## Boundaries
 
@@ -229,9 +233,22 @@ optionally saves local previews.
 
 The Nudges FAB uses the same Vuetify `smAndDown` breakpoint as AppShell: mobile opens the existing composer sheet; desktop is a router link to `/compose`. Keep one FAB, preserve its appearance and use SPA navigation without reloading the shell.
 
-`ComposeNudgeView` composes `BroadcastComposer` inside the unchanged workspace frame. The body groups sender identity, a live preview and a short message field in one responsive panel. Mobile uses a cropped lock-screen preview above the editor; wider screens show a compact phone alongside it. `NotificationPreview` owns the live client clock and supports an opt-in `adaptive` variant; its default remains unchanged for the existing sheet.
+`ComposeNudgeView` composes `BroadcastComposer` inside the unchanged workspace frame. The body groups sender identity, a live preview and message fields in one responsive panel. `NotificationPreview` is the single notification-card renderer for desktop, mobile sheet and confirmation: merchant avatar plus overlapping Nudge badge, merchant name, message and optional right-side Rich image. It contains no phone frame or clock timer. Container sizing adapts the same card to its available width. Live editing uses an illustrative four-line preview; review sets `isExpanded` to show the complete message within that same card, once. Keep the device-appearance note. `NotificationFields` owns format and Rich controls, with a named `message` slot preserving the order format → message → Rich options in composer, sheet and playground.
 
 `BroadcastComposer` and `NudgeComposerSheet` share `useBroadcastComposer` for validation, the reviewed message snapshot, duplicate-send protection and queued/error state. Both use `MessageField` for labels, counting, validation hints and input focus. No draft is persisted. The existing session-authenticated broadcast endpoint and permissions remain unchanged. A queued response is not delivery confirmation; link to history and retain the draft after a failed send. Do not automatically resend. Verify confirmation, focus restoration, failure recovery, long messages, both themes and mobile/desktop with mocked requests only.
+
+Compose and playground send dialogs use `DialogFrame` inside their existing
+`VDialog`: header and footer are outside one labelled, keyboard-scrollable body.
+The frame uses a semantic surface rather than a direct `VCard`, avoiding Vuetify's
+direct-card flex defaults shrinking message sections. Composer review and mobile
+Sheet render the complete message only inside expanded `NotificationPreview`.
+The playground uses a heading-free `MessageSummary` for its one message display.
+`ContentSummary.isMediaVisible=false` avoids duplicating the thumbnail already in
+`NotificationPreview`; the CTA/destination always remain in review. History and
+playground retain their media summary by default. Review sets
+`ContentSummary.isFormatVisible=false`; history retains its format badge. Feature composables still own
+review snapshots, permissions, dismissal while busy and sends; these primitives
+do not fetch, mutate drafts or deliver notifications.
 
 ### API access body
 

@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { createSourceLoader, vue, renderer, node, findAll } from './helpers/vueHarness.mjs'
+import { notificationCapabilities } from './helpers/notificationFixtures.mjs'
 
 test('history FAB is a desktop route link and a mobile sheet action, including after resize', async () => {
   const smAndDown = vue.ref(false)
@@ -57,7 +58,8 @@ function harness() {
   const profile = vue.ref({ id: 'fixture', display_name: 'Demo Creator', is_active: true, profile_type: 'creator' })
   const request = (path, init) => new Promise((resolve, reject) => requests.push({ path, init, resolve, reject }))
   const scope = vue.effectScope()
-  const model = scope.run(() => createSourceLoader()('src/composables/useBroadcastComposer.ts').useBroadcastComposer(profile, request))
+  const model = scope.run(() => createSourceLoader({ vue: { ...vue, onMounted() {} } })('src/composables/useBroadcastComposer.ts').useBroadcastComposer(profile, request))
+  model.notification.capabilities.value = structuredClone(notificationCapabilities)
   return { model, profile, requests, dispose: () => scope.stop() }
 }
 
@@ -94,7 +96,7 @@ test('review freezes the trimmed message; sending requires confirmation and prev
     assert.equal(h.requests.length, 1)
     assert.equal(h.requests[0].path, '/v1/app-nudger/nudge/broadcast')
     assert.equal(h.requests[0].init.method, 'POST')
-    assert.deepEqual(JSON.parse(h.requests[0].init.body), { message: 'Hello subscribers 😼' })
+    assert.deepEqual(JSON.parse(h.requests[0].init.body), { message: 'Hello subscribers 😼', notification_format: 'basic' })
     h.requests[0].resolve({ data: { status: 'queued' } })
     assert.equal(await pending, true)
     assert.equal(m.isQueued.value, true)
@@ -155,6 +157,8 @@ test('both creator and platform may broadcast; missing or inactive profiles cann
     }
     for (const profile_type of ['creator','platform']) {
       h.profile.value = { display_name:'Sender',is_active:true,profile_type }
+      m.notification.capabilities.value = structuredClone(notificationCapabilities)
+      m.message.value = 'Hello'
       assert.equal(m.handleReview(), true)
       m.handleEdit()
     }
@@ -204,7 +208,10 @@ test('shared message field associates its visible label, limit, helper and valid
     assert.equal(label.props.for,input.props.id)
     assert.equal(input.props.name,'message')
     assert.equal(input.props.rows,'3')
-    assert.equal(input.props.maxlength,4096)
+    assert.equal(input.props.maxlength,undefined, 'Native maxlength counts UTF-16 units, unlike the API')
+    props.modelValue = '  😼  '
+    await flush()
+    assert.ok(findAll(root, el=>el.props['aria-label']==='1 of 4096 characters').length)
     assert.equal(input.props['aria-invalid'],false)
     input.props.onInput({target:{value:'New text'}})
     assert.deepEqual(updates,['New text'])

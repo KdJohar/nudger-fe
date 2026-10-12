@@ -135,9 +135,13 @@ rebuilding their markup. Feature containers own fetching, permissions and workfl
 | `MetricCard.vue` | Audience statistic with icon, semantic tone, value, change and optional detail |
 | `LineChart.vue` | Shared trend drawing, keyboard/touch exploration and accessible daily-value table; SVG geometry stays data-driven |
 | `MessageField.vue` | Labelled compact native textarea, character count, limit, validation and exposed input focus |
-| `NotificationPreview.vue` | Merchant image/name/message and live client clock; adaptive composer presentation |
+| `NotificationPreview.vue` | One notification card shared by compose, mobile sheet and review; merchant avatar with Nudge badge, title/message, optional right thumbnail; live editing clamps four lines, `isExpanded` review displays the whole message once and retains the device note |
 | `PhonePreview.vue` | Public landing-page demo; distinct from the live sender preview |
 | `Sheet.vue` | Labelled bottom sheet, header/body/footer slots, drag/tap close, focus handling and keyboard viewport adaptation |
+| `DialogFrame.vue` | Shared send-review surface inside VDialog; header/footer slots never shrink, only the labelled body scrolls; VDialog/feature retains focus and send-state ownership |
+| `ImageViewer.vue` | On-demand image in desktop DialogFrame or mobile Sheet; shares MediaPreview's missing-image fallback and preserves the active overlay through resize |
+| `ExpandableText.vue` | Controlled long-message disclosure; history owns expansion so table/card changes preserve it |
+| `MessageSummary.vue` | Playground's single plain-text review; no extra Full message heading, clamp or nested scrollbar |
 | `CodeBlock.vue` | Selectable code and explicit copying; secret display and copied code have separate contracts |
 | `SnackbarHost.vue` | Single App-owned feedback surface, queue rendering and accessible announcements |
 | `SnackbarFeedback.vue` | Bridge feature success/error state to shared feedback; lifecycle-aware cleanup |
@@ -165,7 +169,7 @@ classes such as `v-slide-group__container`.
 | Navigation breakpoint | Share Vuetify `smAndDown` in shell and FAB; mobile navigation below 960px, sidebar from 960px |
 | Main frame | Outer container maximum 1600px; shared page maximum 1360px; mobile uses a bounded 100dvh shell with one content scroll owner and safe-area/nav clearance |
 | Cards | 20px base radius, thin neutral border; compact 16–20px padding and 24px where space permits |
-| History | One card per row in mobile and desktop; footer delivery/timing align to opposite sides |
+| History | Desktop table from 960px; mobile cards below 960px. One inbox/push/engagement presentation model and More stats modal/Sheet; safe CTA and on-demand image inside shared details |
 | Audience metrics | Two columns on narrow screens; four at the existing 1200px layout breakpoint |
 | Send action | 48px round FAB; desktop navigates to `/compose`, mobile opens the shared sheet |
 

@@ -1,6 +1,10 @@
 <script setup lang="ts">
 const fields = [
   { name: 'message', type: 'string · required', description: '1–4,096 characters. Whitespace-only messages are rejected; leading and trailing whitespace is trimmed.' },
+  { name: 'notification_format', type: 'basic / rich', description: 'Basic is the default. Rich requires destination_url and cta_label; an image is optional.' },
+  { name: 'destination_url', type: 'string · Rich required', description: 'Public HTTPS destination opened by the CTA. Omit this key entirely for Basic, even when null.' },
+  { name: 'cta_label', type: 'watch_now / learn_more · Rich required', description: 'Displays Watch now or Learn more. No custom labels. Omit for Basic.' },
+  { name: 'media_url', type: 'string · Rich optional', description: 'Finalized merchant-owned R2 image URL from the upload/YouTube flow. Omit or null for Rich without an image; always omit for Basic. Never use a signed upload URL.' },
   { name: 'nudge_type', type: 'string · required', description: 'Use broadcast for your subscriber audience, or transactional for one subscriber.' },
   { name: 'nudge_user_id', type: 'integer · transactional only', description: 'Ask the recipient to share their own six-digit Nudge ID (100000–999999) with your platform. Use the ID they provide for transactional sends; omit this field for broadcasts. The recipient must also be subscribed to your platform.' },
 ]

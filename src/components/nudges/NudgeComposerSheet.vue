@@ -4,20 +4,23 @@ import Sheet from '../ui/Sheet.vue'
 import MessageField from '../ui/MessageField.vue'
 import SnackbarFeedback from '../ui/SnackbarFeedback.vue'
 import NotificationPreview from '../ui/NotificationPreview.vue'
+import NotificationFields from './NotificationFields.vue'
+import ContentSummary from '../ui/ContentSummary.vue'
 import { useAuth } from '../../composables/useAuth'
 import { useBroadcastComposer } from '../../composables/useBroadcastComposer'
-import { BROADCAST_MESSAGE_LIMIT } from '../../lib/broadcastNudge'
 
 const isOpen = defineModel<boolean>({ default: false })
 const emit = defineEmits<{ queued: [] }>()
 const { state, authenticatedRequest } = useAuth()
 const sheet = ref<InstanceType<typeof Sheet> | null>(null)
 const messageField = ref<InstanceType<typeof MessageField> | null>(null)
+const notificationFields = ref<InstanceType<typeof NotificationFields> | null>(null)
 const formId = useId()
 const profile = computed(() => state.merchantProfile)
 const {
   message, fieldError, sendError, confirmedMessage, isReviewing, isSending, isQueued, title, isProfileReady,
   handleReview: review, handleEdit: edit, handleSend: send, handleReset,
+  notification, confirmedPayload, messageLimit,
 } = useBroadcastComposer(profile, authenticatedRequest)
 const sheetTitle = computed(() => isQueued.value ? 'Nudge queued' : isReviewing.value ? 'Ready to send?' : 'Send a nudge')
 const sheetDescription = computed(() => isQueued.value
@@ -28,6 +31,7 @@ async function handleReview(): Promise<void> {
   if (!review()) {
     await nextTick()
     if (fieldError.value) messageField.value?.focus()
+    else notificationFields.value?.focusError()
     return
   }
   await nextTick()
@@ -71,27 +75,29 @@ watch(isOpen, (opened) => {
       <p class="ui-composer__copy">Delivery is running in the background. You can check its progress in your history.</p>
     </div>
     <div v-else class="ui-composer">
-      <aside class="ui-composer__preview" aria-label="Live notification preview">
-        <div class="ui-composer__preview-label">
-          <span><v-icon icon="mdi-cellphone" size="16" /> Lock screen</span>
-          <span class="ui-composer__live"><span aria-hidden="true" /> Live preview</span>
-        </div>
+      <aside class="ui-composer__preview" aria-label="Notification preview">
         <NotificationPreview
-          :is-active="isOpen"
+          :is-live="!isReviewing"
+          :is-expanded="isReviewing"
           :image-url="profile?.profile_image_url"
           :message="isReviewing ? confirmedMessage : message"
           :title="title"
+          :content="isReviewing ? confirmedPayload || undefined : { notification_format: notification.draft.notificationFormat, media_url: notification.draft.mediaUrl, destination_url: notification.draft.destinationUrl, cta_label: notification.draft.ctaLabel }"
         />
       </aside>
 
       <div v-if="isReviewing" class="ui-composer__review">
         <span class="ui-composer__audience"><v-icon icon="mdi-account-group-outline" size="18" /> Broadcast to your subscribers</span>
-        <div class="ui-composer__review-message"><strong>{{ title }}</strong><p>{{ confirmedMessage }}</p></div>
+        <ContentSummary v-if="confirmedPayload" :content="confirmedPayload" :is-media-visible="false" :is-format-visible="false" />
         <p class="ui-composer__copy">Subscribers receive this based on their notification preferences.</p>
       </div>
 
       <form v-else :id="formId" class="ui-composer__editor" novalidate @submit.prevent="handleReview">
-        <MessageField ref="messageField" v-model="message" :limit="BROADCAST_MESSAGE_LIMIT" :error="fieldError" />
+        <NotificationFields ref="notificationFields" :model="notification" :is-disabled="isSending">
+          <template #message>
+            <MessageField ref="messageField" v-model="message" :limit="messageLimit" :error="fieldError" :is-disabled="isSending" />
+          </template>
+        </NotificationFields>
         <span class="ui-composer__audience"><v-icon icon="mdi-account-group-outline" size="18" /> Broadcast to your subscribers</span>
       </form>
     </div>

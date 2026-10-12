@@ -20,7 +20,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-function errorFromPayload(payload: unknown, status: number): ApiError {
+export function errorFromPayload(payload: unknown, status: number): ApiError {
   const envelope = isRecord(payload) ? payload : {}
   const firstError = Array.isArray(envelope.errors) ? envelope.errors[0] : envelope.errors
   const details = isRecord(firstError) ? firstError : {}

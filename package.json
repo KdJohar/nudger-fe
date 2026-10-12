@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "test:rich": "node --test tests/RichNotifications.test.mjs",
+    "test:browser:rich": "node tests/browser/richNotifications.mjs",
+    "test:browser:history": "node tests/browser/nudgeHistory.mjs",
     "dev": "vite",
     "build": "npm run test:styles && npm run test:pwa && vue-tsc -b && vite build",
     "preview": "vite preview",
@@ -20,7 +23,7 @@
     "test:browser:pending": "node tests/browser/pendingAccess.mjs",
     "test:browser:mobile": "node tests/browser/mobileNative.mjs",
     "test:browser:public-actions": "node tests/browser/publicActions.mjs",
-    "test:compose": "node --test tests/BroadcastComposer.test.mjs",
+    "test:compose": "node --test tests/BroadcastComposer.test.mjs tests/NotificationPreview.test.mjs tests/ReviewLayout.test.mjs",
     "test:api-access": "node --test tests/ApiAccess.test.mjs",
     "test:profile": "node --test tests/ProfileDetails.test.mjs tests/profileErrors.test.mjs tests/ProfileLayout.test.mjs tests/AppTheme.test.mjs",
     "test:ui": "node --test tests/PillTabs.test.mjs tests/PageLayout.test.mjs tests/NudgeHistoryPanel.test.mjs tests/Onboarding.test.mjs tests/PendingProfile.test.mjs tests/RouteAccess.test.mjs tests/SetupLogout.test.mjs tests/profileErrors.test.mjs",

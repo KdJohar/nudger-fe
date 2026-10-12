@@ -13,7 +13,7 @@ const inputId = useId()
 const helperId = useId()
 const errorId = useId()
 const field = ref<HTMLTextAreaElement | null>(null)
-const count = computed(() => props.modelValue.length)
+const count = computed(() => Array.from(props.modelValue.trim()).length)
 function handleInput(event: Event): void {
   emit('update:modelValue', (event.target as HTMLTextAreaElement).value)
 }
@@ -36,7 +36,6 @@ defineExpose({ focus })
       :disabled="isDisabled"
       :aria-invalid="Boolean(error)"
       :aria-describedby="helperId + (error ? ' ' + errorId : '')"
-      :maxlength="limit"
       :placeholder="placeholder"
       name="message"
       autocomplete="off"
