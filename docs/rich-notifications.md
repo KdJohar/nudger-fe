@@ -175,11 +175,13 @@ fallback while message, CTA and delivery details remain readable. Do not infer
 expiry from a hardcoded seven-day cutoff: storage cleanup and retention are backend
 policy, and a null URL is different from a previously present URL returning 404.
 
-Verified source contract: the existing history API has no click totals or CTR.
-Both display **—**, never fake zero or an invented API field; Basic also has no CTA
-or media. A short note explains unavailable engagement. A future backend contract
-must expose defined unique-recipient click totals and CTR before real metrics can
-be shown. No backend, schema, API endpoint or native-app changes belong here.
+Current source contract: the history API returns saved nightly Rich engagement as
+unique-recipient `stats.total_clicks`, percentage `stats.ctr`, and top-level
+`engagement_as_of`. Both presentations consume those saved values directly and
+never derive a rate in the browser. Basic and incomplete/uncalculated Rich remain
+**—**; a zero-successful-delivery snapshot is `0` clicks and **—** CTR. Basic also
+has no CTA or media. A short note explains the nightly cadence. No backend, schema,
+API endpoint or native-app changes belong in this frontend slice.
 
 Failed status is distinct from queued/processing/completed. Completion duration is
 shown only for completed sends with valid ordered timestamps. Preserve zero
@@ -227,9 +229,10 @@ clicks/CTR/Failed deliveries. Failed deliveries displays the existing API count,
 including zero, with error emphasis only when nonzero. Remove the separate timing
 and failure footer. Keep CTA/media actions and the existing image viewer.
 
-`nudgeHistoryPresentation` supplies the card status/count labels from the existing
-response; `NudgeHistoryPanel` owns the same state and events. Desktop table markup,
-filters, pagination, API contract and unavailable click/CTR behaviour are unchanged.
+`nudgeHistoryPresentation` supplies the card status/count labels and saved
+engagement values from the existing response; `NudgeHistoryPanel` owns the same
+state and events. Desktop table markup, filters, pagination, and all unavailable
+metric behavior remain unchanged.
 Verify both themes at 320/375/768px, aligned chips and six metrics, invalid/missing
 duration fallback, zero/nonzero failures, long content, image fallback and resize
 to the unchanged desktop table. Use the existing fixture browser suite.
@@ -245,6 +248,30 @@ surfaces. Screenshots reviewed under `/tmp/nudger-card-refinement-chrome` and
 `/tmp/nudger-card-refinement-webkit`. Physical-device and screen-reader checks
 were not performed. All sends/storage were fixtures; no backend or production
 deployment was changed.
+
+### Saved engagement metrics — 12 October 2026
+
+The backend history contract now provides saved—not live—engagement for Rich
+nudges: `stats.total_clicks` is a unique-recipient integer, `stats.ctr` is a
+percentage from 0 to 100, and `engagement_as_of` is the UTC snapshot cutoff.
+The Nudger client consumes these fields in its one shared history presentation
+mapping for both the desktop table and mobile cards. It never divides delivered
+counts in the browser.
+
+Basic, uncalculated Rich, and an older API response with no snapshot remain `—`.
+A calculated Rich nudge with no successful deliveries shows `0` total clicks and
+`—` CTR. The small history note explains the nightly cadence; accessible labels
+include the snapshot timestamp without adding another visual data row. Invalid
+negative, non-finite, out-of-range, partial, or Basic engagement snapshots are
+rejected at the typed API boundary.
+
+Verification for this update: `make test`, the style/PWA/typecheck production build,
+and the focused Rich suite passed locally. The history browser fixture passed in
+Chrome and WebKit at 320/375/768/1024/1440px in both themes, with mocked response
+data proving Basic `—`, saved click/CTR rendering, zero-delivery CTR fallback,
+accessible snapshot labels, resize, image-viewer focus, and no horizontal overflow.
+The wider Chromium mobile-shell fixture also passed at 320/375/390/412/440/768px.
+No live history data, send, upload, deployment, merge, or backend change occurred.
 
 ### Reproduce safely
 

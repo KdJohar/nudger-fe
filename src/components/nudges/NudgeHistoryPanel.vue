@@ -70,7 +70,7 @@ function handleLoadMore(): void {
         <p>{{ props.errorMessage ? 'Reload your history to see your nudges.' : 'Your sent messages and delivery details will appear here.' }}</p>
       </div>
       <template v-else>
-        <p :id="engagementNoteId" class="ui-record-list__note">Click totals and CTR aren’t available yet. <span aria-hidden="true">—</span> means unavailable or not applicable.</p>
+        <p :id="engagementNoteId" class="ui-record-list__note">Rich engagement updates nightly. <span aria-hidden="true">—</span> means unavailable or not applicable.</p>
 
         <div v-if="!smAndDown" class="ui-record-table__scroll" role="region" aria-label="Nudge history — scroll to see all columns" tabindex="0">
           <table class="ui-record-table">
@@ -100,8 +100,8 @@ function handleLoadMore(): void {
                 <td class="ui-record-table__number">{{ row.audience }}</td>
                 <td class="ui-record-table__number ui-record-list__delivered">{{ row.delivered }}</td>
                 <td class="ui-record-table__number">{{ row.muted }}</td>
-                <td class="ui-record-table__number" :aria-describedby="engagementNoteId"><span :aria-label="row.engagementLabel">—</span></td>
-                <td class="ui-record-table__number" :aria-describedby="engagementNoteId"><span :aria-label="row.engagementLabel">—</span></td>
+                <td class="ui-record-table__number" :aria-describedby="engagementNoteId"><span :aria-label="row.totalClicksLabel">{{ row.totalClicks }}</span></td>
+                <td class="ui-record-table__number" :aria-describedby="engagementNoteId"><span :aria-label="row.ctrLabel">{{ row.ctr }}</span></td>
                 <td>
                   <v-chip :color="row.statusDetails.color" size="small" variant="tonal"><v-icon start :icon="row.statusDetails.icon" />{{ row.statusDetails.label }}</v-chip>
                   <span v-if="row.failed" class="ui-record-list__failure">{{ row.failed }}</span>
@@ -128,8 +128,8 @@ function handleLoadMore(): void {
               <div><dt>Audience</dt><dd>{{ row.audience }}</dd></div>
               <div class="ui-record-list__delivered"><dt>Delivered</dt><dd>{{ row.delivered }}</dd></div>
               <div><dt>Muted</dt><dd>{{ row.muted }}</dd></div>
-              <div><dt>Total clicks</dt><dd :aria-label="row.engagementLabel" :aria-describedby="engagementNoteId">—</dd></div>
-              <div><dt><abbr title="Click-through rate">CTR</abbr></dt><dd :aria-label="row.engagementLabel" :aria-describedby="engagementNoteId">—</dd></div>
+              <div><dt>Total clicks</dt><dd :aria-label="row.totalClicksLabel" :aria-describedby="engagementNoteId">{{ row.totalClicks }}</dd></div>
+              <div><dt><abbr title="Click-through rate">CTR</abbr></dt><dd :aria-label="row.ctrLabel" :aria-describedby="engagementNoteId">{{ row.ctr }}</dd></div>
               <div :class="{ 'is-error': row.stats.failed_deliveries > 0 }"><dt>Failed deliveries</dt><dd>{{ row.failedDeliveries }}</dd></div>
             </dl>
             <dl class="ui-record-card__actions">

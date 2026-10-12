@@ -121,7 +121,7 @@ test('an empty successful response replaces the cards with the existing empty st
 
 test('table and mobile cards share values and retain expanded messages on resize', async () => {
   const message = 'Long message 👋 '.repeat(40)
-  const harness = mount({ items: [{ ...item(), message, notification_format: 'rich', destination_url: 'https://example.com/watch', cta_label: 'watch_now', media_url: 'https://assets.example.com/test.webp' }] })
+  const harness = mount({ items: [{ ...item(), message, notification_format: 'rich', destination_url: 'https://example.com/watch', cta_label: 'watch_now', media_url: 'https://assets.example.com/test.webp', engagement_as_of: '2026-10-07T00:00:00Z', stats: { ...item().stats, total_clicks: 7, ctr: 70 } }] })
   try {
     const expand = findAll(harness.root, element => element.type === 'button' && element.props['aria-expanded'] === false)[0]
     expand.props.onClick()
@@ -132,6 +132,8 @@ test('table and mobile cards share values and retain expanded messages on resize
     assert.equal(byClass(harness.root, 'ui-record-card').length, 0)
     assert.equal(findAll(harness.root, element => element.type === 'table').length, 1)
     assert.equal(findAll(harness.root, element => element.type === 'th').length, 11)
+    assert.equal(findAll(harness.root, element => element.type === 'td')[5].children[0].text, '7')
+    assert.equal(findAll(harness.root, element => element.type === 'td')[6].children[0].text, '70%')
     assert.equal(byClass(harness.root, 'ui-expandable-text__copy')[0].text, message)
     assert.equal(findAll(harness.root, element => element.type === 'img').length, 0, 'No history image is fetched before opening')
     const action = findAll(harness.root, element => element.type === 'a')[0]
@@ -149,11 +151,28 @@ test('failure and missing engagement are represented honestly, including zero au
   assert.equal(row.completionLabel, '—')
   assert.equal(row.audience, '0')
   assert.equal(row.delivered, '0')
-  assert.equal(row.engagementLabel, 'Not available yet')
+  assert.equal(row.totalClicks, '—')
+  assert.equal(row.ctr, '—')
+  assert.equal(row.engagementLabel, 'Not available yet. Engagement updates nightly.')
   assert.equal(row.failedDeliveries, '1')
   assert.equal(row.cardStatusLabel, 'Failed')
   assert.match(row.failed, /1 failed/)
-  assert.equal(presentNudgeHistory(item()).engagementLabel, 'Not applicable to Basic')
+  assert.equal(presentNudgeHistory(item()).engagementLabel, 'Not applicable to Basic notifications')
+})
+
+test('saved Rich engagement uses backend percentages without client-side calculation', () => {
+  const saved = presentNudgeHistory({ ...item(), notification_format: 'rich', engagement_as_of: '2026-10-07T00:00:00Z',
+    stats: { ...item().stats, total_clicks: 1, ctr: 33.333 } })
+  assert.equal(saved.totalClicks, '1')
+  assert.equal(saved.ctr, '33.333%')
+  assert.match(saved.totalClicksLabel, /Engagement updated Oct 7/)
+  assert.match(saved.ctrLabel, /33.333%/)
+
+  const zeroDeliverySnapshot = presentNudgeHistory({ ...item(), notification_format: 'rich', engagement_as_of: '2026-10-07T00:00:00Z',
+    stats: { ...item().stats, total_clicks: 0, ctr: null } })
+  assert.equal(zeroDeliverySnapshot.totalClicks, '0')
+  assert.equal(zeroDeliverySnapshot.ctr, '—')
+  assert.match(zeroDeliverySnapshot.ctrLabel, /no successful deliveries/)
 })
 
 test('completion requires a completed status and ordered valid timestamps', () => {

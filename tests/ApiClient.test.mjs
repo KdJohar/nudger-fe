@@ -167,3 +167,24 @@ test('history validates its envelope before returning data to the list', async t
   await getNudgeHistory(async route => { requested = route; return { data: { items: [], next: null } } }, { nextLink: `http://localhost:5174${path}?cursor=next&nudge_type=broadcast` })
   assert.equal(requested, `${path}?cursor=next&nudge_type=broadcast`)
 })
+
+test('history accepts saved engagement snapshots and rejects impossible analytics', async t => {
+  const api = harness(t)
+  const { getNudgeHistory } = api.load('src/lib/nudges.ts')
+  const rich = {
+    id: 'nudge-1', notification_format: 'rich', destination_url: 'https://example.com/watch', cta_label: 'watch_now',
+    engagement_as_of: '2026-10-07T00:00:00Z', stats: { total_clicks: 1, ctr: 33.333 },
+  }
+  const page = await getNudgeHistory(async () => ({ data: { items: [rich], next: null } }))
+  assert.equal(page.items[0].stats.total_clicks, 1)
+  assert.equal(page.items[0].stats.ctr, 33.333)
+
+  for (const invalid of [
+    { ...rich, stats: { total_clicks: -1, ctr: 0 } },
+    { ...rich, stats: { total_clicks: 1, ctr: 100.001 } },
+    { ...rich, engagement_as_of: null, stats: { total_clicks: 1, ctr: 25 } },
+    { ...rich, notification_format: 'basic', stats: { total_clicks: 1, ctr: 25 } },
+  ]) {
+    await assert.rejects(getNudgeHistory(async () => ({ data: { items: [invalid], next: null } })), error => error.code === 'API_INVALID_RESPONSE')
+  }
+})

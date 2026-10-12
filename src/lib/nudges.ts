@@ -9,6 +9,25 @@ export interface NudgeHistoryOptions {
   nudgeType?: NudgeType | null
 }
 
+function hasInvalidEngagementSnapshot(item: NudgeHistoryPage['items'][number]): boolean {
+  const totalClicks = item.stats?.total_clicks
+  const ctr = item.stats?.ctr
+  const engagementAsOf = item.engagement_as_of
+  const hasTotalClicks = totalClicks !== undefined && totalClicks !== null
+  const hasCtr = ctr !== undefined && ctr !== null
+  const hasEngagementAsOf = engagementAsOf !== undefined && engagementAsOf !== null
+
+  if ((hasTotalClicks && (!Number.isSafeInteger(totalClicks) || totalClicks < 0)) ||
+      (hasCtr && (typeof ctr !== 'number' || !Number.isFinite(ctr) || ctr < 0 || ctr > 100)) ||
+      (hasEngagementAsOf && (typeof engagementAsOf !== 'string' || !Number.isFinite(Date.parse(engagementAsOf))))) return true
+
+  // Older API revisions can omit optional fields during a rolling deployment.
+  // Once any snapshot value is present, retain the backend's all-or-nothing contract.
+  if (item.notification_format === 'basic') return hasTotalClicks || hasCtr || hasEngagementAsOf
+  if (hasTotalClicks || hasCtr || hasEngagementAsOf) return !hasEngagementAsOf || !hasTotalClicks
+  return false
+}
+
 export async function getNudgeHistory(request: AuthenticatedRequest, options: NudgeHistoryOptions = {}): Promise<NudgeHistoryPage> {
   const historyPath = '/v1/app-nudger/nudges'
   const path = options.nextLink
@@ -22,6 +41,7 @@ export async function getNudgeHistory(request: AuthenticatedRequest, options: Nu
   for (const item of response.data.items) {
     if (item.notification_format !== undefined && !['basic', 'rich'].includes(item.notification_format)) throw new ApiError('The API returned an invalid notification format.', 200, 'API_INVALID_RESPONSE')
     if (item.notification_format === 'rich' && (!ctaText(item.cta_label) || !safeNotificationUrl(item.destination_url) || (item.media_url != null && !safeNotificationUrl(item.media_url)))) throw new ApiError('The API returned invalid Rich notification content.', 200, 'API_INVALID_RESPONSE')
+    if (hasInvalidEngagementSnapshot(item)) throw new ApiError('The API returned invalid engagement data.', 200, 'API_INVALID_RESPONSE')
   }
   return response.data
 }

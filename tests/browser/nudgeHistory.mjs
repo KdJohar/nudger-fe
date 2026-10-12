@@ -13,9 +13,9 @@ mkdirSync(output, { recursive: true })
 const errors = []
 const longMessage = 'A useful update 👋\n' + 'Long text stays readable. '.repeat(155)
 const profile = { id: 'fixture-merchant', user_id: 'fixture-user', display_name: 'Studio Notes', nudger_id: 'studio-notes', profile_type: 'platform', is_active: true, profile_image_url: '/nudge.png' }
-const item = (id, content = {}) => ({ id, title: 'Studio Notes', message: id, sender: 'platform', nudge_type: 'broadcast', notification_format: 'basic', status: 'completed', created_at: '2026-10-01T08:00:00Z', completed_at: '2026-10-01T08:00:05Z', stats: { total_audience: 12450, total_devices: 17000, delivered_users: 12000, muted_users: 450, failed_deliveries: 0 }, ...content })
+const item = (id, content = {}) => ({ id, title: 'Studio Notes', message: id, sender: 'platform', nudge_type: 'broadcast', notification_format: 'basic', status: 'completed', created_at: '2026-10-01T08:00:00Z', completed_at: '2026-10-01T08:00:05Z', engagement_as_of: null, stats: { total_audience: 12450, total_devices: 17000, delivered_users: 12000, muted_users: 450, failed_deliveries: 0, total_clicks: null, ctr: null }, ...content })
 const rich = { notification_format: 'rich', destination_url: 'https://example.com/watch', cta_label: 'watch_now', media_url: 'https://assets.example.com/ready.webp' }
-const fixtures = [item('A basic update'), item('Watch our new tutorial', rich), item('An expired image', { ...rich, status: 'failed', cta_label: 'learn_more', media_url: 'https://assets.example.com/deleted.webp', stats: { total_audience: 1, total_devices: 1, delivered_users: 0, muted_users: 0, failed_deliveries: 1 } }), item('Still processing', { ...rich, status: 'processing', completed_at: null, media_url: null }), item('Queued for later', { status: 'created', completed_at: null }), item('Long message', { ...rich, message: longMessage, media_url: null })]
+const fixtures = [item('A basic update'), item('Watch our new tutorial', { ...rich, engagement_as_of: '2026-10-07T00:00:00Z', stats: { total_audience: 12450, total_devices: 17000, delivered_users: 12000, muted_users: 450, failed_deliveries: 0, total_clicks: 3000, ctr: 25 } }), item('An expired image', { ...rich, status: 'failed', cta_label: 'learn_more', media_url: 'https://assets.example.com/deleted.webp', engagement_as_of: '2026-10-07T00:00:00Z', stats: { total_audience: 1, total_devices: 1, delivered_users: 0, muted_users: 0, failed_deliveries: 1, total_clicks: 0, ctr: null } }), item('Still processing', { ...rich, status: 'processing', completed_at: null, media_url: null }), item('Queued for later', { status: 'created', completed_at: null }), item('Long message', { ...rich, message: longMessage, media_url: null })]
 
 async function setup(width, theme) {
   const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: theme, reducedMotion: 'reduce', hasTouch: width < 960 })
@@ -69,6 +69,16 @@ try {
     assert.equal(await entries.nth(0).getByRole('button', { name: 'View image' }).count(), 0)
     assert.equal(await entries.nth(0).getByText('12,000', { exact: true }).count(), 1)
     assert.equal(await entries.nth(0).getByText('Completed in 5s', { exact: true }).count(), 1)
+    if (width >= 960) {
+      assert.equal(await entries.nth(0).locator('td').nth(5).innerText(), '—', 'Basic total clicks remain unavailable')
+      assert.equal(await entries.nth(0).locator('td').nth(6).innerText(), '—', 'Basic CTR remains unavailable')
+    } else {
+      const basicEngagement = entries.nth(0).locator('.ui-record-card__metrics dd')
+      assert.equal(await basicEngagement.nth(3).innerText(), '—', 'Basic total clicks remain unavailable')
+      assert.equal(await basicEngagement.nth(4).innerText(), '—', 'Basic CTR remains unavailable')
+    }
+    assert.equal(await entries.nth(1).getByText('3,000', { exact: true }).count(), 1)
+    assert.equal(await entries.nth(1).getByText('25%', { exact: true }).count(), 1)
     assert.equal(await entries.nth(2).getByText('Failed', { exact: true }).count(), 1)
     if (width >= 960) assert.equal(await entries.nth(2).getByText('1 failed delivery', { exact: true }).count(), 1)
     else {
@@ -78,6 +88,7 @@ try {
       assert.equal(await card.locator('.v-chip').innerText(), 'Completed in 5s')
       assert.deepEqual(await card.locator('.ui-record-card__metrics dt').allTextContents(), ['Audience', 'Delivered', 'Muted', 'Total clicks', 'CTR', 'Failed deliveries'])
       assert.equal(await card.locator('.ui-record-card__metrics dd').last().innerText(), '0')
+      assert.deepEqual(await entries.nth(1).locator('.ui-record-card__metrics dd').allTextContents(), ['12,450', '12,000', '450', '3,000', '25%', '0'])
       assert.equal(await entries.nth(2).locator('.ui-record-card__metrics dd').last().innerText(), '1')
       const geometry = await card.evaluate(el => {
         const format = el.querySelector('.ui-status-tag').getBoundingClientRect(), status = el.querySelector('.v-chip').getBoundingClientRect()
