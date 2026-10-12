@@ -117,11 +117,11 @@ function handleLoadMore(): void {
         <div v-else class="ui-record-cards" aria-label="Nudge history cards">
           <article v-for="row in rows" :key="row.id" class="ui-record-card" data-testid="history-item">
             <header class="ui-record-card__header">
-              <div class="ui-record-card__identity"><strong>{{ row.title }}</strong><span class="ui-record-list__meta">{{ row.sentLabel }}</span></div>
-              <v-chip :color="row.statusDetails.color" size="small" variant="tonal"><v-icon start :icon="row.statusDetails.icon" />{{ row.statusDetails.label }}</v-chip>
-            </header>
-            <div class="ui-record-card__message">
               <span class="ui-status-tag">{{ row.formatLabel }}</span>
+              <v-chip :color="row.statusDetails.color" size="small" variant="tonal"><v-icon start :icon="row.statusDetails.icon" />{{ row.cardStatusLabel }}</v-chip>
+            </header>
+            <span class="ui-record-list__meta">{{ row.sentLabel }}</span>
+            <div class="ui-record-card__message">
               <ExpandableText :text="row.message" :is-expanded="expandedIds.has(row.id)" @update:is-expanded="handleExpand(row.id, $event)" />
             </div>
             <dl class="ui-record-card__metrics" aria-label="Audience delivery stats">
@@ -130,15 +130,12 @@ function handleLoadMore(): void {
               <div><dt>Muted</dt><dd>{{ row.muted }}</dd></div>
               <div><dt>Total clicks</dt><dd :aria-label="row.engagementLabel" :aria-describedby="engagementNoteId">—</dd></div>
               <div><dt><abbr title="Click-through rate">CTR</abbr></dt><dd :aria-label="row.engagementLabel" :aria-describedby="engagementNoteId">—</dd></div>
+              <div :class="{ 'is-error': row.stats.failed_deliveries > 0 }"><dt>Failed deliveries</dt><dd>{{ row.failedDeliveries }}</dd></div>
             </dl>
             <dl class="ui-record-card__actions">
               <div><dt>CTA</dt><dd><a v-if="row.actionUrl" class="ui-text-action" :href="row.actionUrl" target="_blank" rel="noopener noreferrer" :aria-label="`${row.actionLabel} (opens in a new tab)`">{{ row.actionLabel }}<v-icon icon="mdi-open-in-new" size="14" aria-hidden="true" /></a><span v-else>—</span></dd></div>
               <div><dt>Media</dt><dd><button v-if="row.mediaUrl" :data-media-id="row.id" class="ui-text-action" type="button" aria-haspopup="dialog" @click="handleViewImage(row)">View image</button><span v-else>—</span></dd></div>
             </dl>
-            <footer class="ui-record-card__footer">
-              <span class="ui-record-list__meta">{{ row.completionLabel === '—' ? 'Completion —' : row.completionLabel }}</span>
-              <span v-if="row.failed" class="ui-record-list__failure">{{ row.failed }}</span>
-            </footer>
           </article>
         </div>
         <div v-if="props.nextLink && !props.errorMessage" class="ui-record-list__footer">

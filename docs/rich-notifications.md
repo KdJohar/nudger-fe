@@ -216,6 +216,36 @@ Verification for this frontend-only change:
   deployment, real send/upload, merge or push was performed. Click/CTR analytics
   remain unavailable until separately added to the backend history response.
 
+### Mobile history card refinement — 12 October 2026
+
+Approved: remove the repeated merchant title from mobile cards. Basic/Rich sits
+on the left of the header and status on the right, aligned vertically. Completed
+status includes the valid duration (e.g. “Completed in 6s”); missing/invalid timing
+falls back to “Completed”. Retain the sent date and full-message disclosure.
+Delivery metrics form two rows of three: Audience/Delivered/Muted, then Total
+clicks/CTR/Failed deliveries. Failed deliveries displays the existing API count,
+including zero, with error emphasis only when nonzero. Remove the separate timing
+and failure footer. Keep CTA/media actions and the existing image viewer.
+
+`nudgeHistoryPresentation` supplies the card status/count labels from the existing
+response; `NudgeHistoryPanel` owns the same state and events. Desktop table markup,
+filters, pagination, API contract and unavailable click/CTR behaviour are unchanged.
+Verify both themes at 320/375/768px, aligned chips and six metrics, invalid/missing
+duration fallback, zero/nonzero failures, long content, image fallback and resize
+to the unchanged desktop table. Use the existing fixture browser suite.
+
+Verified: required UI tests (53), audience tests (10), style/PWA guards, type
+checks and local build passed. Chrome and WebKit passed the history fixture suite
+at 320/375/768/1440px in both themes against the rebuilt localhost:5174 container.
+Checks assert no repeated card title/footer, aligned format/status chips, six
+statistics with aligned second-row values, zero/nonzero failures, completed timing,
+image deletion fallback, focus/Escape/rotation, full messages, refresh/retry and
+unchanged desktop table columns. Axe found no violations in the tested list/viewer
+surfaces. Screenshots reviewed under `/tmp/nudger-card-refinement-chrome` and
+`/tmp/nudger-card-refinement-webkit`. Physical-device and screen-reader checks
+were not performed. All sends/storage were fixtures; no backend or production
+deployment was changed.
+
 ### Reproduce safely
 
 Run `node --test tests/*.test.mjs`, `npm run build`, then start local Vite with

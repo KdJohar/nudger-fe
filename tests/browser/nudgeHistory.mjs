@@ -70,7 +70,26 @@ try {
     assert.equal(await entries.nth(0).getByText('12,000', { exact: true }).count(), 1)
     assert.equal(await entries.nth(0).getByText('Completed in 5s', { exact: true }).count(), 1)
     assert.equal(await entries.nth(2).getByText('Failed', { exact: true }).count(), 1)
-    assert.equal(await entries.nth(2).getByText('1 failed delivery', { exact: true }).count(), 1)
+    if (width >= 960) assert.equal(await entries.nth(2).getByText('1 failed delivery', { exact: true }).count(), 1)
+    else {
+      const card = entries.nth(0)
+      assert.equal(await card.getByText(profile.display_name, { exact: true }).count(), 0, 'Card omits the repeated merchant title')
+      assert.equal(await card.locator('.ui-record-card__footer').count(), 0, 'Completion is shown once, in the status chip')
+      assert.equal(await card.locator('.v-chip').innerText(), 'Completed in 5s')
+      assert.deepEqual(await card.locator('.ui-record-card__metrics dt').allTextContents(), ['Audience', 'Delivered', 'Muted', 'Total clicks', 'CTR', 'Failed deliveries'])
+      assert.equal(await card.locator('.ui-record-card__metrics dd').last().innerText(), '0')
+      assert.equal(await entries.nth(2).locator('.ui-record-card__metrics dd').last().innerText(), '1')
+      const geometry = await card.evaluate(el => {
+        const format = el.querySelector('.ui-status-tag').getBoundingClientRect(), status = el.querySelector('.v-chip').getBoundingClientRect()
+        const values = [...el.querySelectorAll('.ui-record-card__metrics dd')].map(value => value.getBoundingClientRect())
+        return { formatCenter: format.y + format.height / 2, statusCenter: status.y + status.height / 2,
+          values: values.map(value => ({ x: value.x, y: value.y })) }
+      })
+      assert.ok(Math.abs(geometry.formatCenter - geometry.statusCenter) < 1, 'Format/status chips are vertically aligned')
+      assert.ok(geometry.values[0].x < geometry.values[1].x && geometry.values[1].x < geometry.values[2].x)
+      assert.ok(geometry.values[3].x < geometry.values[4].x && geometry.values[4].x < geometry.values[5].x)
+      assert.ok(Math.max(...geometry.values.slice(3).map(value => value.y)) - Math.min(...geometry.values.slice(3).map(value => value.y)) < 1, 'Second-row statistics share one baseline')
+    }
     assert.equal(await entries.nth(3).getByText('Processing', { exact: true }).count(), 1)
     assert.equal(await entries.nth(4).getByText('Queued', { exact: true }).count(), 1)
     assert.equal(await entries.nth(1).getByRole('link').getAttribute('href'), rich.destination_url)

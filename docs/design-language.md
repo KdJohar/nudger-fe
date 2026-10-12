@@ -115,6 +115,10 @@ row on mobile. The table alone may scroll horizontally to retain readable column
 never make the page overflow. Keep message emphasis, aligned numeric columns,
 semantic status chips and restrained delivered-count emphasis. CTA/media are
 48px text actions, and images load only in the dialog/Sheet after selection.
+Mobile history cards omit the repeated merchant name. Align Basic/Rich and status
+chips at the top; completed status includes the duration once. Keep the sent date,
+then message, a two-row/three-column metrics group (including failed deliveries),
+and CTA/media actions. Avoid a second timing/failure footer.
 Do not rebuild the page frame when filters change or requests fail.
 See [mobile design context](mobile-design-context.md) for viewport and gesture rules.
 

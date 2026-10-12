@@ -533,19 +533,19 @@ button, input, textarea, select { font: inherit; }
 .ui-record-list .ui-status-tag { color: rgb(var(--v-theme-on-surface-variant)); background: rgba(var(--v-theme-on-surface), 0.05); }
 .ui-record-cards { display: grid; gap: 12px; }
 .ui-record-card { display: grid; min-width: 0; gap: 16px; padding: 16px; border: 1px solid var(--app-border); border-radius: var(--app-radius); background: rgb(var(--v-theme-surface)); }
-.ui-record-card__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.ui-record-card__identity { display: grid; min-width: 0; gap: 4px; }
-.ui-record-card__identity strong { overflow-wrap: anywhere; font-size: 14px; font-weight: 650; }
+.ui-record-card__header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ui-record-card__header .ui-status-tag { height: 24px; padding: 0 8px; font-size: 11px; }
 .ui-record-card__header .v-chip { flex-shrink: 0; }
+.ui-record-card__header + .ui-record-list__meta { margin-top: -8px; }
 .ui-record-card__message { display: grid; justify-items: start; gap: 8px; min-width: 0; }
 .ui-record-card__metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 8px; padding: 12px; border-radius: 12px; background: rgba(var(--v-theme-on-surface), 0.035); }
 .ui-record-card__metrics > div, .ui-record-card__actions > div { min-width: 0; }
 .ui-record-card__metrics dt, .ui-record-card__actions dt { color: rgb(var(--v-theme-on-surface-variant)); font-size: 12px; line-height: 1.5; }
 .ui-record-card__metrics dd { margin: 4px 0 0; font-size: 16px; font-weight: 650; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.ui-record-card__metrics > div:nth-child(n+4) dt { min-height: 36px; }
+.ui-record-card__metrics .is-error { color: rgb(var(--v-theme-error)); }
 .ui-record-card__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .ui-record-card__actions dd { display: flex; align-items: center; min-height: 48px; margin: 0; font-size: 14px; }
-.ui-record-card__footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-top: 12px; border-top: 1px solid var(--app-border); }
-.ui-record-card__footer .ui-record-list__failure { margin: 0; }
 .ui-expandable-text { min-width: 0; }
 .ui-expandable-text__copy { margin: 0; color: rgb(var(--v-theme-on-surface)); font-size: 14px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 .ui-text-action { display: inline-flex; align-items: center; justify-content: flex-start; gap: 4px; min-height: 48px; min-width: 48px; max-width: 100%; border-radius: 8px; color: var(--ui-record-accent, var(--app-secondary)); font: inherit; font-size: 13px; line-height: 1.5; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; text-align: start; }
