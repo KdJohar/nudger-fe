@@ -1,6 +1,6 @@
 # Nudger frontend repository context
 
-Updated 2026-10-09. Read [shared project context](project-context.md) first.
+Updated 2026-10-13. Read [shared project context](project-context.md) first.
 This is the merchant/creator workspace plus public landing/legal pages.
 Remote: `KdJohar/nudger-fe`. It alone deploys to `https://plugandnudge.com`.
 
@@ -17,6 +17,9 @@ composables do not duplicate shells. Authenticated routes: audience, nudges,
 compose, profile and platform-only token. `/dashboard` redirects to `/audience`.
 Google auth → missing profile onboarding → inactive profile pending → active workspace.
 Creator permissions and platform-only tokens remain backend-enforced.
+Onboarding includes About and profile-image upload. Active profiles visiting
+`/pending`, including refresh, redirect to `/audience`; inactive/suspended stay
+in pending. R2 finalized profile assets use `https://assets.plugandnudge.com`.
 
 Accepted desktop/mobile design is final. Maintain semantic structure and shared
 state. Use existing coral `#FF6B4A`, indigo `#4338CA`, white/dark `#171B25`,
@@ -63,11 +66,41 @@ The browser calls same-origin `/v1/*`; Nginx calls the API Cloud Run HTTPS origi
 via Direct VPC all-traffic + Private Google Access. No public API-LB hop and no
 browser worker/DB connection. The earlier 404 was caused by proxying to restricted
 `run.app` without the required VPC routing; not proof of a Nudgee deployment.
-Current live frontend revision is `nudger-fe-00006-gns` (dated snapshot).
+Read-only 13 October snapshot: `nudger-fe-00009-lcs`, Ready and 100% traffic,
+service min 1 / max 5. This is deployment readiness, not a fresh login/browser test.
 
 One shared global HTTPS load balancer serves apex/frontend and API/mobile.
 Certificate `nudger-fe-managed-cert` is ACTIVE and attached. Direct external
 frontend `run.app` access is intentionally blocked, not an availability test.
+
+## Rich composer and saved history
+
+The Rich creator/playground/history work is merged through PR #9 and was included
+in the approved merchant rollout. Basic is default and omits Rich-only request
+keys. Rich requires destination and Watch now/Learn more, with optional owned,
+finalized R2 media. Manual WebP upload and explicit YouTube thumbnail import use
+existing shared draft controls, one notification preview and immutable review.
+Sender identity remains the title/avatar; content image is separate. No pricing
+or hook redesign. The review retains the device-appearance warning without a
+duplicate Full message section/format badge or phone frame.
+
+Desktop history shows Message, Type, Inbox audience, Push delivered, Push silenced,
+Total clicks, CTR, Status and Details. Completed duration appears once in Status.
+Mobile retains compact cards and six metrics; More stats uses the existing Sheet,
+desktop the existing DialogFrame. One shared details body includes device attempts,
+failure counts, snapshot freshness, CTA and media viewer. Large/short/long data,
+image expiry and missing metrics must not distort either presentation.
+
+Prefer canonical `push_delivered`/`push_suppressed` over legacy aliases, including
+zero. Audience/silenced/clicks count users; delivered/failed/devices count device
+attempts. CTR is the backend's saved one-decimal percent, not a browser calculation.
+Basic/uncalculated Rich render a dash, measured zero renders zero, and zero inbox
+audience has no CTR. Multiple devices can exceed audience; no installations alone
+does not mean Push silenced. See [Rich feature context](rich-notifications.md).
+
+13 October source regression rerun: 151 checks passed. Dated Chrome/WebKit
+responsive, dialog/media/error/focus/Axe evidence remains in the Rich guide.
+No visual or application code changes are made in this documentation sync.
 
 ## Verification and future release gate
 

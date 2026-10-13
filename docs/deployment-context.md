@@ -9,6 +9,12 @@ frontend. The checked-in `Dockerfile`, `Makefile` and
 `scripts/deploy_cloud_run_production.sh` are authoritative when this document
 and an implementation disagree.
 
+Read-only snapshot on 13 October 2026: `nudger-fe-00009-lcs` is Ready with 100%
+traffic, internal-and-cloud-load-balancing ingress and service min 1 / max 5.
+It includes the approved Rich composer/history changes. The merchant domain and
+same-origin VPC API proxy remain owned by this checkout; Nudgee is never deployed.
+This context/Git sync does not publish an image or update Cloud Run.
+
 ## Runtime shape
 
 ## Repository ownership

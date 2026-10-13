@@ -1,6 +1,9 @@
 # Rich notification frontend contract
 
-Approved 11 October 2026. Local-only feature branch; no merge or deployment.
+Approved 11 October 2026; merged through PR #9 and included in the later approved
+merchant rollout. Read [repository context](repository-context.md) for the current
+deployment and saved inbox/push metrics. Local-only statements in dated sections
+below describe those earlier test phases, not today's release state.
 Backend source: `../plugnudge-be/docs/rich notification implementation.md` and
 `rich-notification-backend-report.md` (approved addendum supersedes old proposals).
 
