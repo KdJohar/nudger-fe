@@ -1,6 +1,6 @@
 # Plug & Nudge — shared project context
 
-Updated 2026-10-10. This contract is mirrored in all five project directories.
+Updated 2026-10-13. This contract is mirrored in all five project directories.
 Read it before choosing a repository, build source, production target or API URL.
 Read [repository context](repository-context.md) next for this directory's responsibilities.
 
@@ -22,10 +22,10 @@ configuration. Report discrepancies rather than silently changing scope.
 “Nudge BE” means `plugnudge-be`. “Nudger FE” means `nudger-fe`, not
 `nudgee-fe`. The Nudgee local directory's GitHub remote is
 `KdJohar/nudge-app`; the different remote name does not change its role.
-The iOS checkout now has remote `git@github.com:KdJohar/nudge-ios.git` and consolidated
-main `550e115`. The Android checkout has remote
-`git@github.com:KdJohar/nudge-android.git` and its implementation is consolidated
-on `main`. A Git push is not an App Store or Play release; Play distribution remains
+The iOS remote is `git@github.com:KdJohar/nudge-ios.git`; Android's remote is
+`git@github.com:KdJohar/nudge-android.git`. All five repositories use canonical
+`main` through the approved PR workflow. Check local/remote heads rather than
+trusting historical hashes. A Git push is not an App Store or Play release; Play distribution remains
 separate and is not implied by the repository state.
 
 The iOS app is currently a **Capacitor application**, not a completed pure SwiftUI
@@ -76,7 +76,42 @@ keeps `internal` ingress plus authenticated Pub/Sub invocation. A worker
 `run.app` URL existing does not mean public access is enabled. Do not restore
 `ingress=all` to fix a proxy 404. Mobile still needs the public API domain.
 
-## Cloud snapshot: verified 2026-10-09
+## Current implementation and deployment
+
+Rich notifications are implemented in the backend, merchant workspace, shared
+receiver screens and both Capacitor hosts. iOS also includes the accepted
+bottom-pill placement fix and System appearance default/following behavior.
+Android Rich work was committed as `7b9cf9e`; existing Material 3 screens,
+navigation, insets and styles remain unchanged. Installation is separate from
+merging source; Android Rich phone acceptance remains outstanding.
+
+Read-only Google Cloud observations on 13 October 2026:
+
+| Resource | Observed state |
+| --- | --- |
+| API | `nudge-api-00039-7m2`, Ready, 100% traffic, internal-and-cloud-load-balancing, service min 1 / max 5 |
+| Worker | `nudge-worker-00038-kxn`, Ready, 100% traffic, internal, service max 5; min 0 remains the deployment contract |
+| Merchant website | `nudger-fe-00009-lcs`, Ready, 100% traffic, internal-and-cloud-load-balancing, service min 1 / max 5 |
+| Last migration execution | `nudge-migrate-6k8fc`, succeeded on 12 October at 15:46 UTC; Alembic logs show 0030 through 0037 |
+| Nightly engagement | `nudge-nightly-engagement`, ENABLED, `0 0 * * *`, Asia/Kolkata, publishes to nudge-engagement-dispatch |
+
+Ready is Cloud Run readiness, not a fresh end-to-end login/delivery/capacity test.
+Topic-scoped runtime publisher access for clicks and engagement was repaired after
+authenticated clicks returned 503. Backend setup now repairs grants on all eight
+topics and stops before secrets/migration/rollout on a denied grant. Pub/Sub push
+OIDC/invocation and private ingress remain separate requirements. See the backend
+`docs/PUBSUB_PRODUCTION.md`; IAM-only repair needs no mobile reinstall.
+
+Selected ignored API/worker production inputs use `nudge-production`, public
+`https://assets.plugandnudge.com`, private `nudge-production-notification-staging`
+and `NOTIFICATION_DAY_LIMIT=7`. Input values are not a new verification of bucket
+CORS/lifecycle. Public thumbnails use
+`merchant-profiles/{merchant_profile_uuid}/thumbnails/{filename}.webp`.
+Media cleanup derives retention plus one day (8 by default), protects queued/live
+uses and has a bounded backend command. No separate media-cleanup Cloud Scheduler
+job appeared in this inventory; nightly CTR is not public-media cleanup.
+
+## Historical cloud baseline verified 2026-10-09
 
 These are dated observations, not permanent identifiers or a fresh deployment.
 
@@ -170,13 +205,63 @@ foreground, background/locked delivery and tap-to-inbox. Backend acceptance or
 an inbox receipt alone does not prove visible push. Never log full FIDs, session
 tokens, notification bodies or private webhook URLs for this verification.
 
+## Inbox, Rich content, push and engagement
+
+- Nudge format is non-null Basic/Rich; legacy nudges were migrated to Basic.
+  Basic stores null media/destination/CTA and rejects those request keys even if
+  null. Rich requires public HTTPS destination and `watch_now`/`learn_more`;
+  owned finalized R2 `media_url` is optional. Title/avatar are merchant identity,
+  not an editable notification title. Hooks remain Basic/message-only.
+- Every active addressed subscription gets a user-level `NudgeReceipt`; hooks
+  get one for their owner. `received_at` is creation time, `clicked_at` starts
+  null, `is_muted` snapshots mute/disabled push-type preferences. Missing native
+  installations never hide inbox messages. Unsubscribed/nonexistent/foreign
+  transactional targets do not become recipients.
+- Actual mobile devices create `NudgeRecipient` attempts tied to the original
+  immutable receipt. Bounded subscription/device/Firebase groups and parallel
+  Pub/Sub stages remain. Replay, account changes, late results and zero/one/many
+  devices must not duplicate receipts, transfer ownership or inflate counters.
+- Inbox audience, silenced pushes and clicks count users; delivered/failed pushes
+  and devices count device attempts. Provider acceptance is not phone-display
+  proof. History reads saved Nudge stats without live request-time aggregation.
+- Explicit in-app CTA or Rich native body/action activation submits authenticated,
+  bodyless `POST /v1/app-nudgee/{nudge_uuid}/click`. API owns user/time and publishes;
+  worker uses one SQL statement to preserve the first click and mark engagement
+  dirty. Receiving, expanding, dismissing or viewing media is not a click. The
+  subscriber's six-digit Nudge ID is not the notification UUID.
+- Nightly durable dispatch/calculation saves unique `total_clicks`, numeric
+  one-decimal percent `ctr` and `engagement_as_of`. CTR denominator is inbox
+  audience, not successful devices. Basic and uncalculated Rich stay null;
+  measured zero is zero; zero audience has null CTR. Defaults: 100 nudges/batch,
+  two batches/dispatch, ordered locks, fixed cutoffs and recoverable work.
+- `NOTIFICATION_DAY_LIMIT` supplies inbox/live-analytics policy (7 by default).
+  Cumulative snapshots survive expiry; delayed clicks remain discoverable.
+  Migration 0037 removed `clicked_recorded_at`. Do not restore obsolete pending/
+  success-only inbox or successful-push CTR rules from historical phase reports.
+- Sender avatar and optional content media are separate images. iOS preserves
+  communication styling with standard expanded attachment/actions. Android keeps
+  MessagingStyle/Person with native actions; separate image/text parts retain the
+  caption and sender badge. Both restore auth, reject wrong-account handoffs,
+  deduplicate and open destinations independently of bounded tracking retries.
+- Future Basic/Pro pricing remains an approved direction only. Capabilities
+  prepare format permissions; no billing, paid-plan schema or pricing enforcement.
+
+Redis is rebuildable; active contracts are v1. Subscription values contain merchant
+UUID/preferences only, with a 24-hour TTL. Mutable merchant details live only in
+DB 2 `nudger:merchant-profile:user:{merchant_owner_user_uuid}:v1`. Bulk/pipelined
+hydration, version fences and invalidation keep views consistent. Receipts,
+outcomes and analytics stay in PostgreSQL. Admin hard deletion validates the chosen
+merchant UUID and clears dependent data/caches; execute only for an authorized
+target, never as a context or rendering check.
+
 ## Builds, migrations, telemetry and safety
 
 Backend: `make publish-image` tests → builds → pushes `nudge-be:latest`.
 `make deploy-production` additionally uploads runtime secrets, runs the single-task
 `nudge-migrate` job, then rolls out API/worker and reconciles Pub/Sub.
-Migrations run once per deployment job, never once per API instance. Native schema
-revision in source is `20261009_0029`.
+Migrations run once per deployment job, never once per API instance. Current source
+head is `20261012_0037`; the last production migration execution succeeded as
+recorded above. Verify the job/Alembic revision before later migration or rollback.
 
 Frontend: run the Nudger checkout's `make publish-image` / `make deploy-production`.
 Check Git root/remote, Docker build context, registry repository, image and service
@@ -224,3 +309,13 @@ Use current repo-specific documents; do not resurrect historical configuration.
 Maintain the identical shared contract across repositories when ownership or
 cross-app behavior changes. Put implementation detail in the owning repository,
 and cross-link it rather than maintaining competing copies.
+
+## Context and Git handoff
+
+Read AGENTS.md, this shared contract and local repository context first, then the
+owning feature/deployment guide. Phase reports preserve dated test evidence, not
+today's release state. When a merge is authorized, raise/merge a PR to main, delete
+only verified merged task branches and fast-forward local main. Audit all local/
+remote branch tips and exact local/remote main equality; never force-reset work.
+Context/Git synchronization does not deploy services, rotate credentials, send
+notifications, install apps or publish a store release.
