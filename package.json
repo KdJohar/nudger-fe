@@ -27,7 +27,8 @@
     "test:api-access": "node --test tests/ApiAccess.test.mjs",
     "test:profile": "node --test tests/ProfileDetails.test.mjs tests/profileErrors.test.mjs tests/ProfileLayout.test.mjs tests/AppTheme.test.mjs",
     "test:ui": "node --test tests/PillTabs.test.mjs tests/PageLayout.test.mjs tests/NudgeHistoryPanel.test.mjs tests/Onboarding.test.mjs tests/PendingProfile.test.mjs tests/RouteAccess.test.mjs tests/SetupLogout.test.mjs tests/profileErrors.test.mjs",
-    "test:audience": "node --test tests/chartGeometry.test.mjs tests/useAudienceOverview.test.mjs"
+    "test:audience": "node --test tests/chartGeometry.test.mjs tests/useAudienceOverview.test.mjs tests/AudienceOverview.test.mjs",
+    "test:browser:audience": "node tests/browser/audienceMetrics.mjs"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",

@@ -41,10 +41,10 @@ function describeChange(current: number, previous: number): { text: string; dire
 const metricItems = computed(() => {
   const summary = overview.value
   if (!summary) return []
-  const totalChange = describeChange(summary.total_audience, summary.comparison.previous.total_audience)
   const newChange = describeChange(summary.new_subscribers, summary.comparison.previous.new_subscribers)
   return [
-    { label: 'Total audience', value: summary.total_audience, icon: 'mdi-account-multiple-outline', tone: 'primary' as const, change: totalChange.text, direction: totalChange.direction, detail: 'vs previous ' + periodLabel.value },
+    // The live total is not a period metric; only New subscribers compares cohorts.
+    { label: 'Total audience', value: summary.total_audience, icon: 'mdi-account-multiple-outline', tone: 'primary' as const, change: '', direction: 'flat' as const, detail: 'Currently active subscribers' },
     { label: 'New subscribers', value: summary.new_subscribers, icon: 'mdi-account-plus-outline', tone: 'secondary' as const, change: newChange.text, direction: newChange.direction, detail: 'vs previous ' + periodLabel.value },
     { label: 'Reachable', value: summary.reachable_subscribers, icon: 'mdi-broadcast', tone: 'success' as const, change: '', direction: 'flat' as const, detail: formatPercent(reachPercent.value) + ' of your audience' },
     { label: 'Muted', value: summary.muted_subscribers, icon: 'mdi-bell-off-outline', tone: 'neutral' as const, change: '', direction: 'flat' as const, detail: formatPercent(mutedPercent.value) + ' of your audience' },
