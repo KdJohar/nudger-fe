@@ -1,5 +1,20 @@
 # Nudger frontend repository context
 
+Audience summary amendment, 14 October 2026: Total audience is live all-time
+active subscribers, labelled “Currently active subscribers”, with no change or
+previous-period comparison. Only New subscribers compares the selected and
+preceding equal 7/30/90-day active cohorts. Shared MetricCard/CSS, existing charts,
+Reachable/Muted percentages, desktop/mobile layout and navigation stay unchanged.
+`test:audience` includes real component regressions; `test:browser:audience`
+verifies responsive/theme/filter/error/zero-baseline behavior with mocked APIs.
+Verification: all 154 frontend unit checks and production typecheck/build passed.
+Chrome and WebKit passed 320/375/768/1440px in both themes (16 browser cases),
+including touch/keyboard filters, no overflow, persistent header/window, API
+failure/retry, zero baselines and Axe on the changed cards. These are browser
+checks, not physical-device acceptance. Fixture browser contexts block service
+workers so Playwright interception cannot escape to the real backend; the
+production service worker and its API/runtime-config exclusions are unchanged.
+
 Updated 2026-10-13. Read [shared project context](project-context.md) first.
 This is the merchant/creator workspace plus public landing/legal pages.
 Remote: `KdJohar/nudger-fe`. It alone deploys to `https://plugandnudge.com`.

@@ -38,6 +38,11 @@ There is no Tailwind or separate official Material Web component layer.
 - `/login`, `/auth/callback`: Google sign-in handoff; use the existing auth flow.
 - `/onboarding`, `/pending`: shared profile setup/image handling and functional logout. Pending review is only for a submitted, non-active profile (including a suspended profile when the backend represents it as `is_active: false`); direct navigation or refresh with an active profile redirects to `/audience`, and an account without a submitted profile returns to `/onboarding`.
 - `/audience`: audience trend, reach and subscriber metrics; 7/30/90-day filtering.
+  Total audience is all currently active subscribers and has no period comparison.
+  New subscribers counts currently active subscriptions created in the selected
+  window; only this summary widget compares the preceding equal-length period.
+  Muted/type-opted-out active subscribers remain audience members. Inactive
+  history is excluded from both New cohorts, not from historical charts.
 - `/nudges`: desktop delivery table and single-column mobile cards, default
   Broadcast; platforms additionally get Transactional filtering. Preserve loaded
   entries and scroll during refresh. Rich media opens on demand in a dialog/Sheet.
