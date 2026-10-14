@@ -15,6 +15,44 @@ It includes the approved Rich composer/history changes. The merchant domain and
 same-origin VPC API proxy remain owned by this checkout; Nudgee is never deployed.
 This context/Git sync does not publish an image or update Cloud Run.
 
+## Audience active-cohort release — 14 October 2026
+
+[PR #11](https://github.com/KdJohar/nudger-fe/pull/11) merged at
+`0af20f80e96396fa750deab08f9a15eb9989a878`; its feature branch was deleted and
+local main synced before the test/build/publish/deploy pipeline.
+Total audience's comparison was removed from the existing shared MetricCard;
+only New subscribers compares the currently active selected/preceding cohorts.
+No CSS, chart, navigation, Nudgee or native code changed.
+
+| Check | Verified result |
+| --- | --- |
+| Frontend service | `nudger-fe-00010-rdw`, Ready and 100% traffic |
+| Published latest/index digest | `sha256:503a50dbaa7cf5058b95fcd7e332468ee53950e099a2313b938df8d2370622a1` |
+| Resolved linux/amd64 digest | `sha256:f627f355aac4269f0d7823234f8bc50abace92d4aff4eba4bb42904a7e73c333` |
+| Build-source Git root | `/Users/kd/projects/nudger-fe`, remote `KdJohar/nudger-fe`, clean merged main |
+| Local verification | 154 unit tests; existing Make/style/PWA/typecheck/build gates pass |
+| Browser matrix | Chrome/WebKit, 320/375/768/1440px, light/dark: 16 source-build and 16 published-image cases pass |
+| Browser assertions | Sole New comparison, active-total label, touch/keyboard filters, zero baseline, error/retry, frame persistence, Axe and no overflow |
+| Public routes/runtime | `/`, `/audience`, `/nudges` HTTP 200; runtime-config no-store and same-origin API base |
+| Internal API proxy | Google start HTTP 200 JSON with the correct `api.plugandnudge.com` callback; VPC all-traffic unchanged |
+| Live merchant page | Total audience 3; New subscribers 3 for 7d/30d/90d; prior New cohort 0; comparison only under New |
+| Certificate/ingress | Managed certificate ACTIVE; internal-and-cloud-load-balancing retained |
+| Backend companion | API `nudge-api-00053-vm2`, worker `nudge-worker-00051-pbr`, healthy; migration head 0042 unchanged |
+
+Browser fixture contexts block service workers to preserve intercepted API calls;
+production PWA/service-worker behavior is unchanged. These are browser tests, not
+physical-device acceptance. Production verification is read-only except the
+normal authorized image/runtime rollout and ephemeral Google-start state.
+No account reset, profile edit or real nudge send was used.
+
+Existing dependency limitation: read-only `npm audit` reports two moderate entries
+for `@newrelic/browser-agent` and its `fflate` dependency (one malformed ZIP64
+decompression/infinite-loop advisory), including the production dependency view.
+This task changed no dependency versions/lockfile and ran no forced audit fix.
+Dependency remediation is separate; successful health does not clear that advisory.
+Existing >500kB build-chunk warnings are also unchanged. Release-evidence-only
+commits after publication do not alter the shipped application.
+
 ## Runtime shape
 
 ## Repository ownership

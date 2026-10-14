@@ -14,6 +14,10 @@ failure/retry, zero baselines and Axe on the changed cards. These are browser
 checks, not physical-device acceptance. Fixture browser contexts block service
 workers so Playwright interception cannot escape to the real backend; the
 production service worker and its API/runtime-config exclusions are unchanged.
+The feature is merged through PR #11 and deployed as `nudger-fe-00010-rdw`,
+Ready/100%. Published-image browser checks also passed all 16 width/theme/engine
+cases. The live merchant shows total/new 3 across 7/30/90, with comparison only
+under New. See [deployment evidence and dependency limitations](deployment-context.md#audience-active-cohort-release--14-october-2026).
 
 Updated 2026-10-13. Read [shared project context](project-context.md) first.
 This is the merchant/creator workspace plus public landing/legal pages.
