@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-type LegalTopic = 'privacy' | 'terms' | 'security'
+type LegalTopic = 'privacy' | 'terms' | 'security' | 'delete-account'
 
 const props = defineProps<{ topic: LegalTopic }>()
 
@@ -17,10 +17,28 @@ type LegalPage = {
   description: string
   icon: string
   promise: string
+  effectiveDate?: string
+  contactUrl?: string
   sections: readonly LegalSection[]
 }
 
 const pageCopy: Record<LegalTopic, LegalPage> = {
+  'delete-account': {
+    eyebrow: 'Your account, your choice',
+    title: 'Request Nudge account deletion.',
+    description: 'You can request deletion of your Nudge account and associated personal data without installing the app or signing in to this website.',
+    icon: 'mdi-account-remove-outline',
+    promise: 'Email kd@plugandnudge.com from your account email address. Requests are reviewed manually; sending an email does not immediately delete data.',
+    effectiveDate: 'October 15, 2026',
+    contactUrl: 'mailto:kd@plugandnudge.com?subject=Nudge%20account%20deletion%20request',
+    sections: [
+      { heading: 'How to request deletion', bullets: ['Email kd@plugandnudge.com with the subject “Nudge account deletion request”.', 'Tell us the email address and sign-in provider associated with your Nudge account. If you cannot email from that address, let us know so we can verify ownership.', 'Do not send passwords, sign-in codes, API tokens, or personal hook URLs. We will reply to confirm the request and explain any verification needed.'] },
+      { heading: 'What the in-app option does', paragraphs: ['In Nudge, open You → Delete your profile and confirm. This permanently removes your personal hooks, push installations, sessions, and related receiver data, stops push notifications to those installations, and signs you out on all devices. Subscriptions are deactivated, and inbox receipts are deleted from your inbox.', 'Your subscription details and inbox activity are never shared with merchants. Merchants can see only aggregate numbers, such as subscription totals and CTR. They cannot see who subscribed, unsubscribed, or clicked, and they cannot identify individual subscribers. Merchant profiles are retained. Historical delivery and click analytics may be retained for reporting until they are automatically removed under the retention policy.'] },
+      { heading: 'Manual requests and retained records', paragraphs: ['We review requests manually and verify ownership before deleting or de-identifying remaining account-associated personal data. We will confirm completion or explain the specific records that must be retained and why.', 'Retained identity and history do not currently have an automatic deletion deadline; they remain until a manual request is completed. The app’s seven-day inbox visibility window is not a promise that these records are erased after seven days. No automatic identity-cleanup job is currently in operation.'] },
+      { heading: 'If you also have a merchant workspace', paragraphs: ['Nudge and the Nudger merchant workspace can share a Google sign-in identity. The in-app profile deletion does not delete merchant profiles, sent nudges, or merchant records. In your email, tell us whether you also want to close your merchant workspace. We will clarify the scope and any necessary business-record retention before processing the shared identity.'] },
+      { heading: 'What happens next', paragraphs: ['If you want only specific personal data deleted without closing the account, describe that data in your email. Account deletion cannot be undone once completed. You can create a fresh account later, but deleted subscriptions, hooks, and inbox data cannot be restored. Google or Apple accounts are separate services; deleting Nudge data does not delete your account with your sign-in provider.'] },
+    ],
+  },
   privacy: {
     eyebrow: 'Privacy, by default',
     title: 'Your identity stays yours.',
@@ -31,7 +49,7 @@ const pageCopy: Record<LegalTopic, LegalPage> = {
       { heading: 'What this policy covers', paragraphs: ['This Privacy Policy applies to the Plug & Nudge receiver experience, the Nudger workspace, and the plugandnudge.com website. It describes the information handled when you browse the site, create an account, subscribe to a channel, or send a nudge.'] },
       { heading: 'Information we collect', paragraphs: ['We collect only the information needed to provide, secure, and improve the service. Depending on how you use Plug & Nudge, this can include:'], bullets: ['Account information supplied by your sign-in provider, such as your name, email address, and provider identifier.', 'Workspace information supplied by creators and developers, such as channel details, message content, delivery settings, and API configuration.', 'Subscription and delivery information, such as the channels you chose, notification preferences, delivery status, and timestamps.', 'Technical information needed for security and reliability, such as browser, device, approximate location, IP address, and diagnostic logs.'] },
       { heading: 'How we use information', paragraphs: ['We use information to authenticate accounts, maintain subscriptions, deliver requested nudges, provide workspace features, protect the service from abuse, troubleshoot failures, measure reliability, and respond to support requests. We do not use your personal information to build an advertising profile.'] },
-      { heading: 'What we never share', paragraphs: ['A channel creator sees the audience and delivery information needed to operate their channel, not a list of the people behind it. We never share your name, email address, phone number, Google identity, or other PII with channel creators, other subscribers, or advertisers.'], bullets: ['We do not sell PII.', 'We do not provide PII to advertisers or data brokers.', 'We do not expose subscriber contact details through audience totals or delivery analytics.'] },
+      { heading: 'What we never share', paragraphs: ['A channel creator sees aggregate numbers needed to operate their channel, not the identities behind those numbers. Merchants may see totals such as subscriptions, unsubscribes, delivery outcomes, clicks, and CTR, but they cannot see which users subscribed, unsubscribed, or clicked, or identify individual subscribers. We never share your name, email address, phone number, Google identity, or other PII with merchants, other subscribers, or advertisers.'], bullets: ['We do not sell PII.', 'We do not provide PII to advertisers or data brokers.', 'We do not expose subscriber contact details through audience totals, delivery analytics, or CTR.'] },
       { heading: 'Service providers and required disclosures', paragraphs: ['We may use carefully selected providers for hosting, authentication, monitoring, error reporting, analytics, notification delivery, and security. They receive only the information needed to perform those services and are expected to protect it. We may also disclose information when required by law, to protect people or the service, or as part of a legitimate business transfer with appropriate safeguards.'] },
       { heading: 'Your choices', bullets: ['Leave a channel or change notification preferences at any time.', 'Request access to, correction of, or deletion of your account information through the support channel available in your account.', 'Use browser and device controls to limit optional analytics or notifications.', 'Ask questions about this policy or how your information is handled.'] },
       { heading: 'Retention and deletion', paragraphs: ['We retain information for as long as needed to provide the service, meet legal and security obligations, resolve disputes, and keep reliable records. When you request deletion, we remove or de-identify information that is no longer needed, subject to limited backups, fraud-prevention records, or other lawful retention requirements.'] },
@@ -81,7 +99,7 @@ const copy = computed(() => pageCopy[props.topic])
       <span class="site-eyebrow">{{ copy.eyebrow }}</span>
       <h1 id="info-heading" class="site-heading">{{ copy.title }}</h1>
       <p class="site-intro">{{ copy.description }}</p>
-      <div class="site-legal__meta"><v-icon :icon="copy.icon" size="18" /><span>Effective October 9, 2026</span></div>
+      <div class="site-legal__meta"><v-icon :icon="copy.icon" size="18" /><span>Effective {{ copy.effectiveDate || 'October 9, 2026' }}</span></div>
       <div class="site-legal__promise" role="note">
         <div class="site-legal__promise-icon"><v-icon :icon="copy.icon" size="25" /></div>
         <div><strong>Our standing promise</strong><p>{{ copy.promise }}</p></div>
@@ -96,6 +114,7 @@ const copy = computed(() => pageCopy[props.topic])
         </section>
       </article>
       <div class="site-legal__actions">
+        <a v-if="copy.contactUrl" class="site-button site-button--primary" :href="copy.contactUrl">Email a deletion request <v-icon icon="mdi-email-outline" size="18" /></a>
         <RouterLink class="site-button site-button--primary" to="/">Back to home <v-icon icon="mdi-arrow-right" size="18" /></RouterLink>
         <RouterLink class="site-button site-button--text" to="/for-nudgers">For creators &amp; developers <v-icon icon="mdi-arrow-up-right" size="18" /></RouterLink>
       </div>

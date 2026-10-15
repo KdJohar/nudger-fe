@@ -55,6 +55,25 @@ commits after publication do not alter the shipped application.
 
 ## Runtime shape
 
+## Public deletion request resource — 15 October 2026
+
+The owner approved publishing `/delete-account` with accurate current retention
+disclosures and manual follow-up through `kd@plugandnudge.com`. Source commit
+`1f5f048` is on `feature/play-account-deletion-page`, reviewed through open
+[PR #13](https://github.com/KdJohar/nudger-fe/pull/13); not merged by this task.
+The page reuses the existing legal layout, adds public routing/footer/sitemap/SEO
+and one regression check. No account deletion backend/job or mobile app changed.
+
+Published image/index: `sha256:20dba71cb70c164a07836e1959dc41c87578840fa8beac53eb0aebfbf5a14680`.
+`nudger-fe-00011-k4f` is Ready with 100% traffic, min 1/max 5 and unchanged
+internal-and-cloud-load-balancing ingress. The existing VPC API proxy remains.
+The public page returns 200 and its rendered deletion/retention copy and email
+link were verified in Chrome. The normal Make tests and production build passed;
+PWA checks are 7/7, including the new disclosure guard. Browser checks at
+320/375/768/1440px showed one h1 and no horizontal overflow; 375px dark mode also
+passed. No real deletion email or account reset was sent for verification.
+This page is a request resource, not a guarantee of Google Play approval.
+
 ## Repository ownership
 
 | Repository | Role | Deployment rule |
