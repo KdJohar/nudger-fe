@@ -70,14 +70,14 @@ test('public legal pages contain the privacy promise and the footer omits API do
   assert.doesNotMatch(footer, /Developer API Docs/)
 })
 
-test('account deletion requests are public and accurately distinguish reset from manual deletion', () => {
+test('account deletion requests are public and explain receiver deletion and aggregate analytics', () => {
   const legal = read('src/views/PublicInfoView.vue')
   assert.match(read('src/router/index.ts'), /path: 'delete-account'.*topic: 'delete-account'/)
   assert.match(read('src/layouts/PublicLayout.vue'), /to="\/delete-account"/)
   assert.match(legal, /mailto:kd@plugandnudge\.com\?subject=Nudge%20account%20deletion%20request/)
-  assert.match(legal, /Subscriptions are deactivated and inbox receipts are hidden/)
-  assert.match(legal, /does not currently erase the shared sign-in identity/)
-  assert.match(legal, /do not currently have an automatic deletion deadline/)
-  assert.match(legal, /does not delete merchant profiles/)
+  assert.match(legal, /Subscriptions are deactivated, and inbox receipts are deleted from your inbox/)
+  assert.match(legal, /Merchants can see only aggregate numbers/)
+  assert.match(legal, /Historical delivery and click analytics may be retained/)
+  assert.match(legal, /Merchant profiles are retained/)
   assert.match(legal, /Do not send passwords/)
 })
