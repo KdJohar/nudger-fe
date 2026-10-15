@@ -1,7 +1,9 @@
 # Public HTML, SEO and merchant SPA contract
 
 Accepted 15 October 2026. Implementation branch: `feature/public-pages-seo-prerender`.
-This work is local for review; it does not authorize publishing, merging or deploying.
+The owner subsequently approved the frontend-only production rollout. Implementation
+was merged through PR #14 and deployed from clean main `ed605471022d63eebbfded4d593ffab3f363348b`.
+See the production evidence below; earlier local observations remain dated evidence.
 
 ## Rendering and ownership
 
@@ -133,3 +135,49 @@ a fresh Google consent flow and production Analytics ingestion were not retested
 References: [Vue SSR/SSG](https://vuejs.org/guide/scaling-up/ssr.html),
 [Google JavaScript SEO](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics),
 [GA4 manual page views](https://developers.google.com/analytics/devguides/collection/ga4/views).
+
+## Production verification — 15 October 2026
+
+- PR #14 merged, its feature branch deleted locally/remotely, and local main
+  fast-forwarded to GitHub before publication. No other open Nudger PRs existed.
+- Published `nudger-fe:latest` index digest:
+  `sha256:02acf3660e508626ae72b6479a0f96ffdafd5652d0d99bb7e9bd5e56b34aa479`.
+  Cloud Run `nudger-fe-00013-qqb` is Ready with 100% traffic, service min 1/max 5,
+  1 CPU/512 MiB, restricted ingress and existing Direct VPC all-traffic preserved.
+- Previous deployed image `sha256:53b86ea81d5133239ac24a2eea8d237bc496c5c0e744828e778569cf2f6c0998`
+  is protected by tag `rollback-before-seo-20261015`. No backend, worker,
+  migration, Nudgee or native app was deployed.
+- All 165 source/component tests passed again; the production publish pipeline's
+  tests, typecheck, client/server build and prerender guards passed. Live HTTP
+  checks confirmed six full public HTML pages/canonicals, three private noindex
+  shells, true page/asset 404s, sitemap/robots, no-store config/SW, and successful
+  same-origin Google-start JSON with the correct public API callback.
+- Live mobile menu and 320/375/768/1440px public reflow checks passed without
+  overflow. Browser application warnings/errors were absent in these checks.
+  These are not physical-device installation or fresh-consent acceptance tests.
+- The production GA4 web stream received the real browser visit in Realtime,
+  including its title and subsequent SPA routes. Automatic history-based page
+  views were disabled and the saved unchecked setting verified. An already-open
+  tab initially double-counted navigation, consistent with cached remote tag
+  settings; after browser reload, controlled Terms and For creators transitions
+  each recorded one view. Do not treat an already-open
+  cached tag as evidence that a newly saved remote setting failed.
+- Search Console processed `https://plugandnudge.com/sitemap.xml` successfully
+  and discovered all six public URLs. Its initial transient "Couldn't fetch"
+  changed to success; frontend request logs also show Googlebot HTTP 200.
+  Live homepage and privacy URL tests returned "URL is available to Google"
+  and "Page can be indexed". The homepage's indexed result already reported
+  "URL is on Google"; privacy was discovered but not yet indexed. Indexing all
+  pages is Google's decision, not a deployment health guarantee.
+- The optional manual homepage indexing request failed because Google's
+  reCAPTCHA service could not connect. No challenge was solved or bypassed;
+  sitemap processing and live crawling succeeded independently.
+- The separate www redirect was prepared but not deployed: browser safety review
+  requested approval for the exact wildcard-to-target mapping. Apex remains
+  DNS-only to preserve the current Google-managed certificate contract. HTTP
+  apex has no port-80 load-balancer listener. Do not claim HTTP/www redirects
+  were repaired, turn on apex proxying, or add billable forwarding resources
+  without resolving that separate routing decision.
+
+Documentation-only release evidence may be committed after publication; it does
+not change the application image or its recorded build-source commit.
