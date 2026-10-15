@@ -13,6 +13,7 @@ FROM nginx:1.29-alpine
 RUN apk add --no-cache gettext
 
 COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist/public-routes.conf /etc/nginx/snippets/public-pages.conf
 COPY nginx.conf /etc/nginx/templates/default.conf.template
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 

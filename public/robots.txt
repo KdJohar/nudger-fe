@@ -1,16 +1,9 @@
 User-agent: *
 Allow: /
-Disallow: /auth/
-Disallow: /login
-Disallow: /onboarding
-Disallow: /pending
-Disallow: /workspace
-Disallow: /dashboard
-Disallow: /audience
-Disallow: /compose
-Disallow: /nudges
-Disallow: /profile
-Disallow: /token
-Disallow: /runtime-config.js
+# Private HTML routes serve noindex headers; crawlers must be able to read them.
+# Runtime configuration is public and needed to render the application.
+Disallow: /v1/
+Disallow: /docs
+Disallow: /openapi.json
 
 Sitemap: https://plugandnudge.com/sitemap.xml

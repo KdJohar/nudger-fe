@@ -41,9 +41,15 @@ files. See [API client conventions](docs/api-client.md) when adding requests.
 
 ## Scripts
 
+Public pages are generated as complete HTML while the merchant workspace stays a
+SPA/PWA. See [public rendering and SEO](docs/public-pages-seo.md) for sitemap,
+Analytics/Search Console rollout and local verification.
+
 - `npm run dev` — start the Vite development server
 - `npm run typecheck` — run Vue TypeScript checks
 - `npm run build` — typecheck and create a production build
+- `npm run test:seo` — metadata, Analytics and service-worker regression checks
+- `SEO_BASE_URL=http://localhost:5174 npm run test:seo:built` — verify generated HTML, sitemap and local container responses after a build
 - `npm run test:pwa` — validate the manifest, icons, SEO entrypoints, robots rules, and service worker boundaries
 - `npm run preview` — preview the production build locally
 - `npm run test:ui` — shared layout persistence, controls, and page structure tests

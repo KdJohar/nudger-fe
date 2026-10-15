@@ -6,7 +6,7 @@ import vue from '@vitejs/plugin-vue'
 import { validateRuntimeConfig } from './src/lib/runtimeConfig'
 
 export default defineConfig(({ command }) => {
-  if (command === 'build') return { plugins: [vue()] }
+  if (command === 'build') return { plugins: [vue()], ssr: { noExternal: ['vuetify'] } }
   // Read exactly one selected file. Shell variables and Vite mode files cannot override its values.
   const envFile = resolve(process.env.NUDGER_ENV_FILE || '.env.nudger.local')
   const env = parseEnv(readFileSync(envFile, 'utf8'))

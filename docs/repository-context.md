@@ -50,13 +50,22 @@ Test iOS standalone and Android browser/PWA geometry, not only desktop emulation
 
 ## PWA, SEO and public pages
 
+15 October 2026, local SEO implementation: public pages are generated as full HTML
+from existing Vue components during the build; the merchant remains a SPA/PWA.
+One public inventory generates metadata, sitemap and Nginx routing; private HTML
+has noindex directives and unknown routes return real 404s. Service-worker public
+offline fallback is page-specific with content-derived cache versions. Analytics
+queue/initial page-view fixes are tested locally. Search Console property and GA4
+stream were checked read-only; sitemap submission and live collection validation
+await an approved deployment. See [rendering, analytics and verification contract](public-pages-seo.md).
+
 15 October 2026: `/delete-account` is a public Nudge account-deletion request
 resource using the existing legal-page layout. Requests go to
 `kd@plugandnudge.com` for owner-approved manual follow-up. It describes the
 receiver reset (personal receiver data removed, subscriptions deactivated and
 inbox receipts deleted from the inbox), retained merchant profiles, and the
 aggregate-only subscription, delivery, click and CTR statistics visible to
-merchants. Merchant identity and individual subscriber/click records are never
+merchants. Subscriber identity and individual subscriber/click records are never
 exposed to merchants. Historical analytics may remain until the retention policy
 removes them; email request delivery/processing is not automatic.
 
@@ -67,9 +76,9 @@ Apple standalone metadata, SPA fallback, safe-area layout and static-asset-only
 service worker remain part of the contract. Never cache `runtime-config.js`,
 authenticated APIs or session credentials. No browser push delivery is requested.
 
-Public routes: `/`, `/for-nudgers`, `/privacy`, `/security`, `/terms`.
-Public footer excludes the Developer API Docs link. SPA SEO manages canonical,
-description, Open Graph/Twitter/JSON-LD; robots/sitemap accompany it.
+Public routes: `/`, `/for-nudgers`, `/privacy`, `/security`, `/terms`, `/delete-account`.
+Public footer excludes the Developer API Docs link. Initial HTML and SPA navigation
+share canonical, description, Open Graph/Twitter/JSON-LD; robots/sitemap accompany it.
 Auth and private workspace routes are noindex. Public PII/privacy wording must
 not imply no data is processed by configured telemetry providers or invent audits,
 compliance or guarantees. Store links remain coming-soon until releases exist.

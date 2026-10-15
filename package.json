@@ -8,7 +8,9 @@
     "test:browser:rich": "node tests/browser/richNotifications.mjs",
     "test:browser:history": "node tests/browser/nudgeHistory.mjs",
     "dev": "vite",
-    "build": "npm run test:styles && npm run test:pwa && vue-tsc -b && vite build",
+    "build": "npm run test:styles && npm run test:pwa && npm run test:seo && vue-tsc -b && vite build && vite build --ssr src/entry-server.ts --outDir build/prerender && node scripts/prerender.mjs && npm run test:seo:built",
+    "test:seo": "node --test tests/Seo.test.mjs tests/GoogleAnalytics.test.mjs tests/ServiceWorker.test.mjs",
+    "test:seo:built": "node --test tests/build/Prerender.test.mjs",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit",
     "test:charts": "node --test tests/chartGeometry.test.mjs",
@@ -40,6 +42,7 @@
     "vuetify": "^3.8.12"
   },
   "devDependencies": {
+    "@vue/server-renderer": "^3.5.43",
     "@types/node": "^22.20.5",
     "@vitejs/plugin-vue": "^6.0.0",
     "typescript": "~5.8.3",

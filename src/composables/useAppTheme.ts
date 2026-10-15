@@ -1,4 +1,4 @@
-import { inject, onScopeDispose, provide, type InjectionKey } from 'vue'
+import { inject, onMounted, onScopeDispose, provide, type InjectionKey } from 'vue'
 import { useTheme } from 'vuetify'
 import { createAppThemeState } from '../lib/appTheme'
 
@@ -9,7 +9,9 @@ const appThemeKey: InjectionKey<ReturnType<typeof createAppThemeState>> = Symbol
 export function provideAppTheme(): void {
   const theme = useTheme()
   const state = createAppThemeState(theme.global.name, typeof window === 'undefined' ? undefined : window)
-  state.initializeTheme()
+  // The initial client tree must match the generated HTML before OS/theme preferences apply.
+  if (typeof document !== 'undefined' && document.querySelector('#app[data-prerendered]')) onMounted(state.initializeTheme)
+  else state.initializeTheme()
   provide(appThemeKey, state)
   onScopeDispose(state.dispose)
 }

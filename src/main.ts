@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp, createSSRApp } from 'vue'
 import { createPinia } from 'pinia'
 
 import App from './App.vue'
@@ -8,7 +8,8 @@ import { getNudgerConfig } from './config'
 import { initializeProductionTelemetry } from './lib/productionTelemetry'
 import './styles/main.css'
 
-const app = createApp(App)
+const isPrerendered = document.querySelector('#app')?.hasAttribute('data-prerendered')
+const app = isPrerendered ? createSSRApp(App) : createApp(App)
 const runtimeConfig = getNudgerConfig()
 
 initializeProductionTelemetry(app, router, runtimeConfig)
@@ -17,7 +18,9 @@ app
   .use(createPinia())
   .use(router)
   .use(vuetify)
-  .mount('#app')
+
+// Lazy public routes must resolve before hydrating their existing HTML.
+void router.isReady().then(() => app.mount('#app'))
 
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {

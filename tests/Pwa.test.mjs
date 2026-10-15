@@ -40,7 +40,9 @@ test('HTML entrypoint exposes PWA and static SEO metadata', () => {
 test('public crawl entrypoints exclude private SPA routes', () => {
   const robots = read('public/robots.txt')
   const sitemap = read('public/sitemap.xml')
-  for (const path of ['/login', '/onboarding', '/pending', '/workspace', '/token']) assert.match(robots, new RegExp(`Disallow: ${path.replace('/', '\\/')}`))
+  assert.match(robots, /Disallow: \/v1\//)
+  assert.doesNotMatch(robots, /Disallow: \/runtime-config\.js/)
+  assert.match(read('nginx.conf'), /X-Robots-Tag "noindex, nofollow"/)
   for (const path of ['https://plugandnudge.com/', 'https://plugandnudge.com/for-nudgers', 'https://plugandnudge.com/privacy']) assert.match(sitemap, new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
   assert.doesNotMatch(sitemap, /\/workspace|\/audience|\/token/)
 })
@@ -54,16 +56,17 @@ test('service worker never caches runtime configuration or API responses', () =>
 
 test('SPA route metadata includes indexable public pages and private noindex pages', () => {
   const router = read('src/router/index.ts')
+  const pages = read('src/data/publicPages.ts')
   assert.match(router, /robots: 'index,follow'/)
   assert.match(router, /robots: 'noindex,nofollow'/)
-  assert.match(router, /description: 'Intentional notifications for your lock screen\./)
-  assert.match(router, /description: 'Send useful updates to subscribers/)
+  assert.match(pages, /description: 'Intentional notifications for your lock screen\./)
+  assert.match(pages, /description: 'Send useful updates to subscribers/)
 })
 
 test('public legal pages contain the privacy promise and the footer omits API docs', () => {
   const legal = read('src/views/PublicInfoView.vue')
   const footer = read('src/layouts/PublicLayout.vue')
-  for (const path of ['/privacy', '/security', '/terms']) assert.match(read('src/router/index.ts'), new RegExp(`path: '${path.slice(1)}'`), path)
+  for (const path of ['/privacy', '/security', '/terms']) assert.ok(read('src/data/publicPages.ts').includes(`path: '${path}'`), path)
   assert.match(legal, /PII is never shared with channel creators, other subscribers, or advertisers/)
   assert.match(legal, /We do not sell PII/)
   assert.doesNotMatch(legal, /Full document coming soon/)
@@ -72,7 +75,7 @@ test('public legal pages contain the privacy promise and the footer omits API do
 
 test('account deletion requests are public and explain receiver deletion and aggregate analytics', () => {
   const legal = read('src/views/PublicInfoView.vue')
-  assert.match(read('src/router/index.ts'), /path: 'delete-account'.*topic: 'delete-account'/)
+  assert.match(read('src/data/publicPages.ts'), /path: '\/delete-account'.*topic: 'delete-account'/)
   assert.match(read('src/layouts/PublicLayout.vue'), /to="\/delete-account"/)
   assert.match(legal, /mailto:kd@plugandnudge\.com\?subject=Nudge%20account%20deletion%20request/)
   assert.match(legal, /Subscriptions are deactivated, and inbox receipts are deleted from your inbox/)

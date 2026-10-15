@@ -4,40 +4,7 @@ import type { App } from 'vue'
 import type { Router } from 'vue-router'
 
 import type { NudgerRuntimeConfig } from './runtimeConfig'
-
-interface WindowWithAnalytics extends Window {
-  dataLayer?: unknown[]
-  gtag?: (...args: unknown[]) => void
-}
-
-function initializeGoogleAnalytics(measurementId: string, router: Router): void {
-  const analyticsWindow = window as WindowWithAnalytics
-  analyticsWindow.dataLayer = analyticsWindow.dataLayer || []
-  analyticsWindow.gtag = (...args: unknown[]) => {
-    analyticsWindow.dataLayer?.push(args)
-  }
-
-  if (!document.querySelector(`script[data-google-analytics="${measurementId}"]`)) {
-    const script = document.createElement('script')
-    script.async = true
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`
-    script.dataset.googleAnalytics = measurementId
-    document.head.appendChild(script)
-  }
-
-  analyticsWindow.gtag('js', new Date())
-  analyticsWindow.gtag('config', measurementId, { send_page_view: false })
-
-  const trackPageView = (path: string): void => {
-    analyticsWindow.gtag?.('event', 'page_view', {
-      page_location: window.location.href,
-      page_path: path,
-      page_title: document.title,
-    })
-  }
-  router.afterEach((route) => trackPageView(route.fullPath))
-  void router.isReady().then(() => trackPageView(router.currentRoute.value.fullPath))
-}
+import { initializeGoogleAnalytics } from './googleAnalytics'
 
 function initializeSentry(app: App, config: NudgerRuntimeConfig): void {
   if (!config.sentryDsn) return
