@@ -1,5 +1,6 @@
 node_modules
 dist
+build/prerender
 .DS_Store
 *.local
 .env.nudger.production

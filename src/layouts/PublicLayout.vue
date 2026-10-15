@@ -11,8 +11,7 @@ const isMenuOpen = ref(false)
 const route = useRoute()
 const { smAndDown } = useDisplay()
 const hasActionDock = computed(() => smAndDown.value && route.name === 'home')
-const { isDark, initializeTheme, toggleTheme } = useAppTheme()
-initializeTheme()
+const { isDark, toggleTheme } = useAppTheme()
 
 function closeMenu(): void {
   isMenuOpen.value = false

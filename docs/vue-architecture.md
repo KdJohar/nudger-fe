@@ -64,6 +64,11 @@ Examples: Audience binds its existing period ref; Nudges binds its nudge-type re
 
 ## Lifecycle and SPA behaviour
 
+Public routes now generate HTML at build time and hydrate the existing components;
+private routes retain this persistent client workspace. Router/Vuetify factories
+give the build renderer fresh instances. Read [public rendering/SEO contract](public-pages-seo.md)
+before changing entrypoints, public route inventory, metadata or fallback behavior.
+
 PageLayout provides an instance-scoped injection context. There is no module-global mutable page state.
 
 Each registration records its route key and an ownership token. A route change immediately ignores old presentation data, even before the old body finishes unmounting. Disposing an old registration cannot erase a newer one. Late API responses cannot restore an obsolete header.
