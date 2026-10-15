@@ -55,6 +55,33 @@ commits after publication do not alter the shipped application.
 
 ## Runtime shape
 
+## Public-page prerender and SEO release — 15 October 2026
+
+[PR #14](https://github.com/KdJohar/nudger-fe/pull/14) merged the approved SEO work
+into main `ed605471022d63eebbfded4d593ffab3f363348b`. The feature branch was removed
+locally/remotely before publishing from clean synced main. At that check no other
+open Nudger PRs remained.
+
+Image/index digest: `sha256:02acf3660e508626ae72b6479a0f96ffdafd5652d0d99bb7e9bd5e56b34aa479`.
+Cloud Run `nudger-fe-00013-qqb` is Ready and serves 100% traffic; min 1/max 5,
+1 CPU/512 MiB, internal-and-cloud-load-balancing ingress and VPC all-traffic
+remain. The previous digest is retained under `rollback-before-seo-20261015`.
+Only the frontend was deployed; API `nudge-api-00055-smz` and worker
+`nudge-worker-00053-m9j` remained unchanged and Ready.
+
+All 165 frontend source tests and the publish/build/prerender gates passed. Live
+HTTP checks passed for full public HTML, private noindex shells, real 404s,
+sitemap/robots, config/SW caching and the internal same-origin OAuth proxy.
+Production browser reflow/menu checks passed at 320/375/768/1440px. Analytics
+Realtime collection was verified; Search Console processed six sitemap URLs and
+its live homepage/privacy fetches passed. Individual manual recrawl was blocked
+by Google's reCAPTCHA connection failure, not a failed site fetch.
+
+HTTP apex and www canonical redirects are not repaired by the application image.
+The prepared www-only Cloudflare rule awaits exact-action approval after browser
+safety review. Do not proxy the DNS-only apex or add a port-80 forwarding rule as
+an unreviewed workaround. See [full SEO release evidence](public-pages-seo.md#production-verification--15-october-2026).
+
 ## Public deletion request resource — 15 October 2026
 
 The owner approved publishing `/delete-account` with accurate current retention

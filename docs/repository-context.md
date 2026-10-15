@@ -50,14 +50,17 @@ Test iOS standalone and Android browser/PWA geometry, not only desktop emulation
 
 ## PWA, SEO and public pages
 
-15 October 2026, local SEO implementation: public pages are generated as full HTML
+15 October 2026, SEO implementation merged through PR #14 and deployed as
+`nudger-fe-00013-qqb` (Ready, 100% traffic): public pages are generated as full HTML
 from existing Vue components during the build; the merchant remains a SPA/PWA.
 One public inventory generates metadata, sitemap and Nginx routing; private HTML
 has noindex directives and unknown routes return real 404s. Service-worker public
 offline fallback is page-specific with content-derived cache versions. Analytics
-queue/initial page-view fixes are tested locally. Search Console property and GA4
-stream were checked read-only; sitemap submission and live collection validation
-await an approved deployment. See [rendering, analytics and verification contract](public-pages-seo.md).
+Realtime now receives production visits and SPA routes; automatic history page
+views are disabled. Search Console processed the sitemap successfully with six
+discovered URLs; live homepage/privacy crawl tests passed. Manual recrawl hit a
+Google reCAPTCHA connection error; optional HTTP/www redirect work remains
+separate and unimplemented. See [rendering, analytics and verification contract](public-pages-seo.md).
 
 15 October 2026: `/delete-account` is a public Nudge account-deletion request
 resource using the existing legal-page layout. Requests go to
