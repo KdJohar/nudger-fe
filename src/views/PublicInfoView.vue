@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-type LegalTopic = 'privacy' | 'terms' | 'security'
+type LegalTopic = 'privacy' | 'terms' | 'security' | 'delete-account'
 
 const props = defineProps<{ topic: LegalTopic }>()
 
@@ -17,10 +17,28 @@ type LegalPage = {
   description: string
   icon: string
   promise: string
+  effectiveDate?: string
+  contactUrl?: string
   sections: readonly LegalSection[]
 }
 
 const pageCopy: Record<LegalTopic, LegalPage> = {
+  'delete-account': {
+    eyebrow: 'Your account, your choice',
+    title: 'Request Nudge account deletion.',
+    description: 'You can request deletion of your Nudge account and associated personal data without installing the app or signing in to this website.',
+    icon: 'mdi-account-remove-outline',
+    promise: 'Email kd@plugandnudge.com from your account email address. Requests are reviewed manually; sending an email does not immediately delete data.',
+    effectiveDate: 'October 15, 2026',
+    contactUrl: 'mailto:kd@plugandnudge.com?subject=Nudge%20account%20deletion%20request',
+    sections: [
+      { heading: 'How to request deletion', bullets: ['Email kd@plugandnudge.com with the subject “Nudge account deletion request”.', 'Tell us the email address and sign-in provider associated with your Nudge account. If you cannot email from that address, let us know so we can verify ownership.', 'Do not send passwords, sign-in codes, API tokens, or personal hook URLs. We will reply to confirm the request and explain any verification needed.'] },
+      { heading: 'What the in-app option does today', paragraphs: ['In Nudge, open You → Delete your profile and confirm. This removes your personal hooks, push installations, sessions, and related receiver caches, stops new pushes to those installations, and signs you out on all devices. Subscriptions are deactivated and inbox receipts are hidden rather than erased from historical records.', 'The in-app option does not currently erase the shared sign-in identity, provider mappings, subscription history, or historical delivery and click records. To request deletion of this remaining personal data as well, use the email request above.'] },
+      { heading: 'Manual requests and retained records', paragraphs: ['We review requests manually and verify ownership before deleting or de-identifying remaining account-associated personal data. We will confirm completion or explain the specific records that must be retained and why.', 'Retained identity and history do not currently have an automatic deletion deadline; they remain until a manual request is completed. The app’s seven-day inbox visibility window is not a promise that these records are erased after seven days. No automatic identity-cleanup job is currently in operation.'] },
+      { heading: 'If you also have a merchant workspace', paragraphs: ['Nudge and the Nudger merchant workspace can share a Google sign-in identity. The in-app receiver reset does not delete merchant profiles, sent nudges, or merchant records. In your email, tell us whether you also want to close your merchant workspace. We will clarify the scope and any necessary business-record retention before processing the shared identity.'] },
+      { heading: 'What happens next', paragraphs: ['If you want only specific personal data deleted without closing the account, describe that data in your email. Account deletion cannot be undone once completed. You can create a fresh account later, but deleted subscriptions, hooks, and inbox data cannot be restored. Google or Apple accounts are separate services; deleting Nudge data does not delete your account with your sign-in provider.'] },
+    ],
+  },
   privacy: {
     eyebrow: 'Privacy, by default',
     title: 'Your identity stays yours.',
@@ -81,7 +99,7 @@ const copy = computed(() => pageCopy[props.topic])
       <span class="site-eyebrow">{{ copy.eyebrow }}</span>
       <h1 id="info-heading" class="site-heading">{{ copy.title }}</h1>
       <p class="site-intro">{{ copy.description }}</p>
-      <div class="site-legal__meta"><v-icon :icon="copy.icon" size="18" /><span>Effective October 9, 2026</span></div>
+      <div class="site-legal__meta"><v-icon :icon="copy.icon" size="18" /><span>Effective {{ copy.effectiveDate || 'October 9, 2026' }}</span></div>
       <div class="site-legal__promise" role="note">
         <div class="site-legal__promise-icon"><v-icon :icon="copy.icon" size="25" /></div>
         <div><strong>Our standing promise</strong><p>{{ copy.promise }}</p></div>
@@ -96,6 +114,7 @@ const copy = computed(() => pageCopy[props.topic])
         </section>
       </article>
       <div class="site-legal__actions">
+        <a v-if="copy.contactUrl" class="site-button site-button--primary" :href="copy.contactUrl">Email a deletion request <v-icon icon="mdi-email-outline" size="18" /></a>
         <RouterLink class="site-button site-button--primary" to="/">Back to home <v-icon icon="mdi-arrow-right" size="18" /></RouterLink>
         <RouterLink class="site-button site-button--text" to="/for-nudgers">For creators &amp; developers <v-icon icon="mdi-arrow-up-right" size="18" /></RouterLink>
       </div>

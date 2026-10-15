@@ -50,6 +50,15 @@ Test iOS standalone and Android browser/PWA geometry, not only desktop emulation
 
 ## PWA, SEO and public pages
 
+15 October 2026: `/delete-account` is a public Nudge account-deletion request
+resource using the existing legal-page layout. Requests go to
+`kd@plugandnudge.com` for owner-approved manual follow-up. It explicitly describes
+the current receiver reset (deactivated subscriptions/hidden receipts), retained
+shared identity/history, no automatic identity-cleanup deadline, and separate
+merchant-workspace scope. It does not add an automatic deletion worker or claim
+that retained records are already erased. Keep this disclosure aligned with the
+actual backend; email request delivery/processing is not automatic.
+
 Manifest app name is `Plug & Nudge`, short/install name `Nudger`, standalone
 display, `/` start/scope, coral theme; Android/maskable and Apple touch icons.
 Do not change it back to the receiver name `Nudge`.
