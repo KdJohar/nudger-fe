@@ -212,3 +212,14 @@ viewport override became ineffective, so final narrow-width checks used its
 visible responsive-device controls instead. No mail, account mutation or
 production analytics event was needed for local verification. Physical PWA
 installation and automated Axe coverage were not rerun for this content-only page.
+
+Owner-approved production publication used clean feature source `179dd7c`, without
+merging its branch. Published image/index:
+`sha256:dae302f4dc0bc1abdd1c036ecf61a0e9b08a90ac442a1da77573949e8de2564e`.
+Cloud Run `nudger-fe-00014-k54` is Ready with 100% traffic. The update changed the
+image only, preserving runtime env, ingress, VPC, scaling and the internal API
+proxy. `/support` returns HTTP 200 with full HTML, correct canonical/contact and
+privacy/deletion links; the live sitemap contains all seven public routes. The
+same-origin Google-start check returned JSON with the existing production API
+callback. No backend, worker, Redis, database, DNS or load-balancer change occurred.
+Documentation-only evidence commits after publication do not alter the image.
