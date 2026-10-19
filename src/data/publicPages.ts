@@ -6,6 +6,7 @@ export const PUBLIC_PAGES = [
   { path: '/terms', name: 'terms', topic: 'terms', title: 'Terms of Service | Plug & Nudge', description: 'Read the Plug & Nudge Terms of Service for receivers, creators and developers.' },
   { path: '/security', name: 'security', topic: 'security', title: 'Security Statement | Plug & Nudge', description: 'Read about the security principles behind the Plug & Nudge receiver and sender experience.' },
   { path: '/delete-account', name: 'delete-account', topic: 'delete-account', title: 'Delete your Nudge account | Plug & Nudge', description: 'Request deletion of your Nudge account and personal data, and learn what in-app profile deletion removes or retains.' },
+  { path: '/support', name: 'support', topic: 'support', title: 'Nudge Support | Plug & Nudge', description: 'Contact Nudge support for help with sign-in, notifications, subscriptions, personal hooks, privacy and account deletion.' },
 ] as const
 
 export const SITE_ORIGIN = 'https://plugandnudge.com'

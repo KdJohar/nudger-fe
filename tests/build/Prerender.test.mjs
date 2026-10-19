@@ -22,6 +22,13 @@ test('built public documents contain full content and unique SEO before JavaScri
   }
   assert.match(read('privacy/index.html'), /which users subscribed, unsubscribed, or clicked/)
   assert.match(read('delete-account/index.html'), /The in-app profile deletion/)
+  const support = read('support/index.html')
+  assert.match(support, /Nudge support\./)
+  assert.match(support, /mailto:kd@plugandnudge\.com\?subject=Nudge%20support/)
+  assert.match(support, /Email support/)
+  assert.match(support, /Read the Privacy Policy/)
+  assert.match(support, /Request account deletion/)
+  assert.doesNotMatch(support, /Email a deletion request/)
 })
 
 test('generated sitemap/routing covers exactly public pages and private shell stays generic', () => {

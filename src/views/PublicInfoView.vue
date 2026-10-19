@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-type LegalTopic = 'privacy' | 'terms' | 'security' | 'delete-account'
+type LegalTopic = 'privacy' | 'terms' | 'security' | 'delete-account' | 'support'
 
 const props = defineProps<{ topic: LegalTopic }>()
 
@@ -9,6 +9,7 @@ type LegalSection = {
   heading: string
   paragraphs?: readonly string[]
   bullets?: readonly string[]
+  links?: readonly { label: string; to: string }[]
 }
 
 type LegalPage = {
@@ -19,10 +20,29 @@ type LegalPage = {
   promise: string
   effectiveDate?: string
   contactUrl?: string
+  contactLabel?: string
+  promiseTitle?: string
   sections: readonly LegalSection[]
 }
 
 const pageCopy: Record<LegalTopic, LegalPage> = {
+  support: {
+    eyebrow: 'A little help, when you need it',
+    title: 'Nudge support.',
+    description: 'Get help with Nudge on iPhone and Android, including sign-in, subscriptions, personal hooks, and notifications.',
+    icon: 'mdi-lifebuoy',
+    promiseTitle: 'Contact support',
+    promise: 'Email kd@plugandnudge.com. Tell us what happened and which device and app version you are using so we can help.',
+    effectiveDate: 'October 19, 2026',
+    contactUrl: 'mailto:kd@plugandnudge.com?subject=Nudge%20support',
+    contactLabel: 'Email support',
+    sections: [
+      { heading: 'Signing in', paragraphs: ['On iPhone, use Sign in with Apple or Google. On Android, use Sign in with Google. Use the same sign-in provider and account you used before to return to your subscriptions and inbox. Apple and Google sign-ins can create separate Nudge accounts.'] },
+      { heading: 'Notifications and subscriptions', bullets: ['If an update appears in your inbox but no alert appears, check Nudge notification permissions in your device Settings, along with silent mode, Focus or Do Not Disturb.', 'Review the subscription’s mute and notification preferences in Nudge. Push delivery also requires an internet connection.', 'If the issue continues, email support with the approximate time of the problem. Do not send private notification content unless it is necessary and you are comfortable sharing it.'] },
+      { heading: 'Report a problem', paragraphs: ['Email us about unexpected behavior, content concerns, or an issue with your personal hooks. Include the steps that led to the problem and any error message. Screenshots are optional; remove personal or confidential information first.'], bullets: ['Never send passwords, sign-in codes, session tokens, API credentials, or private hook URLs.', 'Sending a support email does not automatically change your account, subscriptions, or notification preferences.'] },
+      { heading: 'Privacy and account deletion', paragraphs: ['Read how Nudge handles your information, or follow the account-deletion instructions to make a request.'], links: [{ label: 'Read the Privacy Policy', to: '/privacy' }, { label: 'Request account deletion', to: '/delete-account' }] },
+    ],
+  },
   'delete-account': {
     eyebrow: 'Your account, your choice',
     title: 'Request Nudge account deletion.',
@@ -102,7 +122,7 @@ const copy = computed(() => pageCopy[props.topic])
       <div class="site-legal__meta"><v-icon :icon="copy.icon" size="18" /><span>Effective {{ copy.effectiveDate || 'October 9, 2026' }}</span></div>
       <div class="site-legal__promise" role="note">
         <div class="site-legal__promise-icon"><v-icon :icon="copy.icon" size="25" /></div>
-        <div><strong>Our standing promise</strong><p>{{ copy.promise }}</p></div>
+        <div><strong>{{ copy.promiseTitle || 'Our standing promise' }}</strong><p>{{ copy.promise }}</p></div>
       </div>
       <article class="site-legal__content">
         <section v-for="section in copy.sections" :key="section.heading" class="site-legal__section">
@@ -111,10 +131,13 @@ const copy = computed(() => pageCopy[props.topic])
           <ul v-if="section.bullets?.length">
             <li v-for="bullet in section.bullets" :key="bullet">{{ bullet }}</li>
           </ul>
+          <ul v-if="section.links?.length">
+            <li v-for="link in section.links" :key="link.to"><RouterLink class="site-button site-button--text" :to="link.to">{{ link.label }}</RouterLink></li>
+          </ul>
         </section>
       </article>
       <div class="site-legal__actions">
-        <a v-if="copy.contactUrl" class="site-button site-button--primary" :href="copy.contactUrl">Email a deletion request <v-icon icon="mdi-email-outline" size="18" /></a>
+        <a v-if="copy.contactUrl" class="site-button site-button--primary" :href="copy.contactUrl">{{ copy.contactLabel || 'Email a deletion request' }} <v-icon icon="mdi-email-outline" size="18" /></a>
         <RouterLink class="site-button site-button--primary" to="/">Back to home <v-icon icon="mdi-arrow-right" size="18" /></RouterLink>
         <RouterLink class="site-button site-button--text" to="/for-nudgers">For creators &amp; developers <v-icon icon="mdi-arrow-up-right" size="18" /></RouterLink>
       </div>
