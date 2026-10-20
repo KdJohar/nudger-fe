@@ -84,3 +84,15 @@ test('account deletion requests are public and explain receiver deletion and agg
   assert.match(legal, /Merchant profiles are retained/)
   assert.match(legal, /Do not send passwords/)
 })
+
+test('support is public, discoverable and uses the existing page with safe contact instructions', () => {
+  const legal = read('src/views/PublicInfoView.vue')
+  assert.match(read('src/data/publicPages.ts'), /path: '\/support'.*topic: 'support'/)
+  assert.match(read('src/layouts/PublicLayout.vue'), /to="\/support"/)
+  assert.match(read('public/sitemap.xml'), /https:\/\/plugandnudge\.com\/support/)
+  assert.match(legal, /mailto:kd@plugandnudge\.com\?subject=Nudge%20support/)
+  assert.match(legal, /contactLabel: 'Email support'/)
+  assert.match(legal, /Never send passwords, sign-in codes, session tokens, API credentials, or private hook URLs/)
+  assert.match(legal, /label: 'Read the Privacy Policy', to: '\/privacy'/)
+  assert.match(legal, /label: 'Request account deletion', to: '\/delete-account'/)
+})

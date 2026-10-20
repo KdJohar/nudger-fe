@@ -8,7 +8,7 @@ See the production evidence below; earlier local observations remain dated evide
 ## Rendering and ownership
 
 `src/data/publicPages.ts` is the route/metadata inventory for `/`, `/for-nudgers`,
-`/privacy`, `/terms`, `/security` and `/delete-account`. The normal build compiles
+`/privacy`, `/terms`, `/security`, `/delete-account` and `/support`. The normal build compiles
 the Vue client and a build-only renderer, then `scripts/prerender.mjs` renders the
 existing public components into complete HTML. There is no runtime Node server.
 Nginx serves the generated documents from the existing image.
@@ -181,3 +181,45 @@ References: [Vue SSR/SSG](https://vuejs.org/guide/scaling-up/ssr.html),
 
 Documentation-only release evidence may be committed after publication; it does
 not change the application image or its recorded build-source commit.
+
+## App Store support resource — 19 October 2026
+
+Owner-approved `/support` reuses PublicLayout and PublicInfoView, with the current
+public typography, colours and responsive styles. Journey: store listing or site
+footer → support instructions → explicit email action, privacy or deletion links.
+It needs no account, API call, form submission, new service or mobile-app change.
+The shared public inventory provides prerendered HTML, canonical metadata, routing,
+sitemap and the existing exact-page offline behavior. Existing legal-page labels
+remain unchanged; the support page supplies its own contact/promise labels.
+
+The public contact is `kd@plugandnudge.com`. Copy explains provider-specific login,
+notification Settings/preferences, optional redacted screenshots and safe issue
+reports. Never promise instant replies, automatic deletion or an implemented
+moderation workflow. Support email is a manual contact channel, not a replacement
+for in-app report/block functionality.
+
+Verify the public HTTP document and email/privacy/deletion anchors without login,
+single h1, keyboard access, 320/375/768/1440 reflow and both themes. This change
+does not alter the merchant workspace, APIs, native apps or their store links.
+
+Local verification: 166 source/component tests passed; typecheck, style/PWA/SEO
+guards, client/server build and seven-page prerender passed. All four built-site
+checks passed against the final Docker image at localhost:5184. Chrome confirmed
+one h1, no horizontal overflow and 50px main action targets at actual
+320/375/768/1440px widths. Both themes and the privacy navigation were checked;
+mobile and desktop screenshots retain the existing public-page layout. Chrome's
+viewport override became ineffective, so final narrow-width checks used its
+visible responsive-device controls instead. No mail, account mutation or
+production analytics event was needed for local verification. Physical PWA
+installation and automated Axe coverage were not rerun for this content-only page.
+
+Owner-approved production publication used clean feature source `179dd7c`, without
+merging its branch. Published image/index:
+`sha256:dae302f4dc0bc1abdd1c036ecf61a0e9b08a90ac442a1da77573949e8de2564e`.
+Cloud Run `nudger-fe-00014-k54` is Ready with 100% traffic. The update changed the
+image only, preserving runtime env, ingress, VPC, scaling and the internal API
+proxy. `/support` returns HTTP 200 with full HTML, correct canonical/contact and
+privacy/deletion links; the live sitemap contains all seven public routes. The
+same-origin Google-start check returned JSON with the existing production API
+callback. No backend, worker, Redis, database, DNS or load-balancer change occurred.
+Documentation-only evidence commits after publication do not alter the image.

@@ -60,6 +60,7 @@ function handleMenuToggle(): void {
             <RouterLink to="/terms">Terms of Service</RouterLink>
             <RouterLink to="/security">Security Statement</RouterLink>
             <RouterLink to="/delete-account">Account deletion</RouterLink>
+            <RouterLink to="/support">Support</RouterLink>
           </nav>
         </div>
         <div class="site-footer__bottom"><span>© {{ new Date().getFullYear() }} Plug &amp; Nudge</span><span>Private by design. In control by default.</span></div>
