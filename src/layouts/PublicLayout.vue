@@ -1,71 +1,17 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useDisplay } from 'vuetify'
-import { useRoute } from 'vue-router'
-
-import BrandLogo from '../components/ui/BrandLogo.vue'
-import PublicEntryActions from '../components/public/PublicEntryActions.vue'
-import { useAppTheme } from '../composables/useAppTheme'
-
-const isMenuOpen = ref(false)
-const route = useRoute()
-const { smAndDown } = useDisplay()
-const hasActionDock = computed(() => smAndDown.value && route.name === 'home')
-const { isDark, toggleTheme } = useAppTheme()
-
-function closeMenu(): void {
-  isMenuOpen.value = false
-}
-
-function handleMenuToggle(): void {
-  isMenuOpen.value = !isMenuOpen.value
-}
+import { IOS_URL } from '../data/integrations'
+defineProps<{ pageName?: string }>()
 </script>
-
 <template>
-  <v-app class="public-app" :class="{ 'public-app--with-dock': hasActionDock }">
-    <a class="site-skip" href="#main-content">Skip to content</a>
-    <header class="site-header">
-      <div class="site-header__inner">
-        <RouterLink class="site-header__brand" to="/" aria-label="Plug & Nudge home" @click="closeMenu">
-          <BrandLogo size="small" alt="" />
-          <span>Plug <span class="site-header__brand-mark">&</span> Nudge</span>
-        </RouterLink>
-        <button class="site-header__menu-button" type="button" aria-controls="site-navigation" :aria-expanded="isMenuOpen" :aria-label="isMenuOpen ? 'Close menu' : 'Open menu'" @click="handleMenuToggle">
-          <v-icon :icon="isMenuOpen ? 'mdi-close' : 'mdi-menu'" size="24" />
-        </button>
-        <nav id="site-navigation" class="site-header__nav" :class="{ 'site-header__nav--open': isMenuOpen }" aria-label="Main navigation">
-          <RouterLink to="/#features" @click="closeMenu">Features</RouterLink>
-          <RouterLink to="/#privacy" @click="closeMenu">Privacy &amp; control</RouterLink>
-          <RouterLink to="/for-nudgers" @click="closeMenu">For creators &amp; developers</RouterLink>
-          <button class="site-header__theme" type="button" :aria-label="isDark ? 'Use light mode' : 'Use dark mode'" @click="toggleTheme"><v-icon :icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'" size="20" /></button>
-          <RouterLink class="site-header__cta" to="/#get-app" @click="closeMenu">Get the app <span>Free</span><v-icon icon="mdi-arrow-up-right" size="18" /></RouterLink>
-        </nav>
-      </div>
-    </header>
-
-    <main id="main-content" class="site-main" tabindex="-1">
-      <router-view :key="route.path" />
-    </main>
-
-    <footer class="site-footer">
-      <div class="site-footer__inner">
-        <div class="site-footer__top">
-          <div>
-            <RouterLink class="site-footer__brand" to="/"><BrandLogo size="small" alt="" /><span>Plug &amp; Nudge</span></RouterLink>
-            <p>Your attention belongs to you.</p>
-          </div>
-          <nav class="site-footer__links" aria-label="Footer navigation">
-            <RouterLink to="/privacy">Privacy Policy</RouterLink>
-            <RouterLink to="/terms">Terms of Service</RouterLink>
-            <RouterLink to="/security">Security Statement</RouterLink>
-            <RouterLink to="/delete-account">Account deletion</RouterLink>
-            <RouterLink to="/support">Support</RouterLink>
-          </nav>
-        </div>
-        <div class="site-footer__bottom"><span>© {{ new Date().getFullYear() }} Plug &amp; Nudge</span><span>Private by design. In control by default.</span></div>
-      </div>
-    </footer>
-    <PublicEntryActions v-if="hasActionDock" />
-  </v-app>
+  <div class="m-site" :class="{ 'm-site--download-dock': pageName === 'home' }">
+    <a class="m-skip" href="#main-content">Skip to content</a>
+    <header class="m-header"><div class="m-wrap m-header__inner">
+      <a class="m-brand" href="/" aria-label="Plug & Nudge home"><img src="/showcase/nudge-mark.webp" alt="" width="32" height="32" /><span>plug<span class="m-brand__amp">&amp;</span>nudge</span></a>
+      <nav class="m-desktop-nav" aria-label="Main navigation"><a href="/#possibilities">The app</a><a href="/integrations" :aria-current="pageName?.startsWith('integration') ? 'page' : undefined">Integrations</a><a href="/merchant" :aria-current="pageName === 'merchant' ? 'page' : undefined">For creators &amp; platforms</a></nav>
+      <div class="m-header__actions"><button class="m-theme" type="button" data-theme-toggle aria-label="Change color theme" hidden><span aria-hidden="true">◐</span></button><a class="m-button m-button--small m-button--primary" :href="IOS_URL">Get the app <span aria-hidden="true">↗</span></a><details class="m-mobile-menu"><summary aria-label="Open navigation"><span aria-hidden="true">☰</span></summary><nav aria-label="Mobile navigation"><a href="/#possibilities">The app</a><a href="/integrations">Integrations</a><a href="/merchant">For creators &amp; platforms</a><a href="/privacy">Privacy</a><a href="/login">Sign in</a></nav></details></div>
+    </div></header>
+    <main id="main-content" tabindex="-1"><slot /></main>
+    <footer class="m-footer"><div class="m-wrap"><div class="m-footer__top"><div><a class="m-brand" href="/"><img src="/showcase/nudge-mark.webp" alt="" width="32" height="32" /><span>plug&amp;nudge</span></a><p>Your attention belongs to you.</p></div><div class="m-footer__group"><strong>Explore</strong><a href="/integrations">Integrations</a><a href="/merchant">Creators &amp; platforms</a><a href="/login">Sign in</a></div><div class="m-footer__group"><strong>Your trust</strong><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/security">Security</a></div><div class="m-footer__group"><strong>Here to help</strong><a href="/support">Support</a><a href="/delete-account">Account deletion</a><a :href="IOS_URL">Download for iPhone</a></div></div><div class="m-footer__bottom"><span>© {{ new Date().getFullYear() }} Plug &amp; Nudge</span><span>Updates you choose. Alerts that matter.</span></div></div></footer>
+    <aside v-if="pageName === 'home'" class="m-dock" aria-label="Download Nudge"><div><strong>Nudge for iPhone</strong><span>Your updates. On your terms.</span></div><a class="m-button m-button--primary" :href="IOS_URL">Get the app <span aria-hidden="true">↗</span></a></aside>
+  </div>
 </template>

@@ -6,3 +6,7 @@ build/prerender
 .env.nudger.production
 .idea/
 *.tsbuildinfo
+
+# Reproducible screenshot intermediates and local review output
+scripts/marketing-artifacts/
+.review/

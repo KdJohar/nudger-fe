@@ -1,79 +1,27 @@
 <script setup lang="ts">
-import PhonePreview from '../components/ui/PhonePreview.vue'
-
-const valueBadges = [
-  '100% free forever for receivers',
-  'No spam. Zero algorithms.',
-  'No personal data shared with channels',
-]
-
-const controlFeatures = [
-  { icon: 'mdi-account-check-outline', title: 'An invitation, never an interruption.', copy: 'Find and subscribe to channels yourself. No accidental opt-ins or default spam.' },
-  { icon: 'mdi-tune-variant', title: 'The details are up to you.', copy: 'Turn on Going Live. Turn off Weekly Vlog. Follow only the topics that matter.' },
-  { icon: 'mdi-inbox-outline', title: 'Quiet is a setting.', copy: 'Mute a channel instantly or send its updates to your Nudge Inbox to read later.' },
-]
-
-const privacyFeatures = [
-  { icon: 'mdi-account-off-outline', title: 'No personal details for senders', copy: 'Your email, phone number, and name stay out of creators’ and channels’ hands.' },
-  { icon: 'mdi-account-group-outline', title: 'A count, not a contact list', copy: 'Channels see subscriber totals, not a list of the people behind them.' },
-  { icon: 'mdi-delete-outline', title: 'Leave on your terms', copy: 'Unsubscribe whenever you want. You can also request to delete your account.' },
-]
-
-const steps = [
-  { number: '01', icon: 'mdi-magnify', title: 'Search & find', copy: 'Find a creator, store, or personal webhook you actually want to hear from.' },
-  { number: '02', icon: 'mdi-tune-variant', title: 'Choose channels', copy: 'Pick the exact kinds of updates you want. Nothing gets added for you.' },
-  { number: '03', icon: 'mdi-bell-check-outline', title: 'Receive direct nudges', copy: 'Updates arrive on your lock screen or in your quiet inbox, without a feed in the middle.' },
-]
+import { INTEGRATIONS, IOS_URL } from '../data/integrations'
+import PublicIcon from '../components/public/PublicIcon.vue'
+import IntegrationCard from '../components/public/IntegrationCard.vue'
+import DownloadBlock from '../components/public/DownloadBlock.vue'
 </script>
-
 <template>
-  <div class="site-page">
-    <section class="site-hero" aria-labelledby="hero-heading">
-      <div class="site-wrap site-hero__grid">
-        <div class="site-hero__copy">
-          <div class="site-kicker"><span class="site-kicker__dot" /> A quieter way to stay close</div>
-          <h1 id="hero-heading">Never miss what matters.<br /><span>Zero unwanted noise.</span></h1>
-          <p class="site-hero__lead">A universal notification layer for your lock screen. Subscribe only to the creators, updates, and automated alerts you care about.</p>
-          <ul class="site-hero__badges" aria-label="Why receivers choose Plug & Nudge">
-            <li v-for="badge in valueBadges" :key="badge"><v-icon icon="mdi-check-circle" size="17" />{{ badge }}</li>
-          </ul>
-          <div class="site-hero__actions"><a class="site-button site-button--primary" href="#get-app">Get the app · Free <v-icon icon="mdi-arrow-down" size="18" /></a><a class="site-button site-button--text" href="#how-it-works">See how it works <v-icon icon="mdi-arrow-right" size="18" /></a></div>
-          <p class="site-hero__microcopy">Made for your lock screen, not another feed.</p>
-        </div>
-        <div class="site-hero__visual"><div class="site-hero__visual-orbit" aria-hidden="true" /><PhonePreview /><div class="site-hero__visual-caption"><v-icon icon="mdi-sparkles" size="16" /> Only what you asked for</div></div>
-      </div>
-    </section>
-
-    <section id="features" class="site-section site-section--tint" aria-labelledby="features-heading">
-      <div class="site-wrap site-feature-grid">
-        <div class="site-feature-grid__copy">
-          <span class="site-eyebrow">01 / Your space, your rules</span>
-          <h2 id="features-heading" class="site-heading">You decide what reaches your lock screen.</h2>
-          <p class="site-intro">From the first subscription to the last notification, you stay in control.</p>
-          <div class="site-feature-list"><article v-for="feature in controlFeatures" :key="feature.title" class="site-feature-list__item"><span class="site-feature-list__icon"><v-icon :icon="feature.icon" size="22" /></span><div><h3>{{ feature.title }}</h3><p>{{ feature.copy }}</p></div></article></div>
-        </div>
-        <div class="site-feature-grid__visual"><PhonePreview mode="controls" /><div class="site-feature-grid__caption"><v-icon icon="mdi-hand-pointing-up" size="17" /> Try the switches</div></div>
-      </div>
-    </section>
-
-    <section id="privacy" class="site-section" aria-labelledby="privacy-heading">
-      <div class="site-wrap">
-        <div class="site-section-head"><span class="site-eyebrow">02 / Privacy is the point</span><h2 id="privacy-heading" class="site-heading">Your identity stays yours. Period.</h2><p class="site-intro">The connection is direct. Your personal information isn’t part of the handoff.</p></div>
-        <div class="site-trust-grid">
-          <article class="site-trust-grid__anchor"><div class="site-trust-grid__anchor-icon"><v-icon icon="mdi-shield-lock-outline" size="30" /></div><div><span class="site-trust-grid__overline">PRIVACY LAYER</span><h3>Stay in the loop.<br />Stay out of the list.</h3><p>Subscribe to what you love without handing your personal identity to the channel sending it.</p></div><div class="site-trust-flow" aria-label="Your phone connects through a privacy shield to an anonymous channel subscriber count"><span><v-icon icon="mdi-cellphone" size="22" /> Your phone</span><v-icon icon="mdi-arrow-right" size="18" /><span class="site-trust-flow__shield"><v-icon icon="mdi-shield-check-outline" size="22" /> Privacy shield</span><v-icon icon="mdi-arrow-right" size="18" /><span><v-icon icon="mdi-account-multiple-outline" size="22" /> Count only</span></div></article>
-          <article v-for="feature in privacyFeatures" :key="feature.title" class="site-trust-grid__tile"><span class="site-trust-grid__tile-icon"><v-icon :icon="feature.icon" size="23" /></span><div><h3>{{ feature.title }}</h3><p>{{ feature.copy }}</p></div></article>
-        </div>
-      </div>
-    </section>
-
-    <section id="how-it-works" class="site-section site-section--tint" aria-labelledby="steps-heading">
-      <div class="site-wrap"><div class="site-section-head"><span class="site-eyebrow">03 / Three simple steps</span><h2 id="steps-heading" class="site-heading">A better signal, in three taps.</h2><p class="site-intro">No feed to scroll. No ranking system deciding for you. Just the updates you chose.</p></div><div class="site-steps"><article v-for="step in steps" :key="step.number" class="site-step"><div class="site-step__top"><span>{{ step.number }}</span><v-icon :icon="step.icon" size="24" /></div><h3>{{ step.title }}</h3><p>{{ step.copy }}</p></article></div></div>
-    </section>
-
-    <section id="get-app" class="site-section site-download" aria-labelledby="download-heading">
-      <div class="site-wrap site-download__grid"><div><span class="site-eyebrow">The calm is coming</span><h2 id="download-heading" class="site-heading">A little less noise.<br />A lot more meaning.</h2><p class="site-intro">Plug &amp; Nudge for receivers is on its way. The app will be free to use.</p></div><div class="site-download__stores" aria-label="App availability"><div class="store-badge" aria-label="App Store coming soon"><v-icon icon="mdi-apple" size="28" /><span><small>Coming soon to the</small><strong>App Store</strong></span></div><div class="store-badge" aria-label="Google Play coming soon"><v-icon icon="mdi-google-play" size="28" /><span><small>Coming soon to</small><strong>Google Play</strong></span></div></div></div>
-    </section>
-
-    <section class="site-section site-section--callout" aria-labelledby="callout-heading"><div class="site-wrap site-callout"><div><span class="site-eyebrow">On the other side of the nudge</span><h2 id="callout-heading" class="site-heading">Want to send intentional Nudges?</h2><p class="site-intro">Reach your most dedicated followers or send automated push notifications from your own code.</p></div><div class="site-callout__actions"><RouterLink class="site-button site-button--light" to="/for-nudgers#creators">For creators &amp; channels <v-icon icon="mdi-arrow-up-right" size="18" /></RouterLink><RouterLink class="site-button site-button--outline" to="/for-nudgers#developers">For developers &amp; webhooks <v-icon icon="mdi-arrow-up-right" size="18" /></RouterLink></div></div></section>
-  </div>
+  <section class="m-hero m-wrap" aria-labelledby="hero-title">
+    <div class="m-hero__copy"><p class="m-eyebrow"><span class="m-dot" /> A quieter kind of connected</p><h1 id="hero-title">Less checking.<br /><span>More living.</span></h1><p class="m-lead">Your favorite creators. Your everyday tools.<br class="m-desktop-break" /> The updates that matter, together in Nudge.</p><div class="m-actions"><a class="m-button m-button--primary" :href="IOS_URL">Download for iPhone <span aria-hidden="true">↗</span></a><a class="m-text-link" href="#possibilities">Meet Nudge <span aria-hidden="true">↓</span></a></div><p class="m-caption">Available on iOS <span aria-hidden="true">·</span> Android coming soon</p></div>
+    <div class="m-hero__visual"><div class="m-orbit m-orbit--one" /><div class="m-orbit m-orbit--two" /><figure class="m-phone m-phone--hero"><div class="m-phone__top" aria-hidden="true"><span>9:41</span><span class="m-phone__island" /><span>▰</span></div><img src="/showcase/app-inbox.webp" alt="Nudge app inbox showing creator updates, a completed build and a personal reminder with sample data" width="390" height="780" fetchpriority="high" /><div class="m-phone__bottom" aria-hidden="true" /></figure><div class="m-float m-float--top"><span class="m-notice-icon"><PublicIcon name="play" /></span><div><strong>Studio Notes</strong><span>We’re going live. Come hang out.</span></div><span class="m-float__time">now</span></div><div class="m-float m-float--bottom"><span class="m-notice-icon m-notice-icon--mint"><PublicIcon name="code" /></span><div><strong>Your build is ready.</strong><span>You can close that extra tab.</span></div><PublicIcon name="check" /></div><p class="m-visual-caption">Real app screens. Illustrative updates.</p></div>
+  </section>
+  <div class="m-proof m-wrap"><span><PublicIcon name="check" /> Only what you subscribe to</span><span><PublicIcon name="lock" /> Your identity stays private to senders</span><span><PublicIcon name="bell" /> One app for useful updates</span></div>
+  <section id="possibilities" class="m-section m-wrap" aria-labelledby="possibilities-title"><div class="m-section-heading"><p class="m-eyebrow">One app. Your kind of updates.</p><h2 id="possibilities-title">Life has enough tabs open.</h2><p>Let the right updates come to you.</p></div>
+    <div class="m-bento">
+      <article class="m-card m-card--creators"><div><span class="m-kicker">For the things you love</span><h3>Never miss<br />“we’re live.”</h3><p>Discover participating creators and web apps. Subscribe to the people and services you actually want to hear from.</p></div><div class="m-notices" aria-label="Illustrative creator updates"><div class="m-notice"><span class="m-notice-icon"><PublicIcon name="play" /></span><div><strong>Studio Notes <small>Creator</small></strong><p>A new episode just dropped.</p></div></div><div class="m-notice"><span class="m-notice-icon m-notice-icon--mint"><PublicIcon name="globe" /></span><div><strong>Everyday <small>Platform</small></strong><p>Your weekly roundup is ready.</p></div></div></div><span class="m-card__foot">Find your favorites in the app. Availability varies.</span></article>
+      <article class="m-card m-card--hooks"><span class="m-kicker">For the things you build</span><h3>From your code.<br />To your pocket.</h3><p>Create a personal webhook. Connect a script, automation, or device. Get a nudge when something needs you.</p><div class="m-code-preview"><div><span /><span /><span /><small>your-workflow</small></div><code><span>POST</span> your-private-webhook<br /><br />{<br />&nbsp; "message": "All done. ✨"<br />}</code></div><a class="m-text-link" href="/integrations/webhooks">Explore personal webhooks <span aria-hidden="true">→</span></a></article>
+      <article class="m-card m-card--control"><PublicIcon name="bell" /><h3>A little less noise.<br />A lot more control.</h3><p>Mute a channel. Change a preference. Unsubscribe whenever you want. You choose what gets your attention.</p><div class="m-preference" aria-hidden="true"><span>Updates that matter</span><span class="m-switch" /></div></article>
+      <article class="m-card m-card--privacy"><PublicIcon name="lock" /><h3>A subscriber.<br />Never a contact list.</h3><p>Creators and platforms see aggregate numbers, not your name, email, or identity. We don’t sell your personal information.</p><a class="m-text-link" href="/privacy">Our privacy promise <span aria-hidden="true">→</span></a></article>
+    </div>
+  </section>
+  <section class="m-section m-app-section" aria-labelledby="showcase-title"><div class="m-wrap m-app-grid"><div class="m-app-visual"><figure class="m-phone m-phone--secondary"><div class="m-phone__top" aria-hidden="true"><span>9:41</span><span class="m-phone__island" /><span>▰</span></div><img src="/showcase/app-discover.webp" alt="The Nudge Discover screen with sample creator and platform profiles" width="390" height="780" loading="lazy" decoding="async" /><div class="m-phone__bottom" aria-hidden="true" /></figure><div class="m-app-tag"><PublicIcon name="spark" /><span>A space for your favorites.</span></div></div><div class="m-app-copy"><p class="m-eyebrow">A few taps. A little peace of mind.</p><h2 id="showcase-title">Made for your life.<br />Not another feed.</h2><ol class="m-steps"><li><span>01</span><div><h3>Find your people and tools.</h3><p>Explore participating creators and platforms, or create a personal hook for your own alerts.</p></div></li><li><span>02</span><div><h3>Choose what gets through.</h3><p>Subscribe on your terms. Keep the updates you want and mute the ones you don’t need right now.</p></div></li><li><span>03</span><div><h3>Get on with your day.</h3><p>Useful updates arrive in your Nudge inbox, with push alerts when your settings allow.</p></div></li></ol><a class="m-text-link" :href="IOS_URL">Take Nudge with you <span aria-hidden="true">↗</span></a></div></div></section>
+  <section class="m-section m-wrap" aria-labelledby="integrations-title"><div class="m-section-heading m-section-heading--split"><div><p class="m-eyebrow">Small connections. Big possibilities.</p><h2 id="integrations-title">Works with your world.</h2><p>From a quick script to your daily workflow.</p></div><a class="m-text-link" href="/integrations">Explore integrations <span aria-hidden="true">→</span></a></div><div class="m-integration-grid"><IntegrationCard v-for="integration in INTEGRATIONS.filter(item => item.featured)" :key="integration.slug" :integration="integration" /></div><p class="m-caption">Webhook guides connect through HTTP. Preview integrations have limited availability.</p></section>
+  <section class="m-section m-wrap" aria-labelledby="moments-title"><div class="m-section-heading"><p class="m-eyebrow">A nudge for the useful moments</p><h2 id="moments-title">What will you connect?</h2></div><div class="m-use-grid"><article><span>01 / CREATE</span><h3>The next livestream.</h3><p>A creator you subscribe to is about to go live. Be there for the beginning.</p></article><article><span>02 / AUTOMATE</span><h3>The finished task.</h3><p>Your script, export, or workflow is done. No need to keep checking.</p></article><article><span>03 / CONNECT</span><h3>The everyday device.</h3><p>Your printer finishes or a routine completes. Let your setup give you a heads-up.</p></article></div></section>
+  <section class="m-wrap m-merchant-strip"><div><p class="m-eyebrow">Have something worth sharing?</p><h2>Be the update they look forward to.</h2><p>A direct connection for creators and platforms. Free during the pilot.</p></div><a class="m-button m-button--outline" href="/merchant">Meet Nudge for creators &amp; platforms <span aria-hidden="true">→</span></a></section>
+  <section class="m-section m-wrap m-faq" aria-labelledby="faq-title"><div><p class="m-eyebrow">A few good questions</p><h2 id="faq-title">Before your<br />first nudge.</h2></div><div><details><summary>Can I connect any YouTube channel?</summary><p>You can discover and subscribe to creators who have joined Nudge. Nudge does not automatically import every YouTube channel or notify you about creators who haven’t joined.</p></details><details><summary>What is a personal webhook?</summary><p>A private URL you create in the app. A tool can send a short message to that URL, and Nudge brings it to your account. Keep the URL secret, just like a password.</p></details><details><summary>What can creators see about me?</summary><p>Creators see aggregate subscription, delivery and click statistics. They cannot see your subscriber identity or an individual list of who clicked. Read our <a href="/privacy">privacy policy</a> for details about service providers and data processing.</p></details><details><summary>Is Nudge available on Android?</summary><p>Android is coming soon. You can download Nudge for iPhone today.</p></details></div></section>
+  <DownloadBlock />
 </template>

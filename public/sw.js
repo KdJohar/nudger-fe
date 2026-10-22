@@ -1,9 +1,7 @@
 const CACHE_NAME = 'nudger-shell-__BUILD_ID__'
 const PUBLIC_PAGE_PATHS = /*PUBLIC_PAGE_PATHS*/ []
 const PRECACHE_URLS = [
-  '/',
   '/app.html',
-  ...PUBLIC_PAGE_PATHS.filter(path => path !== '/'),
   '/manifest.webmanifest',
   '/nudge.png',
   '/icon-192.png',
@@ -46,21 +44,12 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET' || !isSameOrigin(url)) return
   if (url.pathname.startsWith('/v1/') || url.pathname === '/runtime-config.js' || url.pathname === '/sw.js' || url.pathname.startsWith('/docs') || url.pathname === '/openapi.json') return
 
+  // Public marketing is a normal website, even for existing installed-workspace clients.
+  const pathname = url.pathname === '/' ? '/' : url.pathname.replace(/\/$/, '')
+  if (PUBLIC_PAGE_PATHS.includes(pathname) || pathname === '/for-nudgers' || pathname.startsWith('/marketing/') || pathname.startsWith('/showcase/')) return
   if (request.mode === 'navigate') {
-    const pathname = url.pathname === '/' ? '/' : url.pathname.replace(/\/$/, '')
-    const isPublicPage = PUBLIC_PAGE_PATHS.includes(pathname)
-    event.respondWith(
-      fetch(request).then((response) => {
-        if (isPublicPage && response.ok) {
-          const copy = response.clone()
-          event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.put(pathname, copy)))
-        }
-        return response
-      }).catch(async () => {
-        if (isPublicPage) return (await caches.match(pathname)) || Response.error()
-        return (await caches.match('/app.html')) || Response.error()
-      }),
-    )
+    if (!/^\/(?:login|auth\/callback|onboarding|pending|workspace|dashboard|audience|compose|nudges|profile|token)$/.test(pathname)) return
+    event.respondWith(fetch(request).catch(async () => (await caches.match('/app.html')) || Response.error()))
     return
   }
 

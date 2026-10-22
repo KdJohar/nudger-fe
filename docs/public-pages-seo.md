@@ -1,5 +1,17 @@
 # Public HTML, SEO and merchant SPA contract
 
+## Static public website — approved 22 October 2026
+
+The public website revamp supersedes older public landing, coming-soon iOS,
+session-aware mobile dock and public SPA/PWA instructions below. Public pages are
+static HTML with a separate minimal enhancement script, coral/indigo branding,
+app screenshots and bento sections. The iOS store link is available; Android is
+coming soon. `/merchant` replaces `/for-nudgers`; JSON supplies integration routes.
+The authenticated workspace design, permissions and API contracts are unchanged.
+See [local review and implementation contract](landing-review.md) for the new
+public boundaries, content rules, testing and catalog maintenance. Historical
+release evidence below is not evidence that this revamp has been deployed.
+
 Accepted 15 October 2026. Implementation branch: `feature/public-pages-seo-prerender`.
 The owner subsequently approved the frontend-only production rollout. Implementation
 was merged through PR #14 and deployed from clean main `ed605471022d63eebbfded4d593ffab3f363348b`.

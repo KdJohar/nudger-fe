@@ -1,5 +1,17 @@
 # Plug & Nudge design language
 
+## Public visual direction — approved 22 October 2026
+
+The public website revamp supersedes older public landing, coming-soon iOS,
+session-aware mobile dock and public SPA/PWA instructions below. Public pages are
+static HTML with a separate minimal enhancement script, coral/indigo branding,
+app screenshots and bento sections. The iOS store link is available; Android is
+coming soon. `/merchant` replaces `/for-nudgers`; JSON supplies integration routes.
+The authenticated workspace design, permissions and API contracts are unchanged.
+See [local review and implementation contract](landing-review.md) for the new
+public boundaries, content rules, testing and catalog maintenance. Historical
+release evidence below is not evidence that this revamp has been deployed.
+
 Current UI contract, 7 October 2026. This file owns visual conventions;
 [app context](app-context.md) owns product scope and [Vue architecture](vue-architecture.md)
 owns shared component/layout behavior. Preserve the existing design, not a new redesign.

@@ -10,7 +10,7 @@ test('PWA manifest has installable iOS and Android metadata', () => {
   const manifest = JSON.parse(read('public/manifest.webmanifest'))
   assert.equal(manifest.name, 'Plug & Nudge')
   assert.equal(manifest.short_name, 'Nudger')
-  assert.equal(manifest.start_url, '/')
+  assert.equal(manifest.start_url, '/audience')
   assert.equal(manifest.scope, '/')
   assert.equal(manifest.display, 'standalone')
   assert.equal(manifest.orientation, 'any')
@@ -43,7 +43,7 @@ test('public crawl entrypoints exclude private SPA routes', () => {
   assert.match(robots, /Disallow: \/v1\//)
   assert.doesNotMatch(robots, /Disallow: \/runtime-config\.js/)
   assert.match(read('nginx.conf'), /X-Robots-Tag "noindex, nofollow"/)
-  for (const path of ['https://plugandnudge.com/', 'https://plugandnudge.com/for-nudgers', 'https://plugandnudge.com/privacy']) assert.match(sitemap, new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+  for (const path of ['https://plugandnudge.com/', 'https://plugandnudge.com/merchant', 'https://plugandnudge.com/privacy']) assert.match(sitemap, new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
   assert.doesNotMatch(sitemap, /\/workspace|\/audience|\/token/)
 })
 
@@ -76,7 +76,7 @@ test('public legal pages contain the privacy promise and the footer omits API do
 test('account deletion requests are public and explain receiver deletion and aggregate analytics', () => {
   const legal = read('src/views/PublicInfoView.vue')
   assert.match(read('src/data/publicPages.ts'), /path: '\/delete-account'.*topic: 'delete-account'/)
-  assert.match(read('src/layouts/PublicLayout.vue'), /to="\/delete-account"/)
+  assert.match(read('src/layouts/PublicLayout.vue'), /href="\/delete-account"/)
   assert.match(legal, /mailto:kd@plugandnudge\.com\?subject=Nudge%20account%20deletion%20request/)
   assert.match(legal, /Subscriptions are deactivated, and inbox receipts are deleted from your inbox/)
   assert.match(legal, /Merchants can see only aggregate numbers/)
@@ -88,7 +88,7 @@ test('account deletion requests are public and explain receiver deletion and agg
 test('support is public, discoverable and uses the existing page with safe contact instructions', () => {
   const legal = read('src/views/PublicInfoView.vue')
   assert.match(read('src/data/publicPages.ts'), /path: '\/support'.*topic: 'support'/)
-  assert.match(read('src/layouts/PublicLayout.vue'), /to="\/support"/)
+  assert.match(read('src/layouts/PublicLayout.vue'), /href="\/support"/)
   assert.match(read('public/sitemap.xml'), /https:\/\/plugandnudge\.com\/support/)
   assert.match(legal, /mailto:kd@plugandnudge\.com\?subject=Nudge%20support/)
   assert.match(legal, /contactLabel: 'Email support'/)

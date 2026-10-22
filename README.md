@@ -1,5 +1,7 @@
 # Plug&Nudge — Nudger workspace
 
+Public landing revamp: see [local review, preview commands and integration catalog](docs/landing-review.md).
+
 Read [shared project context](docs/project-context.md) and
 [Nudger repository context](docs/repository-context.md) first. This checkout is
 the only production website source for `https://plugandnudge.com`.

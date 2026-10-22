@@ -1,0 +1,265 @@
+[
+  {
+    "slug": "webhooks",
+    "name": "Webhooks",
+    "mark": "↗",
+    "category": "Developer tools",
+    "status": "available",
+    "featured": true,
+    "summary": "One private URL. A direct line to your phone.",
+    "description": "Connect anything that can send an HTTPS POST request to a personal webhook in Nudge. Get a notification when work is done or something needs your attention.",
+    "requirements": [
+      "Nudge on your iPhone",
+      "A personal hook created in the app",
+      "A tool that can send HTTPS POST requests"
+    ],
+    "steps": [
+      {
+        "title": "Create your personal hook",
+        "body": "In Nudge, open You → Personal hooks and create a hook. Give it a useful name, then copy its private URL."
+      },
+      {
+        "title": "Keep the URL private",
+        "body": "Anyone with this URL can send to this hook. Save it as a secret in your tool, not in source code or a shared chat."
+      },
+      {
+        "title": "Connect your tool",
+        "body": "Send a POST request to the URL with Content-Type: application/json and a message field. Personal hooks notify your own account and need no separate API token."
+      }
+    ],
+    "codeLanguage": "JSON body",
+    "code": "{\n  \"message\": \"Your export is ready to review.\"\n}",
+    "examples": [
+      "A background job finishes",
+      "A backup needs attention",
+      "A device reports an event"
+    ],
+    "note": "Notifications depend on connectivity, device permissions and Focus settings. Personal hooks send text messages to your account."
+  },
+  {
+    "slug": "python",
+    "name": "Python",
+    "mark": "Py",
+    "category": "Developer tools",
+    "status": "recipe",
+    "featured": true,
+    "summary": "Let your script tell you when it’s finished.",
+    "description": "Step away from a long-running script. Use Python’s built-in HTTP tools to notify yourself when a task completes.",
+    "requirements": [
+      "A personal Nudge webhook",
+      "Python 3 with internet access",
+      "NUDGE_WEBHOOK_URL set in your environment"
+    ],
+    "steps": [
+      {
+        "title": "Create your personal hook",
+        "body": "In Nudge, open You → Personal hooks and create a hook. Give it a useful name, then copy its private URL."
+      },
+      {
+        "title": "Keep the URL private",
+        "body": "Anyone with this URL can send to this hook. Save it as a secret in your tool, not in source code or a shared chat."
+      },
+      {
+        "title": "Send after your task",
+        "body": "Run this snippet when your task finishes. Handle network errors in your workflow and avoid repeating requests whose outcome is uncertain."
+      }
+    ],
+    "codeLanguage": "Python",
+    "code": "import json\nimport os\nfrom urllib.request import Request, urlopen\n\nrequest = Request(\n    os.environ[\"NUDGE_WEBHOOK_URL\"],\n    data=json.dumps({\n        \"message\": \"Your Python job is complete.\"\n    }).encode(\"utf-8\"),\n    headers={\"Content-Type\": \"application/json\"},\n    method=\"POST\",\n)\nwith urlopen(request, timeout=15) as response:\n    print(response.status)",
+    "examples": [
+      "A data export is ready",
+      "A training run finishes",
+      "A scheduled report completes"
+    ],
+    "note": "This recipe uses the Python standard library. No separate Nudge SDK is required."
+  },
+  {
+    "slug": "curl",
+    "name": "Shell & cURL",
+    "mark": ">_",
+    "category": "Developer tools",
+    "status": "recipe",
+    "featured": false,
+    "summary": "A small command. A useful heads-up.",
+    "description": "Add a personal notification to a shell script, scheduled job, or build workflow with a simple HTTPS request.",
+    "requirements": [
+      "A personal Nudge webhook",
+      "cURL installed on your machine",
+      "NUDGE_WEBHOOK_URL saved as a secret"
+    ],
+    "steps": [
+      {
+        "title": "Create your personal hook",
+        "body": "In Nudge, open You → Personal hooks and create a hook. Give it a useful name, then copy its private URL."
+      },
+      {
+        "title": "Keep the URL private",
+        "body": "Anyone with this URL can send to this hook. Save it as a secret in your tool, not in source code or a shared chat."
+      },
+      {
+        "title": "Add your notification",
+        "body": "Run the command at the point where a notification is useful. This example sends a fixed message without automatic retries."
+      }
+    ],
+    "codeLanguage": "Shell",
+    "code": "curl --fail-with-body --max-time 15 \\\n  --request POST \"$NUDGE_WEBHOOK_URL\" \\\n  --header 'Content-Type: application/json' \\\n  --data '{\"message\":\"Your build is ready to review.\"}' ",
+    "examples": [
+      "A build completes",
+      "A backup finishes",
+      "A scheduled command needs a check"
+    ],
+    "note": "This is a general HTTP recipe. Your runner must support outbound HTTPS."
+  },
+  {
+    "slug": "javascript",
+    "name": "JavaScript",
+    "mark": "JS",
+    "category": "Developer tools",
+    "status": "recipe",
+    "featured": false,
+    "summary": "Turn a server-side event into a nudge.",
+    "description": "Use fetch in a server-side JavaScript workflow to notify yourself about a useful event. Keep the webhook away from browser code.",
+    "requirements": [
+      "A personal Nudge webhook",
+      "A server-side runtime with fetch",
+      "A private NUDGE_WEBHOOK_URL environment variable"
+    ],
+    "steps": [
+      {
+        "title": "Create your personal hook",
+        "body": "In Nudge, open You → Personal hooks and create a hook. Give it a useful name, then copy its private URL."
+      },
+      {
+        "title": "Keep the URL server-side",
+        "body": "Save it in your server’s secret environment. Never embed the URL in a public website or browser bundle."
+      },
+      {
+        "title": "Send when it matters",
+        "body": "Call the webhook after the event you care about. An accepted request is not proof that a phone displayed the alert."
+      }
+    ],
+    "codeLanguage": "JavaScript",
+    "code": "const response = await fetch(\n  process.env.NUDGE_WEBHOOK_URL,\n  {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({\n      message: 'Your scheduled report is ready.'\n    }),\n    signal: AbortSignal.timeout(15000)\n  }\n);\nif (!response.ok) {\n  throw new Error(`Nudge request: ${response.status}`);\n}",
+    "examples": [
+      "A report has finished",
+      "An import needs attention",
+      "A server-side workflow completes"
+    ],
+    "note": "Personal hooks notify your own account. Register as a platform to send notifications to your product’s subscribers through the platform API."
+  },
+  {
+    "slug": "automations",
+    "name": "Automations",
+    "mark": "→",
+    "category": "Automation",
+    "status": "recipe",
+    "featured": true,
+    "summary": "Your workflow runs. Your phone keeps you posted.",
+    "description": "Connect a workflow tool that supports custom HTTP requests. Add a Nudge webhook step after the event you care about.",
+    "requirements": [
+      "A personal Nudge webhook",
+      "An automation tool with an HTTPS request action",
+      "A plan that allows custom HTTP requests"
+    ],
+    "steps": [
+      {
+        "title": "Choose your trigger",
+        "body": "Start with an event your tool already supports: a task finishing, a row changing, or a scheduled check."
+      },
+      {
+        "title": "Add an HTTP request",
+        "body": "Choose POST, paste your private webhook as the URL and set Content-Type to application/json."
+      },
+      {
+        "title": "Write a useful message",
+        "body": "Send a JSON body with a message field. Keep the text brief and avoid sensitive customer or account information."
+      },
+      {
+        "title": "Test once",
+        "body": "Trigger the workflow once and check your Nudge inbox. If it arrives silently, review your phone’s notification permissions."
+      }
+    ],
+    "codeLanguage": "JSON body",
+    "code": "{\n  \"message\": \"Your weekly report is ready.\"\n}",
+    "examples": [
+      "A form response needs review",
+      "A workflow completes",
+      "A scheduled check finds a change"
+    ],
+    "note": "This guide uses a generic HTTP action, not a native integration or partnership with a specific automation provider."
+  },
+  {
+    "slug": "iot",
+    "name": "IoT & devices",
+    "mark": "⌁",
+    "category": "Automation",
+    "status": "recipe",
+    "featured": false,
+    "summary": "A little signal from the things around you.",
+    "description": "Connect a device or home-automation hub that can make HTTPS requests, and turn useful events into personal notifications.",
+    "requirements": [
+      "A personal Nudge webhook",
+      "A device or trusted hub with HTTPS POST support",
+      "Secure storage for the webhook"
+    ],
+    "steps": [
+      {
+        "title": "Choose an event",
+        "body": "Pick a non-critical event, such as a print completing or a home routine finishing."
+      },
+      {
+        "title": "Connect through your hub",
+        "body": "Configure your device or hub to POST to the private webhook using Content-Type: application/json and a message field."
+      },
+      {
+        "title": "Set sensible limits",
+        "body": "Use a threshold or cooldown in your automation so repeated sensor changes do not overwhelm your notifications."
+      }
+    ],
+    "codeLanguage": "JSON body",
+    "code": "{\n  \"message\": \"Your 3D print has finished.\"\n}",
+    "examples": [
+      "A 3D print finishes",
+      "A home routine completes",
+      "A device needs attention"
+    ],
+    "note": "Compatibility depends on your device or hub. Nudge is not an emergency alarm or a substitute for a dedicated safety system."
+  },
+  {
+    "slug": "chatgpt",
+    "name": "ChatGPT",
+    "mark": "✳",
+    "category": "AI assistants",
+    "status": "preview",
+    "featured": true,
+    "summary": "Ask for a nudge when your task is done.",
+    "description": "The Nudge plugin connects supported assistant tasks to your personal webhook. Request a completion notification or enable optional alerts for longer tasks.",
+    "requirements": [
+      "Access to the Nudge plugin preview",
+      "A personal Nudge webhook",
+      "A supported ChatGPT or Codex environment"
+    ],
+    "steps": [
+      {
+        "title": "Get preview access",
+        "body": "The plugin is in preview. Contact Nudge support for availability. A public installation link is not available on this page yet."
+      },
+      {
+        "title": "Connect and configure",
+        "body": "Once you have access, connect Nudge and save your webhook in Configuration. Do not paste the URL into a shared chat."
+      },
+      {
+        "title": "Ask for an alert",
+        "body": "Select Nudge and ask your assistant to notify you when the task is done. Optional automatic alerts apply to eligible tasks lasting five minutes or more."
+      }
+    ],
+    "codeLanguage": "Example request",
+    "code": "Review this work and nudge me when it’s ready.",
+    "examples": [
+      "A review is ready",
+      "A longer task finishes",
+      "Your assistant needs input"
+    ],
+    "note": "Assistant notifications are best-effort and depend on the host running the tool. They may not arrive after interruption, app closure or network failure. Automatic alerts do not run for every task."
+  }
+]

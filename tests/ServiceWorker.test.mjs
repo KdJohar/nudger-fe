@@ -42,13 +42,12 @@ function workerFixture() {
   return { lifecycle, request, stores, deleted, offline: () => { isOffline = true }, response: response => { fetchResponse = response } }
 }
 
-test('offline public navigation returns the matching page, never the homepage', async () => {
+test('public pages bypass the workspace worker, including offline and query navigation', async () => {
   const fixture = workerFixture()
   await fixture.lifecycle('install')
-  assert.equal(await (await fixture.request('/privacy')).text(), 'fresh')
+  for (const path of ['/', '/privacy', '/privacy?query=ignored', '/delete-account', '/for-nudgers', '/marketing/site.js', '/showcase/app-inbox.webp', '/unknown']) assert.equal(await fixture.request(path), undefined)
   fixture.offline()
-  assert.equal(await (await fixture.request('/privacy?query=ignored')).text(), 'fresh')
-  assert.equal(await (await fixture.request('/delete-account')).text(), 'precache:/delete-account')
+  assert.equal(await fixture.request('/privacy'), undefined)
   assert.equal(await (await fixture.request('/audience')).text(), 'precache:/app.html')
 })
 
@@ -65,10 +64,10 @@ test('private navigation and failed responses never enter the public cache', asy
   await fixture.lifecycle('install')
   await fixture.request('/audience')
   fixture.response(new Response('Not found', { status: 404 }))
-  assert.equal((await fixture.request('/privacy')).status, 404)
+  assert.equal(await fixture.request('/privacy'), undefined)
   const entries = fixture.stores.get('nudger-shell-fixture-v2')
   assert.equal(entries.has('/audience'), false)
-  assert.equal(await entries.get('/privacy').text(), 'precache:/privacy')
+  assert.equal(entries.has('/privacy'), false)
 })
 
 test('activation removes older app caches while preserving unrelated caches', async () => {
