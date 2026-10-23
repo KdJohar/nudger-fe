@@ -29,7 +29,10 @@ five existing legal/support routes. `/for-nudgers` permanently redirects to
 ## What to review
 
 - Home: app showcase, benefits, privacy/control, use cases, integrations, FAQs.
-- Mobile: persistent iPhone download action with footer/safe-area clearance.
+- Mobile (600px and below): persistent bottom actions with footer/safe-area
+  clearance. Home has Download for iOS and a disabled Android app / Coming soon
+  button side by side. Merchant has Create your profile linking to `/login`.
+  Desktop calls to action and the existing login/registration flow are unchanged.
 - Merchant: creator/platform distinction, existing registration links, screenshots,
   aggregate CTR explanation and an honest own-app comparison; free during pilot.
 - Catalog: name search, category selection, empty/reset state, detail pages and
@@ -134,3 +137,14 @@ Review images: `.review/final-desktop.png`, `.review/final-mobile.png`, plus ful
 home, merchant, catalog and guide screenshots. `.review/verification.json` and
 `.review/final-performance.json` retain the measured results locally. The main
 checkout remains clean on `main`; this revamp is isolated in its own worktree.
+
+### Mobile bottom CTA follow-up — 23 October 2026
+
+Added the approved home download pair and merchant profile action on the same
+local branch. The build and required style, UI and audience checks pass. The public
+browser suite passes in both themes with no accessibility violations or overflow.
+Additional browser checks confirm side-by-side downloads, disabled Android,
+footer clearance and operation without JavaScript at 320/375/600px; the dock stays
+hidden at 768/1440px. The merchant action opens the existing `/login` page.
+Screenshots: `.review/bottom-cta-home-375.png` and
+`.review/bottom-cta-merchant-375.png`. Nothing was deployed.
