@@ -1,5 +1,17 @@
 # Vue workspace architecture
 
+## Public rendering boundary — approved 22 October 2026
+
+The public website revamp supersedes older public landing, coming-soon iOS,
+session-aware mobile dock and public SPA/PWA instructions below. Public pages are
+static HTML with a separate minimal enhancement script, coral/indigo branding,
+app screenshots and bento sections. The iOS store link is available; Android is
+coming soon. `/merchant` replaces `/for-nudgers`; JSON supplies integration routes.
+The authenticated workspace design, permissions and API contracts are unchanged.
+See [local review and implementation contract](landing-review.md) for the new
+public boundaries, content rules, testing and catalog maintenance. Historical
+release evidence below is not evidence that this revamp has been deployed.
+
 Accepted: 6 October 2026, following the user's confirmation of a persistent, identical page frame.
 
 Companion context: [app scope and journeys](app-context.md), [design language and CSS ownership](design-language.md),

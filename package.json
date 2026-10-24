@@ -9,7 +9,7 @@
     "test:browser:history": "node tests/browser/nudgeHistory.mjs",
     "dev": "vite",
     "build": "npm run test:styles && npm run test:pwa && npm run test:seo && vue-tsc -b && vite build && vite build --ssr src/entry-server.ts --outDir build/prerender && node scripts/prerender.mjs && npm run test:seo:built",
-    "test:seo": "node --test tests/Seo.test.mjs tests/GoogleAnalytics.test.mjs tests/ServiceWorker.test.mjs",
+    "test:seo": "node --test tests/Seo.test.mjs tests/GoogleAnalytics.test.mjs tests/ServiceWorker.test.mjs tests/Integrations.test.mjs",
     "test:seo:built": "node --test tests/build/Prerender.test.mjs",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit",
@@ -30,7 +30,8 @@
     "test:profile": "node --test tests/ProfileDetails.test.mjs tests/profileErrors.test.mjs tests/ProfileLayout.test.mjs tests/AppTheme.test.mjs",
     "test:ui": "node --test tests/PillTabs.test.mjs tests/PageLayout.test.mjs tests/NudgeHistoryPanel.test.mjs tests/Onboarding.test.mjs tests/PendingProfile.test.mjs tests/RouteAccess.test.mjs tests/SetupLogout.test.mjs tests/profileErrors.test.mjs",
     "test:audience": "node --test tests/chartGeometry.test.mjs tests/useAudienceOverview.test.mjs tests/AudienceOverview.test.mjs",
-    "test:browser:audience": "node tests/browser/audienceMetrics.mjs"
+    "test:browser:audience": "node tests/browser/audienceMetrics.mjs",
+    "test:browser:marketing": "node tests/browser/marketing.mjs"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
@@ -42,9 +43,10 @@
     "vuetify": "^3.8.12"
   },
   "devDependencies": {
-    "@vue/server-renderer": "^3.5.43",
     "@types/node": "^22.20.5",
     "@vitejs/plugin-vue": "^6.0.0",
+    "@vue/server-renderer": "^3.5.43",
+    "esbuild": "0.28.2",
     "typescript": "~5.8.3",
     "vite": "^7.0.6",
     "vue-tsc": "^2.2.12"

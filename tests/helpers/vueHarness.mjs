@@ -27,6 +27,7 @@ export function createSourceLoader(overrides = {}) {
       if (name in overrides) return overrides[name]
       if (name === 'vue') return vue
       const dependency = resolve(dirname(filename), name)
+      if (dependency.endsWith('.json')) return { default: JSON.parse(readFileSync(dependency, 'utf8')) }
       return loadSource(dependency.endsWith('.vue') ? dependency : dependency + '.ts')
     }, module.exports, module)
     return module.exports

@@ -119,9 +119,8 @@ const copy = computed(() => pageCopy[props.topic])
       <span class="site-eyebrow">{{ copy.eyebrow }}</span>
       <h1 id="info-heading" class="site-heading">{{ copy.title }}</h1>
       <p class="site-intro">{{ copy.description }}</p>
-      <div class="site-legal__meta"><v-icon :icon="copy.icon" size="18" /><span>Effective {{ copy.effectiveDate || 'October 9, 2026' }}</span></div>
+      <div class="site-legal__meta"><span>Effective {{ copy.effectiveDate || 'October 9, 2026' }}</span></div>
       <div class="site-legal__promise" role="note">
-        <div class="site-legal__promise-icon"><v-icon :icon="copy.icon" size="25" /></div>
         <div><strong>{{ copy.promiseTitle || 'Our standing promise' }}</strong><p>{{ copy.promise }}</p></div>
       </div>
       <article class="site-legal__content">
@@ -132,14 +131,14 @@ const copy = computed(() => pageCopy[props.topic])
             <li v-for="bullet in section.bullets" :key="bullet">{{ bullet }}</li>
           </ul>
           <ul v-if="section.links?.length">
-            <li v-for="link in section.links" :key="link.to"><RouterLink class="site-button site-button--text" :to="link.to">{{ link.label }}</RouterLink></li>
+            <li v-for="link in section.links" :key="link.to"><a class="site-button site-button--text" :href="link.to">{{ link.label }}</a></li>
           </ul>
         </section>
       </article>
       <div class="site-legal__actions">
-        <a v-if="copy.contactUrl" class="site-button site-button--primary" :href="copy.contactUrl">{{ copy.contactLabel || 'Email a deletion request' }} <v-icon icon="mdi-email-outline" size="18" /></a>
-        <RouterLink class="site-button site-button--primary" to="/">Back to home <v-icon icon="mdi-arrow-right" size="18" /></RouterLink>
-        <RouterLink class="site-button site-button--text" to="/for-nudgers">For creators &amp; developers <v-icon icon="mdi-arrow-up-right" size="18" /></RouterLink>
+        <a v-if="copy.contactUrl" class="site-button site-button--primary" :href="copy.contactUrl">{{ copy.contactLabel || 'Email a deletion request' }} </a>
+        <a class="site-button site-button--primary" href="/">Back to home </a>
+        <a class="site-button site-button--text" href="/merchant">For creators &amp; platforms </a>
       </div>
     </div>
   </section>

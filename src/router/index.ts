@@ -8,22 +8,12 @@ export function createNudgerRouter(history: RouterHistory = import.meta.env.SSR 
   const router = createRouter({
     history,
     routes: [
-      {
-        path: '/',
-        component: () => import('../layouts/PublicLayout.vue'),
-        meta: { public: true },
-        children: [
-          ...PUBLIC_PAGES.map(page => ({
-            path: page.path.slice(1), name: page.name,
-            component: page.name === 'home' ? () => import('../views/LandingView.vue')
-              : page.name === 'for-nudgers' ? () => import('../views/ForNudgersView.vue')
-                : () => import('../views/PublicInfoView.vue'),
-            props: 'topic' in page ? { topic: page.topic } : undefined,
-            meta: { title: page.title, seo: { description: page.description, robots: 'index,follow' } },
-          })),
-          { path: ':pathMatch(.*)*', name: 'not-found', component: () => import('../views/NotFoundView.vue'), meta: { title: 'Page not found | Plug & Nudge', seo: { description: 'This page could not be found. Explore Plug & Nudge or return to the homepage.', robots: 'noindex,nofollow' } } },
-        ],
-      },
+      ...PUBLIC_PAGES.map(page => ({
+        path: page.path, name: page.name, component: () => import('../public/PublicSite.vue'),
+        props: { path: page.path }, meta: { public: true, title: page.title, seo: { description: page.description, robots: 'index,follow' } },
+      })),
+      { path: '/for-nudgers', redirect: '/merchant' },
+      { path: '/:pathMatch(.*)*', component: () => import('../public/PublicSite.vue'), props: route => ({ path: route.path }), meta: { public: true, title: 'Page not found | Plug & Nudge', seo: { description: 'Page not found.', robots: 'noindex,nofollow' } } },
       { path: '/login', name: 'login', component: () => import('../views/LoginView.vue'), meta: { title: 'Sign in to Nudger', publicOnly: true, seo: { description: 'Sign in to the Plug & Nudge Nudger workspace.', robots: 'noindex,nofollow' } } },
       { path: '/auth/callback', name: 'auth-callback', component: () => import('../views/AuthCallbackView.vue'), meta: { title: 'Finishing sign in', seo: { description: 'Finishing Plug & Nudge sign in.', robots: 'noindex,nofollow' } } },
       { path: '/onboarding', name: 'onboarding', component: () => import('../views/OnboardingView.vue'), meta: { title: 'Set up your profile', requiresAuth: true, seo: { description: 'Set up your Plug & Nudge Nudger profile.', robots: 'noindex,nofollow' } } },
@@ -46,8 +36,12 @@ export function createNudgerRouter(history: RouterHistory = import.meta.env.SSR 
     scrollBehavior: (to) => to.hash ? { el: to.hash, top: 80, behavior: 'smooth' } : { top: 0 },
   })
 
-  router.beforeEach(async (to) => {
-    if (to.matched.some((record) => record.meta.public)) return true
+  router.beforeEach(async (to, from) => {
+    if (to.matched.some((record) => record.meta.public)) {
+      // Public links leave the workspace and load their own static HTML document.
+      if (typeof window !== 'undefined' && from.matched.length) { window.location.assign(to.fullPath); return false }
+      return true
+    }
     const { state, initializeAuth } = useAuth()
     await initializeAuth()
     const hasUser = Boolean(state.user && state.accessToken)

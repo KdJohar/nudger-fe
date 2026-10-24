@@ -56,3 +56,12 @@ Read `docs/mobile-design-context.md` before mobile shell, density or gesture wor
 - Test initial/default filters, repeated selections, route cleanup, metadata updates, and creators without filters.
 - Check 375px, 768px, 1440px (plus 320px reflow), both themes, sticky filters, keyboard controls, and route navigation.
 - Never send a real nudge, rotate/create a token, edit a profile, or modify server data just to test layout.
+
+## Public website, approved 22 October 2026
+
+Read `docs/landing-review.md` for the static public-site boundary. Public templates
+render at build time using Vue but use native semantic HTML and no client Vue or
+Vuetify runtime. All public CSS remains in the marked, scoped section of main.css.
+Public pages are not a SPA/PWA. The existing authenticated app rules above remain
+in force. Never replace real app screenshots with invented UI or publish private
+webhooks, installation links, customer identities or demo metrics as real results.
