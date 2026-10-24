@@ -3,7 +3,8 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { PUBLIC_PAGES } from '../../build/prerender/entry-server.js'
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright')
 const { default: AxeBuilder } = await import(process.env.AXE_MODULE || '@axe-core/playwright')
-const base = process.env.UI_BASE_URL || 'http://127.0.0.1:5186'
+const base = process.env.UI_BASE_URL || 'http://127.0.0.1:5174'
+const integrationsPublished = PUBLIC_PAGES.some(page => page.path === '/integrations')
 assert.ok(['localhost', '127.0.0.1'].includes(new URL(base).hostname), 'Local checks only')
 const output = process.env.MARKETING_SCREENSHOT_DIR || '.review'
 await mkdir(output, { recursive: true })
@@ -20,14 +21,23 @@ try {
     assert.equal(await plain.locator('link[rel=manifest]').count(), 0)
     assert.ok((await plain.locator('main').innerText()).length > 200)
     assert.ok(await plain.getByRole('link', { name: 'Privacy', exact: true }).count())
+    if (!integrationsPublished) assert.equal(await plain.locator('a[href^="/integrations"]').count(), 0)
   }
   await plain.goto(base)
   await plain.locator('.m-mobile-menu summary').click()
   assert.equal(await plain.locator('.m-mobile-menu').getAttribute('open'), '')
-  await plain.locator('.m-mobile-menu').getByRole('link', { name: 'Integrations', exact: true }).click()
-  assert.equal(new URL(plain.url()).pathname, '/integrations')
+  await plain.locator('.m-mobile-menu').getByRole('link', { name: 'For creators & platforms', exact: true }).click()
+  assert.equal(new URL(plain.url()).pathname, '/merchant')
+  if (!integrationsPublished) {
+    for (const path of ['/integrations', ...['webhooks', 'python', 'curl', 'javascript', 'automations', 'iot', 'chatgpt'].map(slug => `/integrations/${slug}`)]) {
+      const response = await plain.goto(base + path)
+      assert.equal(response.status(), 404, path)
+      assert.equal(await plain.locator('meta[name=robots]').getAttribute('content'), 'noindex,nofollow')
+      assert.equal(await plain.locator('.m-integration, .m-guide').count(), 0)
+    }
+  }
   await nojs.close()
-  console.log('PASS all 15 pages, metadata, real content and mobile navigation without JavaScript')
+  console.log(`PASS all ${PUBLIC_PAGES.length} public pages, hidden integration 404s, metadata and mobile navigation without JavaScript`)
 
   for (const width of [320, 375, 768, 1440]) for (const theme of ['light', 'dark']) {
     const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: theme, reducedMotion: 'reduce', serviceWorkers: 'allow' })
@@ -35,7 +45,7 @@ try {
     const requests = []
     page.on('pageerror', error => errors.push(error.message))
     page.on('request', request => requests.push(request.url()))
-    for (const path of ['/', '/merchant', '/integrations', '/integrations/python', '/privacy']) {
+    for (const path of ['/', '/merchant', ...(integrationsPublished ? ['/integrations', '/integrations/python'] : ['/terms', '/support']), '/privacy']) {
       await page.goto(base + path)
       await page.locator('[data-theme-toggle]').waitFor({ state: 'visible' })
       assert.equal(await page.locator('h1').count(), 1)
@@ -63,22 +73,25 @@ try {
   }
   const context = await browser.newContext({ viewport: { width: 375, height: 812 }, permissions: ['clipboard-read', 'clipboard-write'] })
   const page = await context.newPage()
-  await page.goto(base + '/integrations')
-  await page.getByRole('searchbox').fill('PyThOn')
-  assert.equal(await page.locator('#integration-list .m-integration:visible').count(), 1)
-  await page.getByRole('combobox').selectOption('Automation')
-  await page.getByText('No matches yet.', { exact: true }).waitFor()
-  await page.getByRole('button', { name: 'Clear filters' }).click()
-  assert.equal(await page.locator('#integration-list .m-integration:visible').count(), 7)
-  await page.getByRole('combobox').selectOption('AI assistants')
-  assert.equal(await page.locator('#integration-list .m-integration:visible').count(), 1)
-  await page.locator('#integration-list .m-integration:visible').click()
-  assert.equal(new URL(page.url()).pathname, '/integrations/chatgpt')
-  assert.ok(await page.getByRole('link', { name: /Ask about preview access/ }).count())
-  await page.goto(base + '/integrations/python')
-  await page.getByRole('button', { name: 'Copy example' }).click()
-  await page.getByText('Example copied.', { exact: true }).waitFor()
-  assert.match(await page.evaluate(() => navigator.clipboard.readText()), /from urllib.request/)
+  if (integrationsPublished) {
+    await page.goto(base + '/integrations')
+    await page.getByRole('searchbox').fill('PyThOn')
+    assert.equal(await page.locator('#integration-list .m-integration:visible').count(), 1)
+    await page.getByRole('combobox').selectOption('Automation')
+    await page.getByText('No matches yet.', { exact: true }).waitFor()
+    await page.getByRole('button', { name: 'Clear filters' }).click()
+    assert.equal(await page.locator('#integration-list .m-integration:visible').count(), 7)
+    await page.getByRole('combobox').selectOption('AI assistants')
+    assert.equal(await page.locator('#integration-list .m-integration:visible').count(), 1)
+    await page.locator('#integration-list .m-integration:visible').click()
+    assert.equal(new URL(page.url()).pathname, '/integrations/chatgpt')
+    assert.ok(await page.getByRole('link', { name: /Ask about preview access/ }).count())
+    await page.goto(base + '/integrations/python')
+    await page.getByRole('button', { name: 'Copy example' }).click()
+    await page.getByText('Example copied.', { exact: true }).waitFor()
+    assert.match(await page.evaluate(() => navigator.clipboard.readText()), /from urllib.request/)
+  }
+  await page.goto(base + '/privacy')
   const theme = await page.locator('html').getAttribute('data-theme')
   await page.locator('[data-theme-toggle]').click()
   await page.reload()
@@ -94,7 +107,7 @@ try {
   const clearance = await page.locator('.m-footer__bottom').evaluate(el => el.getBoundingClientRect().bottom <= document.querySelector('.m-dock').getBoundingClientRect().top)
   assert.equal(clearance, true, 'Download dock must not cover the footer')
   await context.close()
-  console.log('PASS catalog search/category/empty/reset, copy, theme persistence, Escape, mobile download/footer')
+  console.log('PASS published controls, theme persistence, Escape, mobile download/footer')
 
   const perfContext = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, deviceScaleFactor: 1 })
   const perf = await perfContext.newPage()
@@ -117,3 +130,6 @@ try {
   assert.deepEqual(errors,[])
   console.log('Mobile lab (150ms RTT, 1.6Mbps, 4× CPU):',metrics)
 } finally { await browser.close() }
+
+const { verifyPublicAnalytics } = await import('./publicAnalytics.mjs')
+await verifyPublicAnalytics(base)

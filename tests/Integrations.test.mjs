@@ -24,3 +24,13 @@ test('consumer content contains no credentials or private plugin links', () => {
   assert.doesNotMatch(catalog, /plugins_6|plugin_asdk|mcp\.plugandnudge\.com\/|fixture-refresh|Bearer [a-z0-9]/i)
   assert.equal(INTEGRATIONS.find(item => item.slug === 'chatgpt').status, 'preview')
 })
+
+test('publication flag controls routes without losing the retained catalog', () => {
+  for (const enabled of [false, true]) {
+    const { PUBLIC_PAGES } = createSourceLoader({
+      './publicFeatures': { PUBLIC_INTEGRATIONS_ENABLED: enabled },
+    })('src/data/publicPages.ts')
+    assert.equal(PUBLIC_PAGES.filter(page => page.path.startsWith('/integrations')).length, enabled ? INTEGRATIONS.length + 1 : 0)
+    for (const item of INTEGRATIONS) assert.equal(PUBLIC_PAGES.some(page => page.path === `/integrations/${item.slug}`), enabled)
+  }
+})

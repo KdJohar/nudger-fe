@@ -6,7 +6,10 @@ The public website revamp supersedes older public landing, coming-soon iOS,
 session-aware mobile dock and public SPA/PWA instructions below. Public pages are
 static HTML with a separate minimal enhancement script, coral/indigo branding,
 app screenshots and bento sections. The iOS store link is available; Android is
-coming soon. `/merchant` replaces `/for-nudgers`; JSON supplies integration routes.
+coming soon. `/merchant` replaces `/for-nudgers`. Integration navigation, home
+section and routes are currently unpublished through `PUBLIC_INTEGRATIONS_ENABLED`
+in `src/data/publicFeatures.ts`; JSON and guide code remain for later publication.
+The generated sitemap includes only the seven published routes.
 The authenticated workspace design, permissions and API contracts are unchanged.
 See [local review and implementation contract](landing-review.md) for the new
 public boundaries, content rules, testing and catalog maintenance. Historical

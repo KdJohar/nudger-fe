@@ -9,7 +9,7 @@ import { PUBLIC_PAGES } from '../data/publicPages'
 import { INTEGRATIONS } from '../data/integrations'
 const props = defineProps<{ path: string }>()
 const page = PUBLIC_PAGES.find(item => item.path === props.path)
-const integration = INTEGRATIONS.find(item => props.path === `/integrations/${item.slug}`)
+const integration = page ? INTEGRATIONS.find(item => props.path === `/integrations/${item.slug}`) : undefined
 </script>
 <template>
   <PublicLayout :page-name="page?.name">

@@ -2,14 +2,6 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://plugandnudge.com/</loc></url>
   <url><loc>https://plugandnudge.com/merchant</loc></url>
-  <url><loc>https://plugandnudge.com/integrations</loc></url>
-  <url><loc>https://plugandnudge.com/integrations/webhooks</loc></url>
-  <url><loc>https://plugandnudge.com/integrations/python</loc></url>
-  <url><loc>https://plugandnudge.com/integrations/curl</loc></url>
-  <url><loc>https://plugandnudge.com/integrations/javascript</loc></url>
-  <url><loc>https://plugandnudge.com/integrations/automations</loc></url>
-  <url><loc>https://plugandnudge.com/integrations/iot</loc></url>
-  <url><loc>https://plugandnudge.com/integrations/chatgpt</loc></url>
   <url><loc>https://plugandnudge.com/privacy</loc></url>
   <url><loc>https://plugandnudge.com/terms</loc></url>
   <url><loc>https://plugandnudge.com/security</loc></url>

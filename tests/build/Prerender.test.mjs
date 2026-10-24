@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { PUBLIC_PAGES } from '../../build/prerender/entry-server.js'
 
 const read = file => readFileSync(new URL(`../../dist/${file}`, import.meta.url), 'utf8')
@@ -10,6 +10,7 @@ test('built public documents contain full content and unique SEO before JavaScri
     const html = read(page.path === '/' ? 'index.html' : `${page.path.slice(1)}/index.html`)
     assert.equal((html.match(/<h1(?:\s|>)/g) || []).length, 1, page.path)
     assert.match(html, /<main[\s>]/)
+    if (!PUBLIC_PAGES.some(item => item.path === '/integrations')) assert.doesNotMatch(html, /href="\/integrations(?:[\/"])/)
     assert.match(html, /data-static-public/)
     assert.ok(html.includes(`href="https://plugandnudge.com${page.path}"`))
     assert.ok(html.includes('name="robots" content="index,follow"'))
@@ -35,6 +36,10 @@ test('generated sitemap/routing covers exactly public pages and private shell st
   const urls = [...read('sitemap.xml').matchAll(/<loc>(.*?)<\/loc>/g)].map(match => match[1])
   assert.deepEqual(urls, PUBLIC_PAGES.map(page => `https://plugandnudge.com${page.path}`))
   for (const page of PUBLIC_PAGES) assert.ok(read('public-routes.conf').includes(`location = ${page.path} {`))
+  if (!PUBLIC_PAGES.some(page => page.path === '/integrations')) {
+    assert.equal(existsSync(new URL('../../dist/integrations', import.meta.url)), false)
+    assert.doesNotMatch(read('sitemap.xml'), /\/integrations/)
+  }
   assert.match(read('app.html'), /name="robots" content="noindex,nofollow"/)
   assert.doesNotMatch(read('app.html'), /data-prerendered|rel="canonical"|<h1|application\/ld\+json/)
   assert.match(read('404.html'), /This page isn’t here\./)
@@ -63,7 +68,7 @@ test('local container serves public HTML, real errors and private noindex header
     assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow')
     assert.doesNotMatch(await response.text(), /data-prerendered/)
   }
-  for (const path of ['/no-such-page', '/privacy/index.html', '/assets/missing.js', '/missing.png']) assert.equal((await fetch(`${base}${path}`)).status, 404, path)
+  for (const path of ['/no-such-page', '/privacy/index.html', '/assets/missing.js', '/missing.png', ...(!PUBLIC_PAGES.some(page => page.path === '/integrations') ? ['/integrations', '/integrations/webhooks', '/integrations/python', '/integrations/index.html'] : [])]) assert.equal((await fetch(`${base}${path}`)).status, 404, path)
   const redirect = await fetch(`${base}/privacy/?test=value`, { redirect: 'manual' })
   assert.equal(redirect.status, 308)
   assert.equal(redirect.headers.get('location'), '/privacy?test=value')

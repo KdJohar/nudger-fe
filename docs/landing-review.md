@@ -9,34 +9,40 @@ local on `feat/public-landing-revamp`. Nothing has been pushed, merged or deploy
 Use Node 22+ and install the lockfile dependencies with `npm ci` if needed.
 Copy `.env.nudger.example` to `.env.nudger.local` for a new checkout and point
 `API_PROXY_UPSTREAM` at your local backend. Public pages do not call that backend.
-The review worktree already has a local-only configuration with no telemetry IDs.
+The current local checkout is `/Users/kd/projects/nudger-fe`; its local
+configuration has no telemetry IDs. Use port 5174 for either preview or dev,
+running one at a time.
 
 ```sh
 npm run build
-npm run preview -- --host 127.0.0.1 --port 5186 --strictPort
+npm run preview -- --host 127.0.0.1 --port 5174 --strictPort
 ```
 
-Open `http://127.0.0.1:5186/`. For source edits, `npm run dev -- --host 127.0.0.1
---port 5187 --strictPort` renders the same public templates on request; refresh
+Open `http://127.0.0.1:5174/`. For source edits, `npm run dev -- --host 127.0.0.1
+--port 5174 --strictPort` renders the same public templates on request; refresh
 after editing. Use the production preview for final performance and routing tests.
 
-Pages: `/`, `/merchant`, `/integrations`, `/integrations/webhooks`,
+Published pages: `/`, `/merchant` and the five existing legal/support routes.
+
+Integration pages are currently unpublished (HTTP 404, noindex, absent from links
+and the sitemap). Preserved routes for future publication: `/integrations`, `/integrations/webhooks`,
 `/integrations/python`, `/integrations/curl`, `/integrations/javascript`,
-`/integrations/automations`, `/integrations/iot`, `/integrations/chatgpt`, plus the
-five existing legal/support routes. `/for-nudgers` permanently redirects to
+`/integrations/automations`, `/integrations/iot`, `/integrations/chatgpt`. `/for-nudgers` permanently redirects to
 `/merchant`, preserving query strings and browser fragments.
 
 ## What to review
 
-- Home: app showcase, benefits, privacy/control, use cases, integrations, FAQs.
+- Home: app showcase, benefits, privacy/control, use cases and FAQs. Integration
+  navigation, catalog cards and the webhook-guide link are hidden; general webhook
+  and automation use cases remain visible.
 - Mobile (600px and below): persistent bottom actions with footer/safe-area
   clearance. Home has Download for iOS and a disabled Android app / Coming soon
   button side by side. Merchant has Create your profile linking to `/login`.
   Desktop calls to action and the existing login/registration flow are unchanged.
 - Merchant: creator/platform distinction, existing registration links, screenshots,
   aggregate CTR explanation and an honest own-app comparison; free during pilot.
-- Catalog: name search, category selection, empty/reset state, detail pages and
-  copyable setup examples. Every card and guide is present without JavaScript.
+- Preserved catalog (unpublished): name search, categories, empty/reset state,
+  detail pages and copyable setup examples. No integration content is served now.
 - Legal/support: policy copy and contact links retained, with the new public shell.
 - Desktop and narrow phone widths, light/dark themes and keyboard navigation.
 - Existing sign-in/dashboard: unchanged UI, APIs, permissions and authentication.
@@ -44,6 +50,12 @@ five existing legal/support routes. `/for-nudgers` permanently redirects to
   opens `/audience` so installed workspace users do not start on the consumer site.
 
 ## Add an integration without changing the design
+
+Publication is controlled by `PUBLIC_INTEGRATIONS_ENABLED` in
+`src/data/publicFeatures.ts`, currently `false`. Once the integrations are live,
+set it to `true` and rebuild to restore navigation, the home section, guide link,
+routes, HTML and generated sitemap together. Update the development snapshot
+`public/sitemap.xml` to match. The JSON, guides, components and styles are retained.
 
 Append one object to `src/data/integrations.json`; keep existing entries intact.
 Use the same fields as an existing entry: unique lowercase hyphenated `slug`,
@@ -148,3 +160,39 @@ footer clearance and operation without JavaScript at 320/375/600px; the dock sta
 hidden at 768/1440px. The merchant action opens the existing `/login` page.
 Screenshots: `.review/bottom-cta-home-375.png` and
 `.review/bottom-cta-merchant-375.png`. Nothing was deployed.
+
+### Integration publication and production setup — 24 October 2026
+
+Integrations are unpublished through the single build-time flag. Direct catalog
+and guide URLs return 404 with noindex, without rendering their retained content.
+The generated and development sitemaps list only the seven published routes.
+
+Production Analytics uses existing stream 16074794704, measurement ID
+`G-XPJ12JHLR6`, supplied by runtime config; the production example now names that
+same public ID. The real public entry is tested under an intercepted production
+origin: exactly one manual page view per document, correct title/path, sanitized
+query/fragment/referrer, Google signals and ad personalization disabled. All Google
+requests are intercepted; local preview never collects even with a production ID.
+The existing workspace Analytics implementation is unchanged. Read-only GA
+settings also confirm automatic history-based page views remain disabled, matching
+the manual page-view implementation.
+
+Read-only account checks on 24 October confirmed the production stream is receiving
+traffic in the past 48 hours, and Search Console still identifies the account as
+a verified owner of `sc-domain:plugandnudge.com`. Its existing sitemap URL is
+`https://plugandnudge.com/sitemap.xml`, status Success, last read 23 October,
+seven discovered URLs. No new verification tag, credential or sitemap submission
+is needed for this local change. After a separately approved deployment, Google
+can fetch the updated sitemap at that same URL; verify the new page titles in GA
+Realtime and the new `/merchant` URL in Search Console. Local checks cannot prove
+collection or indexing of an undeployed build. No account settings were changed.
+
+Verification for this follow-up: required style/UI/audience/SEO/PWA checks,
+type checking, build, all four built/HTTP checks, and the public browser suite
+passed. Seven pages work without JavaScript, all eight integration URLs return
+404, and 40 viewport/theme/page combinations have no Axe violations or overflow.
+The isolated production Analytics browser check passed without sending real events.
+The local preview remains on port 5174; no merge, push or deployment was performed.
+
+Implementation references: [GA4 manual page views](https://developers.google.com/analytics/devguides/collection/ga4/views)
+and [Google sitemap guidance](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap).
