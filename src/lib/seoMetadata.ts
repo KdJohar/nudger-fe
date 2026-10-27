@@ -1,3 +1,4 @@
+import { PUBLISHED_INTEGRATIONS } from '../data/publicFeatures'
 import { SITE_ORIGIN } from '../data/publicPages'
 
 export interface SeoMetadata {
@@ -19,13 +20,23 @@ export function getSeoMetadata(route: SeoRouteLike) {
   canonical.hash = ''
   const robots = metadata.robots ?? 'noindex,nofollow'
   const brandImage = `${SITE_ORIGIN}/icon-512.png`
-  const structuredData = !robots.startsWith('index') ? undefined : route.path === '/' ? [
+  const pageStructuredData = !robots.startsWith('index') ? undefined : route.path === '/' ? [
     { '@context': 'https://schema.org', '@type': 'Organization', name: 'Plug & Nudge', url: SITE_ORIGIN, logo: brandImage },
     { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Plug & Nudge', url: canonical.href, description: metadata.description },
   ] : {
     '@context': 'https://schema.org', '@type': 'WebPage', name: title, url: canonical.href,
     description: metadata.description, isPartOf: { '@type': 'WebSite', name: 'Plug & Nudge', url: SITE_ORIGIN },
   }
+  const integration = PUBLISHED_INTEGRATIONS.find(item => canonical.pathname === `/integrations/${item.slug}`)
+  const breadcrumbs = [
+    { name: 'Home', item: SITE_ORIGIN + '/' },
+    { name: 'Integrations', item: SITE_ORIGIN + '/integrations' },
+    ...(integration ? [{ name: integration.name, item: canonical.href }] : []),
+  ]
+  const structuredData = pageStructuredData && (integration || canonical.pathname === '/integrations') ? [
+    pageStructuredData,
+    { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: breadcrumbs.map((item, index) => ({ '@type': 'ListItem', position: index + 1, ...item })) },
+  ] : pageStructuredData
   return {
     title, canonical: canonical.href, structuredData,
     names: {

@@ -34,7 +34,8 @@
       "A backup needs attention",
       "A device reports an event"
     ],
-    "note": "Notifications depend on connectivity, device permissions and Focus settings. Personal hooks send text messages to your account."
+    "note": "Notifications depend on connectivity, device permissions and Focus settings. Personal hooks send text messages to your account.",
+    "published": false
   },
   {
     "slug": "python",
@@ -71,7 +72,8 @@
       "A training run finishes",
       "A scheduled report completes"
     ],
-    "note": "This recipe uses the Python standard library. No separate Nudge SDK is required."
+    "note": "This recipe uses the Python standard library. No separate Nudge SDK is required.",
+    "published": false
   },
   {
     "slug": "curl",
@@ -108,7 +110,8 @@
       "A backup finishes",
       "A scheduled command needs a check"
     ],
-    "note": "This is a general HTTP recipe. Your runner must support outbound HTTPS."
+    "note": "This is a general HTTP recipe. Your runner must support outbound HTTPS.",
+    "published": false
   },
   {
     "slug": "javascript",
@@ -145,7 +148,8 @@
       "An import needs attention",
       "A server-side workflow completes"
     ],
-    "note": "Personal hooks notify your own account. Register as a platform to send notifications to your product’s subscribers through the platform API."
+    "note": "Personal hooks notify your own account. Register as a platform to send notifications to your product’s subscribers through the platform API.",
+    "published": false
   },
   {
     "slug": "automations",
@@ -186,7 +190,8 @@
       "A workflow completes",
       "A scheduled check finds a change"
     ],
-    "note": "This guide uses a generic HTTP action, not a native integration or partnership with a specific automation provider."
+    "note": "This guide uses a generic HTTP action, not a native integration or partnership with a specific automation provider.",
+    "published": false
   },
   {
     "slug": "iot",
@@ -223,7 +228,8 @@
       "A home routine completes",
       "A device needs attention"
     ],
-    "note": "Compatibility depends on your device or hub. Nudge is not an emergency alarm or a substitute for a dedicated safety system."
+    "note": "Compatibility depends on your device or hub. Nudge is not an emergency alarm or a substitute for a dedicated safety system.",
+    "published": false
   },
   {
     "slug": "chatgpt",
@@ -260,6 +266,228 @@
       "A longer task finishes",
       "Your assistant needs input"
     ],
-    "note": "Assistant notifications are best-effort and depend on the host running the tool. They may not arrive after interruption, app closure or network failure. Automatic alerts do not run for every task."
+    "note": "Assistant notifications are best-effort and depend on the host running the tool. They may not arrive after interruption, app closure or network failure. Automatic alerts do not run for every task.",
+    "published": false
+  },
+  {
+    "slug": "odoo",
+    "name": "Odoo CRM",
+    "mark": "Odoo",
+    "category": "CRM",
+    "status": "available",
+    "published": true,
+    "featured": true,
+    "logo": {
+      "src": "/integrations/assets/odoo-logo.png",
+      "alt": "Odoo",
+      "width": 180,
+      "height": 79
+    },
+    "summary": "Your next lead. Your next follow-up. Right on your phone.",
+    "description": "Receive Odoo CRM push notifications on your mobile with Nudge. Stay close to new leads, assignments, customer replies and follow-ups, even when you’re away from your desk.",
+    "seo": {
+      "title": "Odoo CRM Mobile Push Notifications | Plug & Nudge",
+      "description": "Receive Odoo CRM push notifications on your mobile. Get lead assignments, activity reminders and customer replies with Nudge. Setup guide for Odoo 19 and 20."
+    },
+    "requirements": [
+      "An Odoo 19 or 20 database with CRM and module import available",
+      "An Odoo administrator to install CRM Push Alerts",
+      "Nudge on your iPhone, with notifications allowed",
+      "Your own active personal Nudge webhook and the appropriate CRM access"
+    ],
+    "steps": [
+      {
+        "title": "Get Nudge on your phone",
+        "body": "Install Nudge — Alerts That Matter on your iPhone, sign in and allow notifications. Android is coming soon."
+      },
+      {
+        "title": "Copy your personal webhook",
+        "body": "In Nudge, create or choose a personal hook and copy its private webhook URL. Use a hook connected to your own account."
+      },
+      {
+        "title": "Connect your Odoo profile",
+        "body": "Open My Preferences → Nudge → Manage my webhook. Read the data-sharing notice, paste your webhook and choose Save webhook. Each employee connects once."
+      },
+      {
+        "title": "Check your first alert",
+        "body": "Ask your administrator to create a test lead assigned to you. In Scheduled mode, allow time for the next scan. Confirm the notification on your phone and open Learn more to check the record."
+      }
+    ],
+    "examples": [
+      "A new lead is assigned to you",
+      "A follow-up activity is due today",
+      "A customer replies to a CRM conversation"
+    ],
+    "note": "Your webhook is private. Clearing it in Odoo stops future alerts. Phone delivery also depends on connectivity, notification permissions and Focus settings.",
+    "product": {
+      "headline": "Receive Odoo CRM push notifications on your mobile.",
+      "appUrl": "https://bit.ly/4yIFbMK",
+      "versions": [
+        {
+          "label": "Odoo 20",
+          "url": "https://apps.odoo.com/apps/modules/20.0/nudge_online"
+        },
+        {
+          "label": "Odoo 19",
+          "url": "https://apps.odoo.com/apps/modules/19.0/nudge_online"
+        }
+      ],
+      "benefits": [
+        {
+          "title": "Catch the next opportunity.",
+          "body": "Know when a lead is created or assigned to you. See the record context before you return to your pipeline."
+        },
+        {
+          "title": "Keep the follow-up moving.",
+          "body": "Get activity, closing-date and inactivity reminders so the next conversation is easier to remember."
+        },
+        {
+          "title": "Pick up where it happened.",
+          "body": "Use Learn more to open the relevant Odoo record. Your existing sign-in and CRM permissions still apply."
+        }
+      ],
+      "notificationExample": "Lead assigned · Website refresh\nAssigned to: Priya Sharma\nAssigned by: Arun Mehta",
+      "alertGroups": [
+        {
+          "title": "Your pipeline",
+          "items": [
+            "Lead created",
+            "Lead assigned",
+            "Stage changed",
+            "Opportunity won",
+            "Opportunity lost"
+          ]
+        },
+        {
+          "title": "Your activities",
+          "items": [
+            "Activity assigned",
+            "Activity rescheduled",
+            "Activity completed¹",
+            "Activity cancelled²"
+          ]
+        },
+        {
+          "title": "Timely reminders",
+          "items": [
+            "Activity due today",
+            "Activity overdue",
+            "Closing date soon",
+            "Closing date today",
+            "Closing date overdue",
+            "Stale lead",
+            "No next activity"
+          ]
+        },
+        {
+          "title": "CRM conversations",
+          "items": [
+            "CRM mention",
+            "Customer reply"
+          ]
+        },
+        {
+          "title": "The lead lifecycle",
+          "items": [
+            "Lead converted",
+            "Opportunity reopened",
+            "Lead unassigned",
+            "Sales team changed",
+            "Leads merged",
+            "Lead archived"
+          ]
+        },
+        {
+          "title": "Optional updates",
+          "items": [
+            "Lead details changed",
+            "Lead removed²"
+          ]
+        }
+      ],
+      "installSteps": [
+        {
+          "title": "Choose the matching version",
+          "body": "Download CRM Push Alerts for your database’s Odoo version. Check CRM access, module import availability and your subscription. Test on a duplicate database first; back up before upgrading."
+        },
+        {
+          "title": "Install the module",
+          "body": "An administrator enables developer mode in Odoo Settings, then opens Apps → Import Module and uploads the matching ZIP. Install the nudge_online module. The import menu depends on administrator access and your database’s features."
+        },
+        {
+          "title": "Choose your delivery settings",
+          "body": "Open Nudge → Delivery settings. Leave Scheduled selected for the default workflow, enable database notifications and choose the alert types and reminder policy your team needs."
+        },
+        {
+          "title": "Invite your team to connect",
+          "body": "Give employees the appropriate native CRM access, then ask each person to save their own webhook using the steps below. Installing the module does not subscribe every employee automatically."
+        }
+      ],
+      "deliveryModes": [
+        {
+          "title": "Scheduled",
+          "body": "The default. Core Odoo scheduled actions check saved CRM state every five minutes. Scheduler delays and batches can take longer. Supports 24 observable alert types; reminders follow the scheduler."
+        },
+        {
+          "title": "Immediate",
+          "body": "Optional event delivery through Odoo Automation Rules, supporting all 26 alert types. Automation Rules can affect your Odoo subscription. A Settings administrator must review and acknowledge the warning before enabling it. Reminders remain scheduled."
+        }
+      ],
+      "recipientGroups": [
+        {
+          "title": "The relevant person",
+          "body": "Lead updates normally reach the assigned salesperson. Activity alerts go to the relevant activity assignee; mentions go to the mentioned employee. Unassignment can notify the former salesperson."
+        },
+        {
+          "title": "Oversight by choice",
+          "body": "Settings administrators can watch selected accessible leads or opt into broader oversight. Being an administrator alone does not subscribe you to every lead. CRM managers without Settings rights do not gain these controls."
+        }
+      ],
+      "privacy": "Saving a webhook is your opt-in to send selected CRM notification content to Plug & Nudge. That content can include lead or contact names, assignee or actor names, conversation excerpts, dates and record links. Odoo remains the system of record; this is not a full CRM synchronization. Access checks still apply, and clearing your webhook stops future alerts.",
+      "faqs": [
+        {
+          "question": "How do I receive Odoo CRM push notifications on my mobile?",
+          "answer": "Install CRM Push Alerts in your supported Odoo database, download Nudge on your iPhone and save your personal webhook in My Preferences → Nudge → Manage my webhook. After your administrator enables the relevant alert types, assigned CRM events can reach your phone."
+        },
+        {
+          "question": "Does it work with Odoo One App Free?",
+          "answer": "Scheduled mode uses core Odoo scheduled actions and does not require Studio or Automation Rules. It was tested on an Odoo Online 20 database that remained on One App Free. Check your own database’s import features, subscription and current Odoo terms. Immediate mode requires Automation Rules and can change your plan status."
+        },
+        {
+          "question": "Which Odoo versions are supported?",
+          "answer": "Use the matching package for Odoo 19 or Odoo 20. Odoo Online packages still need to match the database framework version. Odoo 18 is unsupported; intermediate SaaS builds need a separate compatibility check."
+        },
+        {
+          "question": "Is the integration free?",
+          "answer": "The CRM Push Alerts module is free under LGPL-3.0. Your Odoo subscription requirements and Nudge service terms apply separately."
+        },
+        {
+          "question": "How quickly will an alert arrive?",
+          "answer": "Scheduled mode checks saved CRM state every five minutes; delays and batching can take longer. Immediate mode captures supported events promptly, but delivery is best effort. Reminders remain scheduled. Phone permissions, Focus settings and connectivity can affect what you see."
+        },
+        {
+          "question": "Why haven’t I received an alert?",
+          "answer": "Check that your saved webhook is active and belongs to your Nudge account. Review the database notification switch, selected alert type, assignment and CRM access. In Scheduled mode, allow for the next scan and reminder timezone. Then check your Nudge inbox, mute settings and phone notification permissions."
+        },
+        {
+          "question": "Can I receive alerts for Sales, Accounting or other Odoo apps?",
+          "answer": "This package currently covers CRM leads, opportunities, related activities, reminders and conversations. Sales orders, Accounting, inventory, calendar meetings and digests are outside its scope. Contact Nudge support to request additional notifications."
+        },
+        {
+          "question": "Will existing leads send historical alerts when I connect?",
+          "answer": "Existing records are baselined without historical creation alerts. Scheduled scans see saved state, so intermediate changes between scans can be missed. They cannot reconstruct earlier changes from before the first baseline."
+        },
+        {
+          "question": "Can I use Android or open the record from my phone?",
+          "answer": "Nudge is publicly available on iPhone; Android is coming soon. Learn more opens the linked Odoo record, subject to your Odoo sign-in and access. A removed record intentionally has no link."
+        }
+      ],
+      "compatibility": "Choose the ZIP for Odoo 19 or 20 to match your database’s framework version. Odoo 18 is unsupported; intermediate SaaS versions need a separate compatibility check. An Apps listing does not guarantee that your database can import modules.",
+      "alertNote": "Your administrator chooses which types are enabled. Lead details changed and Lead removed start off. ¹ Scheduled activity completion requires retained activity history. ² Activity cancelled and Lead removed require Immediate mode.",
+      "deliveryNote": "Scheduled mode was tested on an Odoo Online 20 database that remained on One App Free. Studio and Automation Rules are not required for Scheduled mode. Verify your own plan and module import availability. Switching back from Immediate does not uninstall Automation Rules or automatically restore Free.",
+      "recipientNote": "Watch and oversight settings never grant extra CRM permissions. When recipient rules overlap, the same event is deduplicated so a person receives one copy.",
+      "moduleNote": "CRM Push Alerts is free under LGPL-3.0. Odoo plan requirements and Nudge service terms apply separately.",
+      "appLabel": "Get the Odoo app"
+    }
   }
 ]

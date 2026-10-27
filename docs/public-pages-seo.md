@@ -6,10 +6,13 @@ The public website revamp supersedes older public landing, coming-soon iOS,
 session-aware mobile dock and public SPA/PWA instructions below. Public pages are
 static HTML with a separate minimal enhancement script, coral/indigo branding,
 app screenshots and bento sections. The iOS store link is available; Android is
-coming soon. `/merchant` replaces `/for-nudgers`. Integration navigation, home
-section and routes are currently unpublished through `PUBLIC_INTEGRATIONS_ENABLED`
-in `src/data/publicFeatures.ts`; JSON and guide code remain for later publication.
-The generated sitemap includes only the seven published routes.
+coming soon. `/merchant` replaces `/for-nudgers`. The 27 October local follow-up
+publishes only Odoo: JSON `published` flags produce `PUBLISHED_INTEGRATIONS` in
+`src/data/publicFeatures.ts`, shared by navigation, cards, detail content, route
+inventory and sitemap. Hidden entries retain their code but return 404/noindex.
+The local sitemap has nine routes, including `/integrations` and
+`/integrations/odoo`. Integration pages include breadcrumb JSON-LD and Odoo's
+specific mobile CRM title and description. This follow-up is not deployed.
 The authenticated workspace design, permissions and API contracts are unchanged.
 See [local review and implementation contract](landing-review.md) for the new
 public boundaries, content rules, testing and catalog maintenance. Historical

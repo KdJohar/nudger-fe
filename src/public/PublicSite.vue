@@ -6,10 +6,10 @@ import PublicInfoView from '../views/PublicInfoView.vue'
 import IntegrationsView from '../views/IntegrationsView.vue'
 import IntegrationView from '../views/IntegrationView.vue'
 import { PUBLIC_PAGES } from '../data/publicPages'
-import { INTEGRATIONS } from '../data/integrations'
+import { PUBLISHED_INTEGRATIONS } from '../data/publicFeatures'
 const props = defineProps<{ path: string }>()
 const page = PUBLIC_PAGES.find(item => item.path === props.path)
-const integration = page ? INTEGRATIONS.find(item => props.path === `/integrations/${item.slug}`) : undefined
+const integration = page ? PUBLISHED_INTEGRATIONS.find(item => props.path === `/integrations/${item.slug}`) : undefined
 </script>
 <template>
   <PublicLayout :page-name="page?.name">

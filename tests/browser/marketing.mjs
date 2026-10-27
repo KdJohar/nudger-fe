@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict'
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, writeFile, readFile } from 'node:fs/promises'
 import { PUBLIC_PAGES } from '../../build/prerender/entry-server.js'
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright')
 const { default: AxeBuilder } = await import(process.env.AXE_MODULE || '@axe-core/playwright')
 const base = process.env.UI_BASE_URL || 'http://127.0.0.1:5174'
+const catalog = JSON.parse(await readFile(new URL('../../src/data/integrations.json', import.meta.url), 'utf8'))
+const hiddenPaths = catalog.filter(item => !item.published).map(item => `/integrations/${item.slug}`)
 const integrationsPublished = PUBLIC_PAGES.some(page => page.path === '/integrations')
 assert.ok(['localhost', '127.0.0.1'].includes(new URL(base).hostname), 'Local checks only')
 const output = process.env.MARKETING_SCREENSHOT_DIR || '.review'
@@ -21,6 +23,7 @@ try {
     assert.equal(await plain.locator('link[rel=manifest]').count(), 0)
     assert.ok((await plain.locator('main').innerText()).length > 200)
     assert.ok(await plain.getByRole('link', { name: 'Privacy', exact: true }).count())
+    for (const hidden of hiddenPaths) assert.equal(await plain.locator(`a[href="${hidden}"]`).count(), 0, `${route.path} links to ${hidden}`)
     if (!integrationsPublished) assert.equal(await plain.locator('a[href^="/integrations"]').count(), 0)
   }
   await plain.goto(base)
@@ -28,8 +31,8 @@ try {
   assert.equal(await plain.locator('.m-mobile-menu').getAttribute('open'), '')
   await plain.locator('.m-mobile-menu').getByRole('link', { name: 'For creators & platforms', exact: true }).click()
   assert.equal(new URL(plain.url()).pathname, '/merchant')
-  if (!integrationsPublished) {
-    for (const path of ['/integrations', ...['webhooks', 'python', 'curl', 'javascript', 'automations', 'iot', 'chatgpt'].map(slug => `/integrations/${slug}`)]) {
+  {
+    for (const path of [...(!integrationsPublished ? ['/integrations'] : []), ...hiddenPaths, ...hiddenPaths.map(path => `${path}/index.html`)]) {
       const response = await plain.goto(base + path)
       assert.equal(response.status(), 404, path)
       assert.equal(await plain.locator('meta[name=robots]').getAttribute('content'), 'noindex,nofollow')
@@ -45,7 +48,7 @@ try {
     const requests = []
     page.on('pageerror', error => errors.push(error.message))
     page.on('request', request => requests.push(request.url()))
-    for (const path of ['/', '/merchant', ...(integrationsPublished ? ['/integrations', '/integrations/python'] : ['/terms', '/support']), '/privacy']) {
+    for (const path of ['/', '/merchant', ...(integrationsPublished ? ['/integrations', '/integrations/odoo'] : ['/terms', '/support']), '/privacy']) {
       await page.goto(base + path)
       await page.locator('[data-theme-toggle]').waitFor({ state: 'visible' })
       assert.equal(await page.locator('h1').count(), 1)
@@ -67,7 +70,7 @@ try {
         if (path === '/') await page.screenshot({ path: `${output}/hero-${width}-${theme}.png` })
       }
     }
-    assert.equal(requests.some(url => url.includes('/v1/') || url.includes('/assets/') || url.includes('googletagmanager') || url.endsWith('/sw.js')), false, 'No app runtime, API, worker or local telemetry requests')
+    assert.equal(requests.some(url => url.includes('/v1/') || new URL(url).pathname.startsWith('/assets/') || url.includes('googletagmanager') || url.endsWith('/sw.js')), false, 'No app runtime, API, worker or local telemetry requests')
     await context.close()
     console.log(`PASS ${width}px ${theme}: five page types, no overflow, Axe, static runtime isolation`)
   }
@@ -75,21 +78,20 @@ try {
   const page = await context.newPage()
   if (integrationsPublished) {
     await page.goto(base + '/integrations')
-    await page.getByRole('searchbox').fill('PyThOn')
+    await page.getByRole('searchbox').fill('OdOo')
     assert.equal(await page.locator('#integration-list .m-integration:visible').count(), 1)
-    await page.getByRole('combobox').selectOption('Automation')
+    await page.getByRole('combobox').selectOption('CRM')
+    assert.equal(await page.locator('#integration-list .m-integration:visible').count(), 1)
+    await page.getByRole('searchbox').fill('Python')
     await page.getByText('No matches yet.', { exact: true }).waitFor()
     await page.getByRole('button', { name: 'Clear filters' }).click()
-    assert.equal(await page.locator('#integration-list .m-integration:visible').count(), 7)
-    await page.getByRole('combobox').selectOption('AI assistants')
     assert.equal(await page.locator('#integration-list .m-integration:visible').count(), 1)
     await page.locator('#integration-list .m-integration:visible').click()
-    assert.equal(new URL(page.url()).pathname, '/integrations/chatgpt')
-    assert.ok(await page.getByRole('link', { name: /Ask about preview access/ }).count())
-    await page.goto(base + '/integrations/python')
-    await page.getByRole('button', { name: 'Copy example' }).click()
-    await page.getByText('Example copied.', { exact: true }).waitFor()
-    assert.match(await page.evaluate(() => navigator.clipboard.readText()), /from urllib.request/)
+    assert.equal(new URL(page.url()).pathname, '/integrations/odoo')
+    assert.equal(await page.getByRole('link', { name: /Get the Odoo app/ }).first().getAttribute('href'), 'https://bit.ly/4yIFbMK')
+    await page.getByText('How quickly will an alert arrive?', { exact: true }).click()
+    assert.ok(await page.locator('details[open]').innerText().then(text => text.includes('every five minutes')))
+    assert.equal(await page.locator('[data-copy-code]').count(), 0)
   }
   await page.goto(base + '/privacy')
   const theme = await page.locator('html').getAttribute('data-theme')
@@ -120,7 +122,7 @@ try {
     new PerformanceObserver(list => { for (const entry of list.getEntries()) window.__metrics.lcp=entry.startTime }).observe({type:'largest-contentful-paint',buffered:true})
     new PerformanceObserver(list => { for (const entry of list.getEntries()) if(!entry.hadRecentInput) window.__metrics.cls+=entry.value }).observe({type:'layout-shift',buffered:true})
   })
-  await perf.goto(base)
+  await perf.goto(base + '/integrations/odoo')
   await perf.waitForLoadState('networkidle')
   const metrics=await perf.evaluate(() => ({...window.__metrics, transfer:performance.getEntriesByType('resource').reduce((n,r)=>n+r.transferSize,0)}))
   results.push(metrics)

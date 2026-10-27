@@ -1,8 +1,13 @@
 # Public website revamp — local review
 
-Approved scope, 22 October 2026: redesign public marketing around the Nudge mobile
-app; preserve the existing login, onboarding and authenticated workspace. Work is
-local on `feat/public-landing-revamp`. Nothing has been pushed, merged or deployed.
+The public website revamp was approved on 22 October 2026 and merged through
+frontend PR 17. This document retains the original dated verification records.
+
+Current local follow-up, approved 27 October 2026: `feat/odoo-integration-page`
+publishes **only Odoo** in the local build. The catalog, home card and Odoo detail
+page are visible; all other integration code is retained but unpublished. See
+[Odoo context, content boundaries and local review](odoo-integration-plan.md).
+Do not merge or deploy this follow-up without a new request.
 
 ## Preview
 
@@ -22,27 +27,29 @@ Open `http://127.0.0.1:5174/`. For source edits, `npm run dev -- --host 127.0.0.
 --port 5174 --strictPort` renders the same public templates on request; refresh
 after editing. Use the production preview for final performance and routing tests.
 
-Published pages: `/`, `/merchant` and the five existing legal/support routes.
+Local public pages: `/`, `/merchant`, `/integrations`, `/integrations/odoo` and
+the five existing legal/support routes. The sitemap contains these nine routes.
 
-Integration pages are currently unpublished (HTTP 404, noindex, absent from links
-and the sitemap). Preserved routes for future publication: `/integrations`, `/integrations/webhooks`,
-`/integrations/python`, `/integrations/curl`, `/integrations/javascript`,
-`/integrations/automations`, `/integrations/iot`, `/integrations/chatgpt`. `/for-nudgers` permanently redirects to
-`/merchant`, preserving query strings and browser fragments.
+All other integration detail routes remain unpublished (HTTP 404, noindex,
+absent from links and sitemap): `/integrations/webhooks`, `/integrations/python`,
+`/integrations/curl`, `/integrations/javascript`, `/integrations/automations`,
+`/integrations/iot`, `/integrations/chatgpt`. `/for-nudgers` permanently redirects
+to `/merchant`, preserving query strings and browser fragments.
 
 ## What to review
 
 - Home: app showcase, benefits, privacy/control, use cases and FAQs. Integration
-  navigation, catalog cards and the webhook-guide link are hidden; general webhook
-  and automation use cases remain visible.
+  navigation and the Odoo card are visible. The webhook-guide link is hidden;
+  general webhook and automation use cases remain visible.
 - Mobile (600px and below): persistent bottom actions with footer/safe-area
   clearance. Home has Download for iOS and a disabled Android app / Coming soon
   button side by side. Merchant has Create your profile linking to `/login`.
   Desktop calls to action and the existing login/registration flow are unchanged.
 - Merchant: creator/platform distinction, existing registration links, screenshots,
   aggregate CTR explanation and an honest own-app comparison; free during pilot.
-- Preserved catalog (unpublished): name search, categories, empty/reset state,
-  detail pages and copyable setup examples. No integration content is served now.
+- Catalog: Odoo only, with search/category/empty/reset states. Odoo detail includes
+  setup, alert groups, delivery modes, opt-in/privacy, FAQs and official store links.
+  Retained recipe guides and their copyable examples remain unpublished.
 - Legal/support: policy copy and contact links retained, with the new public shell.
 - Desktop and narrow phone widths, light/dark themes and keyboard navigation.
 - Existing sign-in/dashboard: unchanged UI, APIs, permissions and authentication.
@@ -51,28 +58,36 @@ and the sitemap). Preserved routes for future publication: `/integrations`, `/in
 
 ## Add an integration without changing the design
 
-Publication is controlled by `PUBLIC_INTEGRATIONS_ENABLED` in
-`src/data/publicFeatures.ts`, currently `false`. Once the integrations are live,
-set it to `true` and rebuild to restore navigation, the home section, guide link,
-routes, HTML and generated sitemap together. Update the development snapshot
-`public/sitemap.xml` to match. The JSON, guides, components and styles are retained.
+Each entry in `src/data/integrations.json` must have an explicit boolean
+`published`. Only `published: true` entries are public. `status` is descriptive
+availability, and `featured` selects home cards among published entries; neither
+publishes an entry. Only Odoo is currently approved. Never infer publication from
+an entry being marked Available.
 
-Append one object to `src/data/integrations.json`; keep existing entries intact.
-Use the same fields as an existing entry: unique lowercase hyphenated `slug`,
-`name`, `mark`, `category`, `status`, `featured`, `summary`, `description`,
-`requirements`, ordered `steps`, `codeLanguage`, `code`, `examples`, and `note`.
+`PUBLISHED_INTEGRATIONS` in `src/data/publicFeatures.ts` supplies links, cards,
+search categories, detail rendering, route inventory and sitemap. The derived
+`PUBLIC_INTEGRATIONS_ENABLED` controls the catalog navigation when at least one
+entry is published. Every direct link to a specific guide must check that guide's
+publication. If all entries become hidden, the catalog/nav also disappear.
 
-`status` must be `available` (built-in), `recipe` (generic webhook guide), or
-`preview` (limited access). Never mark a planned/native integration as available.
-`featured: true` includes the card on the home page. Category options, catalog,
-detail page, metadata, sitemap and Nginx route inventory derive from the JSON.
-Rebuild to publish an addition; adding a name alone is not enough to invent setup
-instructions. All prose is rendered as text, never injected as HTML. The build
-rejects invalid/duplicate slugs and incomplete guide fields.
+Append an object with a unique lowercase hyphenated slug and complete, verified
+content. Keep existing entries intact. Common fields: name, mark, category, status,
+published, featured, summary, description, requirements, steps, examples and note.
+Optional `logo` contains a local asset path, alt text and pixel dimensions; optional
+`seo` contains title and description. Validation rejects incomplete content,
+unsafe asset paths, duplicate slugs and invalid external product links.
 
-The initial catalog includes personal webhooks and five generic HTTP recipes.
-ChatGPT is labelled Preview because public distribution has not been verified.
-There is no private installation URL or credential in the catalog.
+Recipe guides require `codeLanguage` and `code`. Installed-app guides use a
+`product` object instead: headline, app label/URL, supported-version links,
+benefits, administrator steps, alert groups, delivery modes, recipient groups,
+privacy, FAQs, an illustrative message and qualifying content notes. Use the
+Odoo entry as the complete schema example. All prose is escaped text; no raw HTML.
+The shared product layout does not require another page component for additions.
+
+For an approved publication, change that entry's `published` flag and rebuild.
+Update `public/sitemap.xml`, the development snapshot, to match generated output.
+Regression checks intentionally assert Odoo is the only published integration in
+this release. Update that release assertion when another entry is approved.
 
 ## Assets and content
 
