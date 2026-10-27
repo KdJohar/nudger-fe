@@ -1,6 +1,6 @@
 # Plug&Nudge — Nudger workspace
 
-Public landing revamp: see [local review, preview commands and integration catalog](docs/landing-review.md).
+Public website: see [local review, preview commands and integration catalog](docs/landing-review.md) and [Odoo integration context](docs/odoo-integration-plan.md).
 
 Read [shared project context](docs/project-context.md) and
 [Nudger repository context](docs/repository-context.md) first. This checkout is

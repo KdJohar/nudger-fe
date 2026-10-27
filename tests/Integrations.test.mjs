@@ -12,7 +12,7 @@ test('catalog rejects duplicate and unsafe paths before build', () => {
   }
 })
 test('new catalog entries require availability and complete setup instructions', () => {
-  for (const key of ['name', 'status', 'requirements', 'steps']) {
+  for (const key of ['name', 'status', 'published', 'requirements', 'steps']) {
     const entries = copy(); delete entries[0][key]
     assert.throws(() => validateIntegrations(entries))
   }
@@ -25,12 +25,35 @@ test('consumer content contains no credentials or private plugin links', () => {
   assert.equal(INTEGRATIONS.find(item => item.slug === 'chatgpt').status, 'preview')
 })
 
-test('publication flag controls routes without losing the retained catalog', () => {
-  for (const enabled of [false, true]) {
-    const { PUBLIC_PAGES } = createSourceLoader({
-      './publicFeatures': { PUBLIC_INTEGRATIONS_ENABLED: enabled },
-    })('src/data/publicPages.ts')
-    assert.equal(PUBLIC_PAGES.filter(page => page.path.startsWith('/integrations')).length, enabled ? INTEGRATIONS.length + 1 : 0)
-    for (const item of INTEGRATIONS) assert.equal(PUBLIC_PAGES.some(page => page.path === `/integrations/${item.slug}`), enabled)
+test('only explicitly published entries receive routes, regardless of availability', () => {
+  const load = createSourceLoader()
+  const { PUBLISHED_INTEGRATIONS } = load('src/data/publicFeatures.ts')
+  const { PUBLIC_PAGES } = load('src/data/publicPages.ts')
+  assert.deepEqual(PUBLISHED_INTEGRATIONS.map(item => item.slug), ['odoo'])
+  assert.equal(INTEGRATIONS.find(item => item.slug === 'webhooks').status, 'available')
+  assert.deepEqual(PUBLIC_PAGES.filter(page => page.path.startsWith('/integrations')).map(page => page.path), ['/integrations', '/integrations/odoo'])
+  const { PUBLIC_PAGES: unpublished } = createSourceLoader({
+    './publicFeatures': { PUBLIC_INTEGRATIONS_ENABLED: false, PUBLISHED_INTEGRATIONS: [] },
+  })('src/data/publicPages.ts')
+  assert.equal(unpublished.some(page => page.path.startsWith('/integrations')), false)
+})
+
+test('product guides require working assets, links, SEO and useful setup data without fake code', () => {
+  const odoo = copy().find(item => item.slug === 'odoo')
+  assert.equal(odoo.code, undefined)
+  assert.doesNotThrow(() => validateIntegrations([odoo]))
+  for (const change of [
+    entry => { entry.product.appUrl = 'javascript:alert(1)' },
+    entry => { entry.product.versions[0].url = 'http://insecure.test' },
+    entry => { entry.product.installSteps = [] },
+    entry => { entry.product.faqs[0].answer = '' },
+    entry => { entry.product.alertGroups[0].items = [] },
+    entry => { entry.logo.src = 'https://remote.test/logo.png' },
+    entry => { entry.logo.width = 0 },
+    entry => { entry.seo.title = '' },
+    entry => { entry.code = 'unlabelled example' },
+  ]) {
+    const entry = structuredClone(odoo); change(entry)
+    assert.throws(() => validateIntegrations([entry]))
   }
 })

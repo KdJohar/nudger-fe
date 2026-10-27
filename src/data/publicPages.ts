@@ -1,5 +1,4 @@
-import { INTEGRATIONS } from './integrations'
-import { PUBLIC_INTEGRATIONS_ENABLED } from './publicFeatures'
+import { PUBLIC_INTEGRATIONS_ENABLED, PUBLISHED_INTEGRATIONS } from './publicFeatures'
 
 export type LegalTopic = 'privacy' | 'terms' | 'security' | 'delete-account' | 'support'
 export interface PublicPage { path: string; name: string; title: string; description: string; topic?: LegalTopic }
@@ -9,8 +8,8 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
   { path: '/', name: 'home', title: 'Nudge | Updates you choose. Alerts that matter.', description: 'Intentional notifications for your lock screen. Plug & Nudge helps people receive only the updates they choose.' },
   { path: '/merchant', name: 'merchant', title: 'For creators & platforms | Plug & Nudge', description: 'Send useful updates to subscribers with Nudge. Reach your audience, connect your platform and measure engagement. Free during the pilot.' },
   ...(PUBLIC_INTEGRATIONS_ENABLED ? [
-    { path: '/integrations', name: 'integrations', title: 'Integrations & webhook guides | Nudge', description: 'Connect your scripts, automations and devices to Nudge. Explore personal webhooks, Python, JavaScript, cURL and assistant integrations.' },
-    ...INTEGRATIONS.map(item => ({ path: `/integrations/${item.slug}`, name: `integration-${item.slug}`, title: `${item.name} notifications with Nudge | Setup guide`, description: item.summary + ' ' + item.description })),
+    { path: '/integrations', name: 'integrations', title: 'Integrations for Mobile Push Notifications | Plug & Nudge', description: 'Connect your tools to Nudge for useful mobile push notifications. Explore available integrations and follow the setup guide.' },
+    ...PUBLISHED_INTEGRATIONS.map(item => ({ path: `/integrations/${item.slug}`, name: `integration-${item.slug}`, title: item.seo?.title ?? `${item.name} notifications with Nudge | Setup guide`, description: item.seo?.description ?? item.summary + ' ' + item.description })),
   ] : []),
   { path: '/privacy', name: 'privacy', topic: 'privacy', title: 'Privacy Policy | Plug & Nudge', description: 'Learn how Plug & Nudge keeps subscriber identity private while merchants see aggregate subscription and click statistics.' },
   { path: '/terms', name: 'terms', topic: 'terms', title: 'Terms of Service | Plug & Nudge', description: 'Read the Plug & Nudge Terms of Service for receivers, creators and developers.' },
