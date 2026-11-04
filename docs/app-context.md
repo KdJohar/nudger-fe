@@ -5,8 +5,8 @@
 The public website revamp supersedes older public landing, coming-soon iOS,
 session-aware mobile dock and public SPA/PWA instructions below. Public pages are
 static HTML with a separate minimal enhancement script, coral/indigo branding,
-app screenshots and bento sections. The iOS store link is available; Android is
-coming soon. `/merchant` replaces `/for-nudgers`; JSON supplies integration routes.
+app screenshots and bento sections. The iOS and Android store links are available.
+`/merchant` replaces `/for-nudgers`; JSON supplies integration routes.
 The authenticated workspace design, permissions and API contracts are unchanged.
 See [local review and implementation contract](landing-review.md) for the new
 public boundaries, content rules, testing and catalog maintenance. Historical
@@ -44,9 +44,9 @@ There is no Tailwind or separate official Material Web component layer.
 
 ## Journeys
 
-- `/`: lightweight receiver-facing landing page. App Store and Google Play remain
-  **coming soon**, not invented store URLs. Its mobile action dock adapts to session
-  and onboarding state; pending profiles reach the review screen.
+- `/`: lightweight receiver-facing landing page. Owner-supplied iOS and Android
+  store links are available. The static mobile download dock is independent of
+  authentication; merchant registration remains on `/merchant` and `/login`.
 - `/login`, `/auth/callback`: Google sign-in handoff; use the existing auth flow.
 - `/onboarding`, `/pending`: shared profile setup/image handling and functional logout. Pending review is only for a submitted, non-active profile (including a suspended profile when the backend represents it as `is_active: false`); direct navigation or refresh with an active profile redirects to `/audience`, and an account without a submitted profile returns to `/onboarding`.
 - `/audience`: audience trend, reach and subscriber metrics; 7/30/90-day filtering.

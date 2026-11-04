@@ -42,9 +42,11 @@ to `/merchant`, preserving query strings and browser fragments.
   navigation and the Odoo card are visible. The webhook-guide link is hidden;
   general webhook and automation use cases remain visible.
 - Mobile (600px and below): persistent bottom actions with footer/safe-area
-  clearance. Home has Download for iOS and a disabled Android app / Coming soon
-  button side by side. Merchant has Create your profile linking to `/login`.
-  Desktop calls to action and the existing login/registration flow are unchanged.
+  clearance. Home has matching active Download for iPhone and Download for Android
+  buttons with Apple and Google Play icons in a compact floating glass dock.
+  Merchant has Create your profile linking to `/login`. Both hero download buttons
+  appear only above 600px; mobile retains Meet Nudge. The public navbar has no
+  Get the app CTA. The existing login/registration flow is unchanged.
 - Merchant: creator/platform distinction, existing registration links, screenshots,
   aggregate CTR explanation and an honest own-app comparison; free during pilot.
 - Catalog: Odoo only, with search/category/empty/reset states. Odoo detail includes
@@ -100,13 +102,77 @@ reproduces the source PNG captures against the local receiver (5173) and workspa
 (5174); `PLAYWRIGHT_MODULE` may point to an existing installation. PNG intermediates
 are ignored. The landing page does not claim these fictional creators are available.
 
-Store link: owner-supplied `https://apple.co/4yDfgX4`. Android is coming soon.
+Store links: owner-supplied iOS `https://apple.co/4yDfgX4` and Android
+`https://bit.ly/4BJ3NHZ`.
 Privacy copy describes identities hidden from senders and no sale of personal
 information; it does not promise zero processing or deny the product's click/CTR
 analytics. The comparison contains no invented monetary estimates or conversion
 claims. Registration still uses the existing Google/onboarding/review flow.
 
 ## Rendering and performance
+
+### Android download and alternatives follow-up — 4 November 2026
+
+The owner approved committing this follow-up, opening and merging its PR into
+`main`, and deploying the frontend on 4 November 2026 after local review. The
+verification records below describe the reviewed source; final rollout evidence
+is reported with the release result rather than inferred from a local build.
+
+Local branch: `feat/android-download-link`. Preview: `http://127.0.0.1:5175/`
+because another project occupies 5174. The public button primitive `IconLink`
+shares accessible text, native links and locally rendered Apple/Google Play icons
+between the hero, download section and fixed mobile dock. Both platforms use the
+same active indigo treatment. Both hero download buttons are hidden at the dock's
+mobile breakpoint. No dashboard, API or deployment changes.
+
+`AlternativesSection` appears before the home FAQ and reuses the existing section,
+icon and responsive three-column layout. It presents reasons to choose Nudge's
+creator/platform experience: in-app discovery and subscriptions, audience and
+periodic rich-notification click/CTR reporting, and aggregate reporting without
+subscriber identities. These are supported by the existing landing/merchant
+product contract, `src/types/audience.ts`, `src/types/nudges.ts` and the public
+privacy copy. Hook alerts are not described as producing CTR.
+
+Official comparison sources checked 4 November 2026:
+
+- https://pushover.net/api/subscriptions — subscription links, opt-in and group
+  broadcasts. Do not claim Pushover lacks subscription or multi-user support.
+- https://docs.ntfy.sh/ — topic subscriptions and HTTP publishing.
+- https://docs.ntfy.sh/install/ — hosted use and optional self-hosting.
+- https://docs.ntfy.sh/config/#access-control — users, roles and access control.
+
+No claim of exclusive features, superior delivery, higher conversion, permanent
+free pricing or missing competitor analytics is justified by this review. The
+section uses positive Nudge capabilities and linked workflow facts, not an
+unsupported feature checklist. Recheck sources before future comparison changes.
+Store glyphs are from Bootstrap Icons (MIT), with the license distributed at
+`public/licenses/bootstrap-icons.txt`; there is no icon-font/runtime dependency.
+
+Verification: required UI/audience checks and production build passed. The public
+browser suite passed all nine static routes and 320/375/768/1440px in both themes,
+including Axe and overflow checks. A focused 600/601px boundary check confirms
+the extra hero Android button and mobile dock switch together. Both mobile store
+links are 56px tall with the same active colors; keyboard Tab/Enter reaches the
+Android destination (intercepted during the check). Review images are saved in
+`.review/android-desktop.png`, `.review/android-mobile.png` and
+`.review/alternatives-desktop.png`. Preview remains available on 5175. Changes
+remain uncommitted on the feature branch; no merge or deployment was performed.
+
+Follow-up polish: remove the public navbar download link and mobile hero iPhone
+duplicate, retaining both desktop hero downloads. `PublicLayout` owns the shared
+floating dock and compact two-line store labels; `IconLink` continues to own the
+native link/icon markup. All styling stays in the public CSS section. The inset
+glass surface uses theme-aware blur with an opaque fallback, 48px minimum targets,
+8px target separation and safe-area/footer clearance. No new script or API state.
+The updated dock is 62px tall. Styles, UI (57), audience (13), production build
+and the full public browser suite pass. Focused checks at 320/375/600/601/768/1440px
+in both themes confirm hero visibility, absent navbar CTA, download destinations,
+keyboard focus and reduced-transparency fallback. Conservative black/white
+backdrop compositing gives a minimum text contrast of 4.72:1 including hover.
+Reviewed screenshots: `.review/glass-mobile-light.png`,
+`.review/glass-mobile-dark.png` and `.review/glass-desktop.png`.
+
+### Public rendering contract
 
 Build-time Vue renders plain public HTML. Public pages load no Vue, Vuetify,
 Pinia, router, icon font, authentication session or workspace telemetry bundle.

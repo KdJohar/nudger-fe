@@ -13,7 +13,7 @@ defineProps<{ integration: Integration; product: ProductIntegration }>()
         <h1>{{ product.headline }}</h1>
         <p class="m-lead">{{ integration.description }}</p>
         <div class="m-actions"><a class="m-button m-button--primary" :href="product.appUrl">{{ product.appLabel }} <span aria-hidden="true">↗</span></a><a class="m-text-link" href="#setup">See how to connect <span aria-hidden="true">↓</span></a></div>
-        <p class="m-caption">For {{ product.versions.map(version => version.label).join(' and ') }} · iOS available · Android coming soon</p>
+        <p class="m-caption">For {{ product.versions.map(version => version.label).join(' and ') }} · iOS and Android available</p>
       </div>
       <figure class="m-product-story">
         <div class="m-product-connection"><span v-if="integration.logo" class="m-product-logo"><img :src="integration.logo.src" :alt="integration.logo.alt" :width="integration.logo.width" :height="integration.logo.height" /></span><span aria-hidden="true">→</span><img src="/showcase/nudge-mark.webp" alt="Nudge" width="56" height="56" /></div>

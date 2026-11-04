@@ -62,3 +62,4 @@ export function validateIntegrations(input: unknown): Integration[] {
 export const INTEGRATIONS = validateIntegrations(catalog)
 export const INTEGRATION_LABELS = { available: 'Available', recipe: 'Webhook guide', preview: 'Preview' } as const
 export const IOS_URL = 'https://apple.co/4yDfgX4'
+export const ANDROID_URL = 'https://bit.ly/4BJ3NHZ'

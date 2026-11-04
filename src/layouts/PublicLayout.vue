@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { IOS_URL } from '../data/integrations'
+import { ANDROID_URL, IOS_URL } from '../data/integrations'
 import { PUBLIC_INTEGRATIONS_ENABLED } from '../data/publicFeatures'
+import IconLink from '../components/public/IconLink.vue'
 defineProps<{ pageName?: string }>()
 </script>
 <template>
@@ -9,14 +10,14 @@ defineProps<{ pageName?: string }>()
     <header class="m-header"><div class="m-wrap m-header__inner">
       <a class="m-brand" href="/" aria-label="Plug & Nudge home"><img src="/showcase/nudge-mark.webp" alt="" width="32" height="32" /><span>plug<span class="m-brand__amp">&amp;</span>nudge</span></a>
       <nav class="m-desktop-nav" aria-label="Main navigation"><a href="/#possibilities">The app</a><a v-if="PUBLIC_INTEGRATIONS_ENABLED" href="/integrations" :aria-current="pageName?.startsWith('integration') ? 'page' : undefined">Integrations</a><a href="/merchant" :aria-current="pageName === 'merchant' ? 'page' : undefined">For creators &amp; platforms</a></nav>
-      <div class="m-header__actions"><button class="m-theme" type="button" data-theme-toggle aria-label="Change color theme" hidden><span aria-hidden="true">◐</span></button><a class="m-button m-button--small m-button--primary" :href="IOS_URL">Get the app <span aria-hidden="true">↗</span></a><details class="m-mobile-menu"><summary aria-label="Open navigation"><span aria-hidden="true">☰</span></summary><nav aria-label="Mobile navigation"><a href="/#possibilities">The app</a><a v-if="PUBLIC_INTEGRATIONS_ENABLED" href="/integrations">Integrations</a><a href="/merchant">For creators &amp; platforms</a><a href="/privacy">Privacy</a><a href="/login">Sign in</a></nav></details></div>
+      <div class="m-header__actions"><button class="m-theme" type="button" data-theme-toggle aria-label="Change color theme" hidden><span aria-hidden="true">◐</span></button><details class="m-mobile-menu"><summary aria-label="Open navigation"><span aria-hidden="true">☰</span></summary><nav aria-label="Mobile navigation"><a href="/#possibilities">The app</a><a v-if="PUBLIC_INTEGRATIONS_ENABLED" href="/integrations">Integrations</a><a href="/merchant">For creators &amp; platforms</a><a href="/privacy">Privacy</a><a href="/login">Sign in</a></nav></details></div>
     </div></header>
     <main id="main-content" tabindex="-1"><slot /></main>
-    <footer class="m-footer"><div class="m-wrap"><div class="m-footer__top"><div><a class="m-brand" href="/"><img src="/showcase/nudge-mark.webp" alt="" width="32" height="32" /><span>plug&amp;nudge</span></a><p>Your attention belongs to you.</p></div><div class="m-footer__group"><strong>Explore</strong><a v-if="PUBLIC_INTEGRATIONS_ENABLED" href="/integrations">Integrations</a><a href="/merchant">Creators &amp; platforms</a><a href="/login">Sign in</a></div><div class="m-footer__group"><strong>Your trust</strong><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/security">Security</a></div><div class="m-footer__group"><strong>Here to help</strong><a href="/support">Support</a><a href="/delete-account">Account deletion</a><a :href="IOS_URL">Download for iPhone</a></div></div><div class="m-footer__bottom"><span>© {{ new Date().getFullYear() }} Plug &amp; Nudge</span><span>Updates you choose. Alerts that matter.</span></div></div></footer>
+    <footer class="m-footer"><div class="m-wrap"><div class="m-footer__top"><div><a class="m-brand" href="/"><img src="/showcase/nudge-mark.webp" alt="" width="32" height="32" /><span>plug&amp;nudge</span></a><p>Your attention belongs to you.</p></div><div class="m-footer__group"><strong>Explore</strong><a v-if="PUBLIC_INTEGRATIONS_ENABLED" href="/integrations">Integrations</a><a href="/merchant">Creators &amp; platforms</a><a href="/login">Sign in</a></div><div class="m-footer__group"><strong>Your trust</strong><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/security">Security</a></div><div class="m-footer__group"><strong>Here to help</strong><a href="/support">Support</a><a href="/delete-account">Account deletion</a><a :href="IOS_URL">Download for iPhone</a><a :href="ANDROID_URL">Download for Android</a></div></div><div class="m-footer__bottom"><span>© {{ new Date().getFullYear() }} Plug &amp; Nudge</span><span>Updates you choose. Alerts that matter.</span></div></div></footer>
     <aside v-if="pageName === 'home' || pageName === 'merchant'" class="m-dock" :aria-label="pageName === 'home' ? 'Download Nudge' : 'Get started with Nudge'">
       <template v-if="pageName === 'home'">
-        <a class="m-button m-button--primary" :href="IOS_URL">Download for iOS</a>
-        <button class="m-button m-dock__pending" type="button" disabled><span>Android app</span><span class="m-dock__status">Coming soon</span></button>
+        <IconLink :href="IOS_URL" icon="apple"><span class="m-button__caption">Download for </span>iPhone</IconLink>
+        <IconLink :href="ANDROID_URL" icon="google-play"><span class="m-button__caption">Download for </span>Android</IconLink>
       </template>
       <a v-else class="m-button m-button--primary" href="/login">Create your profile <span aria-hidden="true">→</span></a>
     </aside>
