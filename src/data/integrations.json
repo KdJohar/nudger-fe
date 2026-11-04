@@ -9,7 +9,7 @@
     "summary": "One private URL. A direct line to your phone.",
     "description": "Connect anything that can send an HTTPS POST request to a personal webhook in Nudge. Get a notification when work is done or something needs your attention.",
     "requirements": [
-      "Nudge on your iPhone",
+      "Nudge on your phone",
       "A personal hook created in the app",
       "A tool that can send HTTPS POST requests"
     ],
@@ -292,13 +292,13 @@
     "requirements": [
       "An Odoo 19 or 20 database with CRM and module import available",
       "An Odoo administrator to install CRM Push Alerts",
-      "Nudge on your iPhone, with notifications allowed",
+      "Nudge on your phone, with notifications allowed",
       "Your own active personal Nudge webhook and the appropriate CRM access"
     ],
     "steps": [
       {
         "title": "Get Nudge on your phone",
-        "body": "Install Nudge — Alerts That Matter on your iPhone, sign in and allow notifications. Android is coming soon."
+        "body": "Install Nudge — Alerts That Matter on your phone, sign in and allow notifications."
       },
       {
         "title": "Copy your personal webhook",
@@ -447,7 +447,7 @@
       "faqs": [
         {
           "question": "How do I receive Odoo CRM push notifications on my mobile?",
-          "answer": "Install CRM Push Alerts in your supported Odoo database, download Nudge on your iPhone and save your personal webhook in My Preferences → Nudge → Manage my webhook. After your administrator enables the relevant alert types, assigned CRM events can reach your phone."
+          "answer": "Install CRM Push Alerts in your supported Odoo database, download Nudge on your phone and save your personal webhook in My Preferences → Nudge → Manage my webhook. After your administrator enables the relevant alert types, assigned CRM events can reach your phone."
         },
         {
           "question": "Does it work with Odoo One App Free?",
@@ -479,7 +479,7 @@
         },
         {
           "question": "Can I use Android or open the record from my phone?",
-          "answer": "Nudge is publicly available on iPhone; Android is coming soon. Learn more opens the linked Odoo record, subject to your Odoo sign-in and access. A removed record intentionally has no link."
+          "answer": "Nudge is publicly available on iPhone and Android. Learn more opens the linked Odoo record, subject to your Odoo sign-in and access. A removed record intentionally has no link."
         }
       ],
       "compatibility": "Choose the ZIP for Odoo 19 or 20 to match your database’s framework version. Odoo 18 is unsupported; intermediate SaaS versions need a separate compatibility check. An Apps listing does not guarantee that your database can import modules.",

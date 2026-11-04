@@ -5,8 +5,13 @@
 The public website revamp supersedes older public landing, coming-soon iOS,
 session-aware mobile dock and public SPA/PWA instructions below. Public pages are
 static HTML with a separate minimal enhancement script, coral/indigo branding,
-app screenshots and bento sections. The iOS store link is available; Android is
-coming soon. `/merchant` replaces `/for-nudgers`; JSON supplies integration routes.
+app screenshots and bento sections. The iOS and Android store links are available.
+The public navbar has no download CTA. Home hero downloads appear above 600px;
+mobile keeps Meet Nudge and the two fixed download links. The mobile action dock
+is a compact, inset glass surface with rounded corners, safe-area clearance,
+48px controls and matching indigo store icons/labels. Preserve light/dark contrast,
+visible focus and an opaque fallback for reduced transparency or unsupported blur.
+`/merchant` replaces `/for-nudgers`; JSON supplies integration routes.
 The authenticated workspace design, permissions and API contracts are unchanged.
 See [local review and implementation contract](landing-review.md) for the new
 public boundaries, content rules, testing and catalog maintenance. Historical

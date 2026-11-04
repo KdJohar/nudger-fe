@@ -48,8 +48,9 @@ implementation acceptance criterion.
 Page sections: benefits; supported CRM alerts; contextual notification examples;
 who receives alerts; administrator installation; employee connection; Scheduled
 versus Immediate delivery; compatibility; privacy; troubleshooting; FAQs; and
-clear links to get the Odoo module and download Nudge for iOS. Android remains
-Coming soon. Preserve the existing mobile download and merchant CTAs.
+clear links to get the Odoo module and download Nudge. iOS and Android are both
+available through the public download controls. Preserve the existing mobile
+download and merchant CTAs.
 
 ## Product facts and copy boundaries
 

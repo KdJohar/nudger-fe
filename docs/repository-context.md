@@ -84,7 +84,8 @@ Public footer excludes the Developer API Docs link. Initial HTML and SPA navigat
 share canonical, description, Open Graph/Twitter/JSON-LD; robots/sitemap accompany it.
 Auth and private workspace routes are noindex. Public PII/privacy wording must
 not imply no data is processed by configured telemetry providers or invent audits,
-compliance or guarantees. Store links remain coming-soon until releases exist.
+compliance or guarantees. The public download controls use owner-supplied iOS and
+Android store links.
 
 ## Publishing and networking
 
